@@ -1,0 +1,61 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\\FrameXML\\UI.xsd">
+
+    <Frame name="GACAttributesFrame" parent="UIParent" hidden="true" inherits="BasicFrameTemplateWithInset">
+        <Size x="520" y="620"/>
+        <Anchors>
+            <Anchor point="CENTER"/>
+        </Anchors>
+
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="TitleText" inherits="GameFontHighlight" justifyH="CENTER">
+                    <Anchors>
+                        <Anchor point="TOP" x="0" y="-8"/>
+                    </Anchors>
+                    <Text>Sistema de Atributos y Talentos</Text>
+                </FontString>
+            </Layer>
+        </Layers>
+
+        <Frames>
+            <Frame parentKey="AttributesPanel" name="$parentAttributesPanel">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="16" y="-30"/>
+                    <Anchor point="BOTTOMRIGHT" x="-32" y="54"/>
+                </Anchors>
+
+                <Frames>
+                    <ScrollFrame parentKey="ScrollFrame" name="$parentScrollFrame" inherits="UIPanelScrollFrameTemplate">
+                        <Anchors>
+                            <Anchor point="TOPLEFT"/>
+                            <Anchor point="BOTTOMRIGHT"/>
+                        </Anchors>
+                        <ScrollChild>
+                            <Frame parentKey="ScrollChild" name="$parentScrollChild">
+                                <Size x="460" y="1"/>
+                            </Frame>
+                        </ScrollChild>
+                    </ScrollFrame>
+                </Frames>
+            </Frame>
+
+            <Button parentKey="SaveButton" name="$parentSave" inherits="UIPanelButtonTemplate">
+                <Size x="120" y="26"/>
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" x="-16" y="16"/>
+                </Anchors>
+                <Text>Guardar PJ</Text>
+            </Button>
+
+            <Button parentKey="ResetButton" name="$parentReset" inherits="UIPanelButtonTemplate">
+                <Size x="120" y="26"/>
+                <Anchors>
+                    <Anchor point="RIGHT" relativeTo="$parentSave" relativePoint="LEFT" x="-8" y="0"/>
+                </Anchors>
+                <Text>Reiniciar</Text>
+            </Button>
+        </Frames>
+    </Frame>
+</Ui>

@@ -1,0 +1,20 @@
+## Interface: 110205
+## Title: GranAddonDeLasCosas
+## Notes: Addon para gestionar tiradas de dados basadas en nuestro sistema de rol.
+## Author: PatrickJS
+## Version: 1.0.0
+## SavedVariables: GranAddonDeLasCosasDB
+## SavedVariablesPerCharacter: GranAddonDeLasCosasCharDB
+
+Core/Init.lua
+Data/AttributesAndTalents.lua
+Core/Events.lua
+Core/Commands.lua
+Core/TRP3Bridge.lua
+Core/RollCommunication.lua
+Core/TooltipSync.lua
+UI/MainFrame.xml
+UI/MainFrame.lua
+UI/MinimapButton.lua
+UI/QuickActionsFrame.lua
+UI/TurnOrderFrame.lua
