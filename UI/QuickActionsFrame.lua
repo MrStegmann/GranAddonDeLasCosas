@@ -558,13 +558,12 @@ function addon:CreateQuickActionsFrame()
         return
     end
 
-    ensureQuickFramePosition()
 
+    -- Anclar el frame de dados al lado derecho de la barra de acción principal
     local frame = CreateFrame("Frame", "GACQuickActionsFrame", UIParent, "BackdropTemplate")
-    frame:SetSize(220, 64)
-    frame:SetMovable(true)
-    frame:EnableMouse(true)
-    frame:RegisterForDrag("LeftButton")
+    frame:SetHeight(34)
+    frame:SetMovable(false)
+    frame:EnableMouse(false)
     frame:SetClampedToScreen(true)
     frame:SetFrameStrata("MEDIUM")
 
@@ -579,39 +578,67 @@ function addon:CreateQuickActionsFrame()
     frame:SetBackdropColor(0.05, 0.06, 0.08, 0.78)
     frame:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.75)
 
-    local position = self.characterData.ui.quickFrame
-    frame:SetPoint(position.anchor, UIParent, position.relativeAnchor, position.x, position.y)
+    local function anchorDiceFrameToMainActionBar()
+        local minWidth = 340
+        local maxWidth = 480
+        local padding = 8
+        if MainMenuBarArtFrame then
+            local actionBarWidth = MainMenuBarArtFrame:GetWidth()
+            if not actionBarWidth or actionBarWidth <= 0 then
+                actionBarWidth = 1024
+            end
+            local diceFrameWidth = math.max(minWidth, math.min(actionBarWidth * 0.48, maxWidth))
+            frame:ClearAllPoints()
+            frame:SetWidth(diceFrameWidth)
+            frame:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "TOPRIGHT", -padding, 44)
+        elseif MainMenuBar then
+            frame:ClearAllPoints()
+            frame:SetWidth(minWidth)
+            frame:SetPoint("BOTTOMRIGHT", MainMenuBar, "TOPRIGHT", -padding, 2)
+        else
+            frame:ClearAllPoints()
+            frame:SetWidth(minWidth)
+            frame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -200, 180)
+        end
+    end
 
-    frame:SetScript("OnDragStart", function(self)
-        self:StartMoving()
-    end)
+    anchorDiceFrameToMainActionBar()
 
-    frame:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
+    if MainMenuBarArtFrame and not self.mainActionBarDiceHooked then
+        self.mainActionBarDiceHooked = true
+        MainMenuBarArtFrame:HookScript("OnSizeChanged", function()
+            if addon.quickActionsFrame then
+                anchorDiceFrameToMainActionBar()
+            end
+        end)
+        MainMenuBarArtFrame:HookScript("OnShow", function()
+            if addon.quickActionsFrame then
+                anchorDiceFrameToMainActionBar()
+            end
+        end)
+    end
 
-        local anchor, _, relativeAnchor, x, y = self:GetPoint(1)
-        addon.characterData.ui.quickFrame.anchor = anchor
-        addon.characterData.ui.quickFrame.relativeAnchor = relativeAnchor
-        addon.characterData.ui.quickFrame.x = math.floor(x + 0.5)
-        addon.characterData.ui.quickFrame.y = math.floor(y + 0.5)
-    end)
+    -- Botones en una sola fila, alineados horizontalmente
+    local buttonY = -2
+    local buttonX = 8
+    local buttonSpacing = 1
 
     local diceButton = CreateFrame("Button", "GACQuickDiceButton", frame, "UIPanelButtonTemplate")
-    diceButton:SetSize(30, 24)
-    diceButton:SetPoint("TOPLEFT", 5, -4)
+    diceButton:SetSize(28, 22)
+    diceButton:SetPoint("LEFT", frame, "LEFT", buttonX, buttonY)
 
     local diceIcon = diceButton:CreateTexture(nil, "ARTWORK")
     diceIcon:SetTexture("Interface\\Icons\\INV_Misc_Dice_01")
     diceIcon:SetPoint("CENTER")
     diceIcon:SetSize(15, 15)
 
-    diceButton:SetScript("OnClick", function()
+    diceButton:SetScript("OnClick", function(self)
         addon.quickActionsMenu = addon:GetTalentRollMenu()
         if not addon.quickActionsMenuFrame then
             addon.quickActionsMenuFrame = CreateFrame("Frame", "GACQuickActionsMenuFrame", UIParent, "UIDropDownMenuTemplate")
         end
-
-        EasyMenu(addon.quickActionsMenu, addon.quickActionsMenuFrame, "cursor", 0, 0, "MENU", 2)
+        -- Anclar el menú: bottom del menú con el top del frame de botones
+        EasyMenu(addon.quickActionsMenu, addon.quickActionsMenuFrame, frame, 0, 0, "MENU", 2)
     end)
 
     diceButton:SetScript("OnEnter", function(self)
@@ -626,21 +653,20 @@ function addon:CreateQuickActionsFrame()
     end)
 
     local attributeButton = CreateFrame("Button", "GACQuickAttributeButton", frame, "UIPanelButtonTemplate")
-    attributeButton:SetSize(30, 24)
-    attributeButton:SetPoint("LEFT", diceButton, "RIGHT", 2, 0)
+    attributeButton:SetSize(28, 22)
+    attributeButton:SetPoint("LEFT", diceButton, "RIGHT", buttonSpacing, 0)
 
     local attributeIcon = attributeButton:CreateTexture(nil, "ARTWORK")
     attributeIcon:SetTexture("Interface\\Icons\\INV_Misc_Book_11")
     attributeIcon:SetPoint("CENTER")
     attributeIcon:SetSize(15, 15)
 
-    attributeButton:SetScript("OnClick", function()
+    attributeButton:SetScript("OnClick", function(self)
         addon.attributeActionsMenu = addon:GetAttributeRollMenu()
         if not addon.attributeActionsMenuFrame then
             addon.attributeActionsMenuFrame = CreateFrame("Frame", "GACAttributeActionsMenuFrame", UIParent, "UIDropDownMenuTemplate")
         end
-
-        EasyMenu(addon.attributeActionsMenu, addon.attributeActionsMenuFrame, "cursor", 0, 0, "MENU", 2)
+        EasyMenu(addon.attributeActionsMenu, addon.attributeActionsMenuFrame, frame, 0, 0, "MENU", 2)
     end)
 
     attributeButton:SetScript("OnEnter", function(self)
@@ -655,8 +681,8 @@ function addon:CreateQuickActionsFrame()
     end)
 
     local swordButton = CreateFrame("Button", "GACQuickSwordButton", frame, "UIPanelButtonTemplate")
-    swordButton:SetSize(30, 24)
-    swordButton:SetPoint("LEFT", attributeButton, "RIGHT", 2, 0)
+    swordButton:SetSize(28, 22)
+    swordButton:SetPoint("LEFT", attributeButton, "RIGHT", buttonSpacing, 0)
 
     local swordIcon = swordButton:CreateTexture(nil, "ARTWORK")
     swordIcon:SetTexture("Interface\\Icons\\Ability_Rogue_Sprint")
@@ -694,21 +720,20 @@ function addon:CreateQuickActionsFrame()
     end)
 
     local attackButton = CreateFrame("Button", "GACQuickAttackButton", frame, "UIPanelButtonTemplate")
-    attackButton:SetSize(30, 24)
-    attackButton:SetPoint("LEFT", swordButton, "RIGHT", 2, 0)
+    attackButton:SetSize(28, 22)
+    attackButton:SetPoint("LEFT", swordButton, "RIGHT", buttonSpacing, 0)
 
     local attackIcon = attackButton:CreateTexture(nil, "ARTWORK")
     attackIcon:SetTexture("Interface\\Icons\\Ability_MeleeDamage")
     attackIcon:SetPoint("CENTER")
     attackIcon:SetSize(15, 15)
 
-    attackButton:SetScript("OnClick", function()
+    attackButton:SetScript("OnClick", function(self)
         addon.attackActionsMenu = addon:GetAttackRollMenu()
         if not addon.attackActionsMenuFrame then
             addon.attackActionsMenuFrame = CreateFrame("Frame", "GACAttackActionsMenuFrame", UIParent, "UIDropDownMenuTemplate")
         end
-
-        EasyMenu(addon.attackActionsMenu, addon.attackActionsMenuFrame, "cursor", 0, 0, "MENU", 2)
+        EasyMenu(addon.attackActionsMenu, addon.attackActionsMenuFrame, frame, 0, 0, "MENU", 2)
     end)
 
     attackButton:SetScript("OnEnter", function(self)
@@ -723,12 +748,12 @@ function addon:CreateQuickActionsFrame()
     end)
 
     local modifierLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    modifierLabel:SetPoint("LEFT", attackButton, "RIGHT", 6, 0)
     modifierLabel:SetText("Mod")
+    modifierLabel:SetPoint("LEFT", attackButton, "RIGHT", 4, 0)
 
     local modifierInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
-    modifierInput:SetSize(30, 18)
-    modifierInput:SetPoint("LEFT", modifierLabel, "RIGHT", 4, 0)
+    modifierInput:SetSize(26, 18)
+    modifierInput:SetPoint("LEFT", modifierLabel, "RIGHT", 10, 0)
     modifierInput:SetAutoFocus(false)
     modifierInput:SetNumeric(false)
     modifierInput:SetMaxLetters(5)
@@ -738,6 +763,51 @@ function addon:CreateQuickActionsFrame()
     end)
     modifierInput:SetScript("OnEnterPressed", function(self)
         self:ClearFocus()
+    end)
+
+    -- Inputs de dado custom alineados a la derecha del frame
+    local dadoLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    dadoLabel:SetText("Dado ")
+    dadoLabel:SetPoint("LEFT", modifierInput, "RIGHT", 12, 0)
+
+    local quantityInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+    quantityInput:SetSize(22, 18)
+    quantityInput:SetAutoFocus(false)
+    quantityInput:SetNumeric(true)
+    quantityInput:SetMaxLetters(2)
+    quantityInput:SetText("1")
+    quantityInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+    quantityInput:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+    end)
+    quantityInput:SetPoint("LEFT", dadoLabel, "RIGHT", 8, 0)
+
+    local separator = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    separator:SetText("d")
+    separator:SetPoint("LEFT", quantityInput, "RIGHT", 5, 0)
+
+    local facesInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+    facesInput:SetSize(28, 18)
+    facesInput:SetAutoFocus(false)
+    facesInput:SetNumeric(true)
+    facesInput:SetMaxLetters(4)
+    facesInput:SetText("20")
+    facesInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+    facesInput:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+    end)
+    facesInput:SetPoint("LEFT", separator, "RIGHT", 2, 0)
+
+    local customRollButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    customRollButton:SetSize(38, 18)
+    customRollButton:SetText("Tirar")
+    customRollButton:SetPoint("LEFT", facesInput, "RIGHT", 1, 0)
+    customRollButton:SetScript("OnClick", function()
+        addon:StartCustomDiceRoll(quantityInput:GetText(), facesInput:GetText())
     end)
 
     local experienceBar = CreateFrame("StatusBar", "GACExperienceBar", UIParent)
@@ -927,45 +997,7 @@ function addon:CreateQuickActionsFrame()
         GameTooltip:Hide()
     end)
 
-    local quantityInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
-    quantityInput:SetSize(30, 18)
-    quantityInput:SetPoint("BOTTOMLEFT", 8, 8)
-    quantityInput:SetAutoFocus(false)
-    quantityInput:SetNumeric(true)
-    quantityInput:SetMaxLetters(2)
-    quantityInput:SetText("1")
-    quantityInput:SetScript("OnEscapePressed", function(self)
-        self:ClearFocus()
-    end)
-    quantityInput:SetScript("OnEnterPressed", function(self)
-        self:ClearFocus()
-    end)
-
-    local separator = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    separator:SetPoint("LEFT", quantityInput, "RIGHT", 4, 0)
-    separator:SetText("d")
-
-    local facesInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
-    facesInput:SetSize(34, 18)
-    facesInput:SetPoint("LEFT", separator, "RIGHT", 4, 0)
-    facesInput:SetAutoFocus(false)
-    facesInput:SetNumeric(true)
-    facesInput:SetMaxLetters(4)
-    facesInput:SetText("20")
-    facesInput:SetScript("OnEscapePressed", function(self)
-        self:ClearFocus()
-    end)
-    facesInput:SetScript("OnEnterPressed", function(self)
-        self:ClearFocus()
-    end)
-
-    local customRollButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    customRollButton:SetSize(44, 18)
-    customRollButton:SetPoint("BOTTOMRIGHT", -8, 8)
-    customRollButton:SetText("Tirar")
-    customRollButton:SetScript("OnClick", function()
-        addon:StartCustomDiceRoll(quantityInput:GetText(), facesInput:GetText())
-    end)
+    -- Eliminar los antiguos inputs de dado custom (ahora están alineados en la fila principal)
 
     frame.quantityInput = quantityInput
     frame.facesInput = facesInput
