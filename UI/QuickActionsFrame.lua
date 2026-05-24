@@ -803,9 +803,15 @@ function addon:CreateQuickActionsFrame()
     facesInput:SetPoint("LEFT", separator, "RIGHT", 2, 0)
 
     local customRollButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    customRollButton:SetSize(38, 18)
-    customRollButton:SetText("Tirar")
+    customRollButton:SetSize(28, 22)
+    customRollButton:SetText("")
     customRollButton:SetPoint("LEFT", facesInput, "RIGHT", 1, 0)
+
+    local customRollIcon = customRollButton:CreateTexture(nil, "ARTWORK")
+    customRollIcon:SetTexture("Interface\\Icons\\INV_Misc_Dice_02")
+    customRollIcon:SetPoint("CENTER")
+    customRollIcon:SetSize(15, 15)
+
     customRollButton:SetScript("OnClick", function()
         addon:StartCustomDiceRoll(quantityInput:GetText(), facesInput:GetText())
     end)
