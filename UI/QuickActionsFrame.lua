@@ -740,9 +740,66 @@ function addon:CreateQuickActionsFrame()
         self:ClearFocus()
     end)
 
-    local experienceBar = CreateFrame("StatusBar", nil, frame)
-    experienceBar:SetSize(202, 10)
-    experienceBar:SetPoint("TOP", frame, "BOTTOM", 0, 0)
+    local experienceBar = CreateFrame("StatusBar", "GACExperienceBar", UIParent)
+    experienceBar:SetFrameStrata("LOW")
+    experienceBar:SetFrameLevel(5)
+
+    local function anchorExperienceBarToMainActionBar()
+        if MainMenuBarArtFrame then
+            local actionBarWidth = MainMenuBarArtFrame:GetWidth()
+            if not actionBarWidth or actionBarWidth <= 0 then
+                actionBarWidth = 1024
+            end
+
+            experienceBar:ClearAllPoints()
+            experienceBar:SetSize(actionBarWidth, 10)
+            experienceBar:SetPoint("BOTTOM", MainMenuBarArtFrame, "TOP", 0, -16)
+            return
+        end
+
+        if MainMenuExpBar then
+            experienceBar:ClearAllPoints()
+            experienceBar:SetAllPoints(MainMenuExpBar)
+            return
+        end
+
+        if StatusTrackingBarManager then
+            experienceBar:ClearAllPoints()
+            experienceBar:SetPoint("TOPLEFT", StatusTrackingBarManager, "TOPLEFT", 0, 0)
+            experienceBar:SetPoint("BOTTOMRIGHT", StatusTrackingBarManager, "BOTTOMRIGHT", 0, 0)
+            return
+        end
+
+        if MainMenuBar then
+            experienceBar:ClearAllPoints()
+            experienceBar:SetSize(512, 10)
+            experienceBar:SetPoint("BOTTOM", MainMenuBar, "TOP", 0, 2)
+            return
+        end
+
+        experienceBar:ClearAllPoints()
+        experienceBar:SetSize(512, 12)
+        experienceBar:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 2)
+    end
+
+    anchorExperienceBarToMainActionBar()
+
+    if MainMenuBarArtFrame and not self.mainActionBarAnchorHooked then
+        self.mainActionBarAnchorHooked = true
+        MainMenuBarArtFrame:HookScript("OnSizeChanged", function()
+            if addon.quickActionsFrame and addon.quickActionsFrame.experienceBar then
+                anchorExperienceBarToMainActionBar()
+            end
+        end)
+        MainMenuBarArtFrame:HookScript("OnShow", function()
+            if addon.quickActionsFrame and addon.quickActionsFrame.experienceBar then
+                anchorExperienceBarToMainActionBar()
+            end
+        end)
+    elseif MainMenuExpBar then
+        experienceBar:ClearAllPoints()
+        experienceBar:SetAllPoints(MainMenuExpBar)
+    end
     experienceBar:SetStatusBarTexture("Interface\\TARGETINGFRAME\\UI-StatusBar")
     experienceBar:SetMinMaxValues(0, 1)
     experienceBar:SetValue(0)

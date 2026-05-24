@@ -202,3 +202,55 @@ function addon:SetCurrentExperience(experienceValue)
     self.characterData.progress.currentExperience = value
     self:NormalizeExperienceProgressData()
 end
+
+function addon:AddExperience(experienceAmount)
+    if not self.characterData then
+        return
+    end
+
+    local amount = math.floor(tonumber(experienceAmount) or 0)
+    if amount <= 0 then
+        return
+    end
+
+    self.characterData.progress = self.characterData.progress or {}
+    self:NormalizeExperienceProgressData()
+
+    local progress = self.characterData.progress
+    local category = progress.category or "Normal"
+    local level = tonumber(progress.level) or 1
+    local currentExperience = tonumber(progress.currentExperience) or 0
+    local remaining = amount
+
+    while remaining > 0 do
+        local requiredExperience = self:GetRequiredExperience(category, level)
+        if not requiredExperience or requiredExperience <= 0 then
+            -- Max level in this category.
+            currentExperience = 0
+            remaining = 0
+            break
+        end
+
+        local missingToLevel = requiredExperience - currentExperience
+        if remaining < missingToLevel then
+            currentExperience = currentExperience + remaining
+            remaining = 0
+            break
+        end
+
+        remaining = remaining - missingToLevel
+        local maxLevel = self:GetMaxLevelForCategory(category)
+        if level >= maxLevel then
+            currentExperience = 0
+            remaining = 0
+            break
+        end
+
+        level = level + 1
+        currentExperience = 0
+    end
+
+    progress.level = level
+    progress.currentExperience = currentExperience
+    self:NormalizeExperienceProgressData()
+end

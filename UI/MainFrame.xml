@@ -3,7 +3,7 @@
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\\FrameXML\\UI.xsd">
 
     <Frame name="GACAttributesFrame" parent="UIParent" hidden="true" inherits="BasicFrameTemplateWithInset">
-        <Size x="520" y="620"/>
+        <Size x="640" y="620"/>
         <Anchors>
             <Anchor point="CENTER"/>
         </Anchors>

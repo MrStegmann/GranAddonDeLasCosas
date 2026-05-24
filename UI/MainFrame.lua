@@ -40,15 +40,105 @@ local function setInputEnabled(input, enabled)
     end
 end
 
+local function normalizeInspectProgressData(data)
+    local progress = (type(data) == "table" and type(data.progress) == "table") and data.progress or {}
+    local category = progress.category or "-"
+    local level = tonumber(progress.level) and tostring(math.floor(progress.level)) or "-"
+    local currentExperience = tonumber(progress.currentExperience)
+    local requiredExperience = progress.requiredExperience
+
+    local expText = "-"
+    if currentExperience ~= nil then
+        if requiredExperience == nil then
+            expText = string.format("%d / MAX", math.max(0, math.floor(currentExperience)))
+        else
+            expText = string.format("%d / %d", math.max(0, math.floor(currentExperience)), math.max(0, math.floor(requiredExperience)))
+        end
+    end
+
+    return category, level, expText
+end
+
+local function updateInspectInfoPanel(frame, data)
+    if not frame or not frame.InspectExperiencePanel then
+        return
+    end
+
+    local category, level, expText = normalizeInspectProgressData(data)
+    frame.InspectInfoCategoryValue:SetText(category)
+    frame.InspectInfoLevelValue:SetText(level)
+    frame.InspectInfoExperienceValue:SetText(expText)
+
+    if frame.InspectGrantInfoText and addon and addon.CanGrantExperienceToInspectedTarget then
+        local canGrant = addon:CanGrantExperienceToInspectedTarget()
+        frame.InspectGrantInfoText:SetText(canGrant and "Opciones de lider activas" or "Solo lider de grupo/banda")
+    end
+
+    if frame.InspectGrantExpInput and addon and addon.CanGrantExperienceToInspectedTarget then
+        local canGrant = addon:CanGrantExperienceToInspectedTarget()
+        frame.InspectGrantExpInput:SetShown(canGrant)
+        if frame.InspectGrantExpLabel then
+            frame.InspectGrantExpLabel:SetShown(canGrant)
+        end
+        if frame.InspectGrantExpButton then
+            frame.InspectGrantExpButton:SetShown(canGrant)
+        end
+    end
+end
+
+local function setInspectNavigationState(frame, activeView)
+    if not frame then
+        return
+    end
+
+    if frame.InspectNavAttributesButton then
+        frame.InspectNavAttributesButton:SetEnabled(activeView ~= "attributes")
+    end
+
+    if frame.InspectNavExperienceButton then
+        frame.InspectNavExperienceButton:SetEnabled(activeView ~= "experience")
+    end
+end
+
+local function updateMainFrameLayout(frame, isInspectMode, inspectView)
+    if not frame or not frame.AttributesPanel then
+        return
+    end
+
+    if frame.InspectNavPanel then
+        frame.InspectNavPanel:SetShown(isInspectMode)
+    end
+
+    if frame.InspectContentPanel then
+        frame.InspectContentPanel:SetShown(isInspectMode)
+    end
+
+    if frame.InspectExperiencePanel then
+        frame.InspectExperiencePanel:SetShown(isInspectMode and inspectView == "experience")
+    end
+
+    frame.AttributesPanel:ClearAllPoints()
+    if isInspectMode and frame.InspectContentPanel then
+        frame.AttributesPanel:SetPoint("TOPLEFT", frame.InspectContentPanel, "TOPLEFT", 0, 0)
+        frame.AttributesPanel:SetPoint("BOTTOMRIGHT", frame.InspectContentPanel, "BOTTOMRIGHT", 0, 0)
+        frame.AttributesPanel:SetShown(inspectView == "attributes")
+    else
+        frame.AttributesPanel:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -30)
+        frame.AttributesPanel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -32, 54)
+        frame.AttributesPanel:Show()
+    end
+
+    setInspectNavigationState(frame, inspectView)
+end
+
 function addon:SelectMainFrameView(view)
     local frame = _G.GACAttributesFrame
     if not frame then
         return
     end
 
-    if frame.AttributesPanel then
-        frame.AttributesPanel:Show()
-    end
+    self.inspectMainView = view or self.inspectMainView or "attributes"
+    updateMainFrameLayout(frame, self.attributesUIReadOnly, self.inspectMainView)
 
     if frame.SaveButton then
         frame.SaveButton:SetShown(not self.attributesUIReadOnly)
@@ -77,6 +167,147 @@ function addon:BuildAttributesUI()
         attributes = {},
         talents = {},
     }
+
+    local inspectNavPanel = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+    inspectNavPanel:SetSize(110, 530)
+    inspectNavPanel:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -30)
+    inspectNavPanel:Hide()
+
+    inspectNavPanel:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 8,
+        edgeSize = 10,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 },
+    })
+    inspectNavPanel:SetBackdropColor(0.03, 0.05, 0.08, 0.78)
+    inspectNavPanel:SetBackdropBorderColor(0.18, 0.36, 0.62, 0.80)
+
+    local inspectNavTitle = inspectNavPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    inspectNavTitle:SetPoint("TOP", inspectNavPanel, "TOP", 0, -10)
+    inspectNavTitle:SetText("Navegacion")
+
+    local inspectNavAttributesButton = CreateFrame("Button", nil, inspectNavPanel, "UIPanelButtonTemplate")
+    inspectNavAttributesButton:SetSize(88, 24)
+    inspectNavAttributesButton:SetPoint("TOP", inspectNavTitle, "BOTTOM", 0, -10)
+    inspectNavAttributesButton:SetText("Atributos")
+    inspectNavAttributesButton:SetScript("OnClick", function()
+        addon:SelectMainFrameView("attributes")
+    end)
+
+    local inspectNavExperienceButton = CreateFrame("Button", nil, inspectNavPanel, "UIPanelButtonTemplate")
+    inspectNavExperienceButton:SetSize(88, 24)
+    inspectNavExperienceButton:SetPoint("TOP", inspectNavAttributesButton, "BOTTOM", 0, -6)
+    inspectNavExperienceButton:SetText("Experiencia")
+    inspectNavExperienceButton:SetScript("OnClick", function()
+        addon:SelectMainFrameView("experience")
+    end)
+
+    local inspectContentPanel = CreateFrame("Frame", nil, frame)
+    inspectContentPanel:SetPoint("TOPLEFT", inspectNavPanel, "TOPRIGHT", 8, 0)
+    inspectContentPanel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -32, 54)
+    inspectContentPanel:Hide()
+
+    local inspectInfoPanel = CreateFrame("Frame", nil, inspectContentPanel, "BackdropTemplate")
+    inspectInfoPanel:SetAllPoints()
+    inspectInfoPanel:Hide()
+
+    inspectInfoPanel:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 8,
+        edgeSize = 10,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 },
+    })
+    inspectInfoPanel:SetBackdropColor(0.04, 0.07, 0.12, 0.72)
+    inspectInfoPanel:SetBackdropBorderColor(0.20, 0.45, 0.82, 0.85)
+
+    local infoTitle = inspectInfoPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    infoTitle:SetPoint("TOPLEFT", 12, -12)
+    infoTitle:SetText("Informacion de progreso")
+
+    local categoryLabel = inspectInfoPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    categoryLabel:SetPoint("TOPLEFT", 12, -28)
+    categoryLabel:SetText("Categoria:")
+
+    local categoryValue = inspectInfoPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    categoryValue:SetPoint("LEFT", categoryLabel, "RIGHT", 6, 0)
+    categoryValue:SetText("-")
+
+    local levelLabel = inspectInfoPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    levelLabel:SetPoint("LEFT", categoryValue, "RIGHT", 28, 0)
+    levelLabel:SetText("Nivel:")
+
+    local levelValue = inspectInfoPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    levelValue:SetPoint("LEFT", levelLabel, "RIGHT", 6, 0)
+    levelValue:SetText("-")
+
+    local experienceLabel = inspectInfoPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    experienceLabel:SetPoint("TOPLEFT", categoryLabel, "BOTTOMLEFT", 0, -6)
+    experienceLabel:SetText("EXP:")
+
+    local experienceValue = inspectInfoPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    experienceValue:SetPoint("LEFT", experienceLabel, "RIGHT", 6, 0)
+    experienceValue:SetText("-")
+
+    local grantInfoText = inspectInfoPanel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    grantInfoText:SetPoint("TOPLEFT", experienceLabel, "BOTTOMLEFT", 0, -12)
+    grantInfoText:SetText("Solo lider de grupo/banda")
+
+    local grantExpLabel = inspectInfoPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    grantExpLabel:SetPoint("TOPLEFT", grantInfoText, "BOTTOMLEFT", 0, -10)
+    grantExpLabel:SetText("EXP a entregar:")
+    grantExpLabel:Hide()
+
+    local grantExpInput = CreateFrame("EditBox", nil, inspectInfoPanel, "InputBoxTemplate")
+    grantExpInput:SetSize(84, 20)
+    grantExpInput:SetPoint("LEFT", grantExpLabel, "RIGHT", 8, 0)
+    grantExpInput:SetAutoFocus(false)
+    grantExpInput:SetNumeric(true)
+    grantExpInput:SetMaxLetters(8)
+    grantExpInput:SetText("0")
+    grantExpInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+    grantExpInput:SetScript("OnEnterPressed", function(self)
+        if addon and addon.GrantExperienceToInspectedTarget then
+            local _, reason = addon:GrantExperienceToInspectedTarget(self:GetText())
+            if reason then
+                print("|cffff4040" .. addonName .. "|r " .. reason)
+            end
+        end
+        self:ClearFocus()
+    end)
+    grantExpInput:Hide()
+
+    local grantExpButton = CreateFrame("Button", nil, inspectInfoPanel, "UIPanelButtonTemplate")
+    grantExpButton:SetSize(84, 22)
+    grantExpButton:SetPoint("LEFT", grantExpInput, "RIGHT", 8, 0)
+    grantExpButton:SetText("Dar EXP")
+    grantExpButton:SetScript("OnClick", function()
+        if addon and addon.GrantExperienceToInspectedTarget then
+            local _, reason = addon:GrantExperienceToInspectedTarget(grantExpInput:GetText())
+            if reason then
+                print("|cffff4040" .. addonName .. "|r " .. reason)
+            end
+        end
+    end)
+    grantExpButton:Hide()
+
+    frame.InspectNavPanel = inspectNavPanel
+    frame.InspectNavAttributesButton = inspectNavAttributesButton
+    frame.InspectNavExperienceButton = inspectNavExperienceButton
+    frame.InspectContentPanel = inspectContentPanel
+    frame.InspectExperiencePanel = inspectInfoPanel
+    frame.InspectInfoCategoryValue = categoryValue
+    frame.InspectInfoLevelValue = levelValue
+    frame.InspectInfoExperienceValue = experienceValue
+    frame.InspectGrantInfoText = grantInfoText
+    frame.InspectGrantExpLabel = grantExpLabel
+    frame.InspectGrantExpInput = grantExpInput
+    frame.InspectGrantExpButton = grantExpButton
 
     local content = frame.AttributesPanel.ScrollFrame.ScrollChild
     local columns = 3
@@ -236,6 +467,24 @@ function addon:FillAttributesUIFromData(data)
     end
 end
 
+function addon:RefreshTargetInspectUI(targetName, data)
+    local frame = _G.GACAttributesFrame
+    if not frame then
+        return
+    end
+
+    self:BuildAttributesUI()
+    self:FillAttributesUIFromData(data)
+    updateInspectInfoPanel(frame, data)
+
+    self.currentInspectTargetName = targetName
+    self.currentInspectData = data
+
+    if frame:IsShown() and self.attributesUIReadOnly then
+        frame.TitleText:SetText("Atributos y Talentos de " .. (targetName or "Objetivo"))
+    end
+end
+
 function addon:ShowTargetAttributesUI(targetName, data)
     local frame = _G.GACAttributesFrame
     if not frame then
@@ -243,8 +492,8 @@ function addon:ShowTargetAttributesUI(targetName, data)
         return
     end
 
-    self:BuildAttributesUI()
-    self:FillAttributesUIFromData(data)
+    self:RefreshTargetInspectUI(targetName, data)
+    self.inspectMainView = "attributes"
     self:SetAttributesUIReadOnly(true, "Atributos y Talentos de " .. (targetName or "Objetivo"))
     frame:Show()
 end
@@ -313,6 +562,9 @@ function addon:ToggleAttributesUI()
     end
 
     self:BuildAttributesUI()
+    self.inspectMainView = "attributes"
+    self.currentInspectTargetName = nil
+    self.currentInspectData = nil
     self:SetAttributesUIReadOnly(false, "Sistema de Atributos y Talentos")
     self:RefreshAttributesUIValues()
     self:SelectMainFrameView()
