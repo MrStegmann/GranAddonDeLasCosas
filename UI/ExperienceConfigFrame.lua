@@ -59,6 +59,14 @@ function addon:RefreshExperienceConfigFrame()
     frame.currentExperienceInput:SetText(tostring(snapshot.currentExperience))
     frame.requiredExperienceValue:SetText(requiredExperienceText)
 
+    local isPrestigeAvailable = self.IsPrestigeAvailable and self:IsPrestigeAvailable() or false
+    if frame.prestigeMessageText then
+        frame.prestigeMessageText:SetShown(isPrestigeAvailable)
+    end
+    if frame.prestigeButton then
+        frame.prestigeButton:SetShown(isPrestigeAvailable)
+    end
+
     buildCategoryDropdown(frame)
     buildLevelDropdown(frame, snapshot.category)
 
@@ -72,7 +80,7 @@ function addon:CreateExperienceConfigFrame()
     end
 
     local frame = CreateFrame("Frame", "GACExperienceConfigFrame", UIParent, "BasicFrameTemplateWithInset")
-    frame:SetSize(340, 230)
+    frame:SetSize(340, 280)
     frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
     frame:SetFrameStrata("DIALOG")
     frame:Hide()
@@ -151,6 +159,30 @@ function addon:CreateExperienceConfigFrame()
     helpText:SetPoint("BOTTOM", applyButton, "TOP", 0, 6)
     helpText:SetText("Usa Enter o el boton Aplicar para confirmar EXP.")
 
+    local prestigeMessageText = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    prestigeMessageText:SetPoint("TOPLEFT", requiredExperienceLabel, "BOTTOMLEFT", 0, -20)
+    prestigeMessageText:SetPoint("RIGHT", frame, "RIGHT", -20, 0)
+    prestigeMessageText:SetJustifyH("LEFT")
+    prestigeMessageText:SetText("Prestigio disponible. Reiniciarás tus atributos y talentos y volverás al nivel 1 de la siguiente categoría.")
+    prestigeMessageText:Hide()
+
+    local prestigeButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    prestigeButton:SetSize(120, 24)
+    prestigeButton:SetPoint("TOPLEFT", prestigeMessageText, "BOTTOMLEFT", 0, -8)
+    prestigeButton:SetText("Prestigiar")
+    prestigeButton:SetScript("OnClick", function()
+        if addon.PrestigeToNextCategory and addon:PrestigeToNextCategory() then
+            addon:RefreshExperienceConfigFrame()
+            if addon.RefreshAttributesUIValues then
+                addon:RefreshAttributesUIValues()
+            end
+            if addon.UpdateQuickExperienceBar then
+                addon:UpdateQuickExperienceBar()
+            end
+        end
+    end)
+    prestigeButton:Hide()
+
     frame.categoryDropdown = categoryDropdown
     frame.levelDropdown = levelDropdown
     frame.levelValue = levelValue
@@ -158,6 +190,8 @@ function addon:CreateExperienceConfigFrame()
     frame.currentExperienceInput = currentExperienceInput
     frame.requiredExperienceValue = requiredExperienceValue
     frame.applyButton = applyButton
+    frame.prestigeMessageText = prestigeMessageText
+    frame.prestigeButton = prestigeButton
 
     self.experienceConfigFrame = frame
     self:RefreshExperienceConfigFrame()

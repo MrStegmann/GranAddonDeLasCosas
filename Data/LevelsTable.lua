@@ -100,6 +100,73 @@ function addon:GetRequiredExperience(category, level)
     return entry.expToLevel
 end
 
+function addon:GetNextExperienceCategory(category)
+    local categories = self.levelCategories or {}
+    local categoryIndex = nil
+
+    for index, categoryName in ipairs(categories) do
+        if categoryName == category then
+            categoryIndex = index
+            break
+        end
+    end
+
+    if not categoryIndex then
+        return nil
+    end
+
+    return categories[categoryIndex + 1]
+end
+
+function addon:IsPrestigeAvailable()
+    local snapshot = self:GetExperienceProgressSnapshot()
+    local maxLevel = self:GetMaxLevelForCategory(snapshot.category)
+    local nextCategory = self:GetNextExperienceCategory(snapshot.category)
+
+    if not nextCategory then
+        return false
+    end
+
+    if snapshot.level < maxLevel then
+        return false
+    end
+
+    local requiredExperience = snapshot.requiredExperience
+    if not requiredExperience or requiredExperience <= 0 then
+        return false
+    end
+
+    return snapshot.currentExperience >= requiredExperience
+end
+
+function addon:PrestigeToNextCategory()
+    if not self.characterData then
+        return false
+    end
+
+    if not self:IsPrestigeAvailable() then
+        return false
+    end
+
+    local snapshot = self:GetExperienceProgressSnapshot()
+    local nextCategory = self:GetNextExperienceCategory(snapshot.category)
+    if not nextCategory then
+        return false
+    end
+
+    if self.ResetAttributesUIValues then
+        self:ResetAttributesUIValues()
+    end
+
+    self.characterData.progress = self.characterData.progress or {}
+    self.characterData.progress.category = nextCategory
+    self.characterData.progress.level = 1
+    self.characterData.progress.currentExperience = 0
+
+    self:NormalizeExperienceProgressData()
+    return true
+end
+
 function addon:NormalizeExperienceProgressData()
     if not self.characterData then
         return
@@ -220,6 +287,20 @@ function addon:AddExperience(experienceAmount)
     local category = progress.category or "Normal"
     local level = tonumber(progress.level) or 1
     local currentExperience = tonumber(progress.currentExperience) or 0
+    local maxLevel = self:GetMaxLevelForCategory(category)
+
+    if level >= maxLevel then
+        local requiredAtCap = self:GetRequiredExperience(category, level)
+        if requiredAtCap and requiredAtCap > 0 then
+            progress.currentExperience = math.min(currentExperience + amount, requiredAtCap)
+        else
+            progress.currentExperience = currentExperience
+        end
+
+        self:NormalizeExperienceProgressData()
+        return
+    end
+
     local remaining = amount
 
     while remaining > 0 do
@@ -239,9 +320,8 @@ function addon:AddExperience(experienceAmount)
         end
 
         remaining = remaining - missingToLevel
-        local maxLevel = self:GetMaxLevelForCategory(category)
         if level >= maxLevel then
-            currentExperience = 0
+            currentExperience = requiredExperience
             remaining = 0
             break
         end
