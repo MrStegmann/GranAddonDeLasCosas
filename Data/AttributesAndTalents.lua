@@ -96,6 +96,11 @@ function addon:InitializeAttributeSystem()
         byGroup = {},
         sequence = 0,
     }
+    GranAddonDeLasCosasCharDB.progress = GranAddonDeLasCosasCharDB.progress or {
+        category = "Normal",
+        level = 1,
+        currentExperience = 0,
+    }
 
     addon.characterData = GranAddonDeLasCosasCharDB
 
@@ -120,5 +125,9 @@ function addon:InitializeAttributeSystem()
                 GranAddonDeLasCosasCharDB.talents[talent] = 0
             end
         end
+    end
+
+    if self.NormalizeExperienceProgressData then
+        self:NormalizeExperienceProgressData()
     end
 end

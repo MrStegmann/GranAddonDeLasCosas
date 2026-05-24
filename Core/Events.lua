@@ -43,6 +43,8 @@ function addon:PLAYER_LOGIN()
         addon.eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
         addon.eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
         addon.eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+        addon.eventFrame:RegisterEvent("PLAYER_XP_UPDATE")
+        addon.eventFrame:RegisterEvent("PLAYER_LEVEL_UP")
     end
 end
 
@@ -60,10 +62,26 @@ function addon:PLAYER_ENTERING_WORLD()
     if addon.UpdateTargetInspectButtonVisibility then
         addon:UpdateTargetInspectButtonVisibility()
     end
+
+    if addon.UpdateQuickExperienceBar then
+        addon:UpdateQuickExperienceBar()
+    end
 end
 
 function addon:PLAYER_TARGET_CHANGED()
     if addon.UpdateTargetInspectButtonVisibility then
         addon:UpdateTargetInspectButtonVisibility()
+    end
+end
+
+function addon:PLAYER_XP_UPDATE()
+    if addon.UpdateQuickExperienceBar then
+        addon:UpdateQuickExperienceBar()
+    end
+end
+
+function addon:PLAYER_LEVEL_UP()
+    if addon.UpdateQuickExperienceBar then
+        addon:UpdateQuickExperienceBar()
     end
 end

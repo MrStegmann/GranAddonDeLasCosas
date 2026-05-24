@@ -5,10 +5,12 @@ local function printHelp()
     print("/gac help - Muestra esta ayuda")
     print("/gac debug - Activa o desactiva modo debug")
     print("/gac ui - Abre o cierra la interfaz de atributos y talentos")
+    print("/gacExp - Abre o cierra configuracion de EXP")
 end
 
 function addon:RegisterCommands()
     SLASH_GRANADDONDELASCOSAS1 = "/gac"
+    SLASH_GRANADDONDELASCOSASEXP1 = "/gacExp"
 
     SlashCmdList.GRANADDONDELASCOSAS = function(msg)
         local command = (msg or ""):lower():match("^%s*(.-)%s*$")
@@ -34,5 +36,11 @@ function addon:RegisterCommands()
 
         print("Comando no reconocido: " .. command)
         printHelp()
+    end
+
+    SlashCmdList.GRANADDONDELASCOSASEXP = function()
+        if addon.ToggleExperienceConfigUI then
+            addon:ToggleExperienceConfigUI()
+        end
     end
 end

@@ -121,6 +121,18 @@ local function buildModifierSegment(hasModifier, modifierValue)
     return " + Mod (" .. modifierValue .. ")"
 end
 
+local function formatXPBarText(currentXP, maxXP)
+    local safeCurrentXP = math.max(tonumber(currentXP) or 0, 0)
+    local safeMaxXP = math.max(tonumber(maxXP) or 0, 0)
+    local percentage = 0
+
+    if safeMaxXP > 0 then
+        percentage = (safeCurrentXP / safeMaxXP) * 100
+    end
+
+    return string.format("EXP %d / %d (%.1f%%)", safeCurrentXP, safeMaxXP, percentage)
+end
+
 function addon:GetActiveRollModifier()
     local frame = self.quickActionsFrame
     if not frame or not frame.modifierInput then
@@ -138,6 +150,60 @@ function addon:GetActiveRollModifier()
     end
 
     return normalizeModifierValue(numericValue), true
+end
+
+function addon:UpdateQuickExperienceBar()
+    local frame = self.quickActionsFrame
+    if not frame or not frame.experienceBar then
+        return
+    end
+
+    local bar = frame.experienceBar
+    local currentXP = 0
+    local maxXP = 0
+
+    if self.GetExperienceProgressSnapshot then
+        local snapshot = self:GetExperienceProgressSnapshot()
+        currentXP = snapshot.currentExperience or 0
+        maxXP = snapshot.requiredExperience or 0
+    else
+        currentXP = UnitXP("player") or 0
+        maxXP = UnitXPMax("player") or 0
+    end
+
+    bar.currentXP = currentXP
+    bar.maxXP = maxXP
+
+    local effectiveMaxXP = maxXP
+    if effectiveMaxXP <= 0 then
+        effectiveMaxXP = 1
+    end
+
+    local percentage = 0
+    if maxXP > 0 then
+        percentage = currentXP / maxXP
+    end
+
+    bar:SetMinMaxValues(0, effectiveMaxXP)
+    bar:SetValue(math.min(currentXP, effectiveMaxXP))
+
+    local fillR = 0.12 + (0.18 * percentage)
+    local fillG = 0.26 + (0.40 * percentage)
+    local fillB = 0.52 + (0.46 * percentage)
+    bar:SetStatusBarColor(fillR, fillG, fillB)
+
+    if bar.spark then
+        local barWidth = bar:GetWidth() - 4
+        local xOffset = (barWidth * percentage) - (barWidth / 2)
+
+        bar.spark:ClearAllPoints()
+        bar.spark:SetPoint("CENTER", bar, "CENTER", xOffset, 0)
+        bar.spark:SetShown(maxXP > 0 and percentage > 0 and percentage < 1)
+    end
+
+    if bar.valueText then
+        bar.valueText:SetText(formatXPBarText(currentXP, maxXP))
+    end
 end
 
 function addon:CanShowTargetInspectButton()
@@ -674,6 +740,83 @@ function addon:CreateQuickActionsFrame()
         self:ClearFocus()
     end)
 
+    local experienceBar = CreateFrame("StatusBar", nil, frame)
+    experienceBar:SetSize(202, 10)
+    experienceBar:SetPoint("TOP", frame, "BOTTOM", 0, 0)
+    experienceBar:SetStatusBarTexture("Interface\\TARGETINGFRAME\\UI-StatusBar")
+    experienceBar:SetMinMaxValues(0, 1)
+    experienceBar:SetValue(0)
+    experienceBar:SetStatusBarColor(0.12, 0.26, 0.52)
+    experienceBar:EnableMouse(true)
+
+    local statusTexture = experienceBar:GetStatusBarTexture()
+    if statusTexture and statusTexture.SetGradientAlpha then
+        statusTexture:SetGradientAlpha("HORIZONTAL", 0.08, 0.20, 0.45, 0.95, 0.42, 0.78, 1.00, 0.98)
+    end
+
+    local expBackground = experienceBar:CreateTexture(nil, "BACKGROUND")
+    expBackground:SetAllPoints()
+    expBackground:SetColorTexture(0.01, 0.03, 0.07, 0.72)
+
+    local expOverlay = experienceBar:CreateTexture(nil, "OVERLAY")
+    expOverlay:SetPoint("TOPLEFT", 1, -1)
+    expOverlay:SetPoint("TOPRIGHT", -1, -1)
+    expOverlay:SetHeight(3)
+    expOverlay:SetColorTexture(0.72, 0.88, 1.00, 0.26)
+
+    local expBorderTop = experienceBar:CreateTexture(nil, "BORDER")
+    expBorderTop:SetPoint("TOPLEFT", -1, 1)
+    expBorderTop:SetPoint("TOPRIGHT", 1, 1)
+    expBorderTop:SetHeight(1)
+    expBorderTop:SetColorTexture(0.22, 0.44, 0.72, 0.9)
+
+    local expBorderBottom = experienceBar:CreateTexture(nil, "BORDER")
+    expBorderBottom:SetPoint("BOTTOMLEFT", -1, -1)
+    expBorderBottom:SetPoint("BOTTOMRIGHT", 1, -1)
+    expBorderBottom:SetHeight(1)
+    expBorderBottom:SetColorTexture(0.02, 0.08, 0.18, 0.95)
+
+    local expBorderLeft = experienceBar:CreateTexture(nil, "BORDER")
+    expBorderLeft:SetPoint("TOPLEFT", -1, 1)
+    expBorderLeft:SetPoint("BOTTOMLEFT", -1, -1)
+    expBorderLeft:SetWidth(1)
+    expBorderLeft:SetColorTexture(0.18, 0.36, 0.62, 0.9)
+
+    local expBorderRight = experienceBar:CreateTexture(nil, "BORDER")
+    expBorderRight:SetPoint("TOPRIGHT", 1, 1)
+    expBorderRight:SetPoint("BOTTOMRIGHT", 1, -1)
+    expBorderRight:SetWidth(1)
+    expBorderRight:SetColorTexture(0.02, 0.07, 0.16, 0.95)
+
+    local expSpark = experienceBar:CreateTexture(nil, "ARTWORK")
+    expSpark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+    expSpark:SetSize(10, 12)
+    expSpark:SetBlendMode("ADD")
+    expSpark:SetVertexColor(0.62, 0.86, 1.00, 0.95)
+    expSpark:SetPoint("CENTER", experienceBar, "LEFT", 0, 0)
+    experienceBar.spark = expSpark
+
+    local expValueText = experienceBar:CreateFontString(nil, "OVERLAY", "GameFontNormalTiny")
+    expValueText:SetPoint("CENTER", experienceBar, "CENTER", 0, 0)
+    expValueText:SetTextColor(1, 0.95, 0.82)
+    expValueText:SetShadowOffset(1, -1)
+    expValueText:SetShadowColor(0, 0, 0, 0.9)
+    expValueText:SetText("EXP 0 / 0 (0.0%)")
+    expValueText:Hide()
+    experienceBar.valueText = expValueText
+
+    experienceBar:SetScript("OnEnter", function(self)
+        if self.valueText then
+            self.valueText:Show()
+        end
+    end)
+
+    experienceBar:SetScript("OnLeave", function(self)
+        if self.valueText then
+            self.valueText:Hide()
+        end
+    end)
+
     local expandTurnOrderButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     expandTurnOrderButton:SetSize(96, 20)
     expandTurnOrderButton:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 8, -1)
@@ -771,6 +914,7 @@ function addon:CreateQuickActionsFrame()
     frame.facesInput = facesInput
     frame.modifierInput = modifierInput
     frame.customRollButton = customRollButton
+    frame.experienceBar = experienceBar
 
     self.turnOrderExpandQuickButton = expandTurnOrderButton
     self.targetInspectQuickButton = inspectTargetButton
@@ -782,4 +926,5 @@ function addon:CreateQuickActionsFrame()
     end
 
     self:UpdateTargetInspectButtonVisibility()
+    self:UpdateQuickExperienceBar()
 end
