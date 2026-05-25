@@ -86,7 +86,60 @@ local function updateInspectInfoPanel(frame, data)
     end
 end
 
-local function setInspectNavigationState(frame, activeView)
+local function buildCategoryDropdown(frame)
+    if not frame or not frame.MainExperienceCategoryDropdown then
+        return
+    end
+
+    UIDropDownMenu_Initialize(frame.MainExperienceCategoryDropdown, function(_, level)
+        if level ~= 1 then
+            return
+        end
+
+        for _, categoryName in ipairs(addon.levelCategories or {}) do
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = categoryName
+            info.value = categoryName
+            info.func = function()
+                addon:SetExperienceCategory(categoryName)
+                addon:RefreshMainExperiencePanel()
+                if addon.UpdateQuickExperienceBar then
+                    addon:UpdateQuickExperienceBar()
+                end
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+end
+
+local function buildLevelDropdown(frame, category)
+    if not frame or not frame.MainExperienceLevelDropdown then
+        return
+    end
+
+    UIDropDownMenu_Initialize(frame.MainExperienceLevelDropdown, function(_, level)
+        if level ~= 1 then
+            return
+        end
+
+        local maxLevel = addon:GetMaxLevelForCategory(category)
+        for levelNumber = 1, maxLevel do
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = tostring(levelNumber)
+            info.value = levelNumber
+            info.func = function()
+                addon:SetExperienceLevel(levelNumber)
+                addon:RefreshMainExperiencePanel()
+                if addon.UpdateQuickExperienceBar then
+                    addon:UpdateQuickExperienceBar()
+                end
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+end
+
+local function setMainNavigationState(frame, activeView)
     if not frame then
         return
     end
@@ -100,35 +153,39 @@ local function setInspectNavigationState(frame, activeView)
     end
 end
 
-local function updateMainFrameLayout(frame, isInspectMode, inspectView)
+local function updateMainFrameLayout(frame, isInspectMode, activeView)
     if not frame or not frame.AttributesPanel then
         return
     end
 
     if frame.InspectNavPanel then
-        frame.InspectNavPanel:SetShown(isInspectMode)
+        frame.InspectNavPanel:Show()
     end
 
     if frame.InspectContentPanel then
-        frame.InspectContentPanel:SetShown(isInspectMode)
+        frame.InspectContentPanel:Show()
     end
 
     if frame.InspectExperiencePanel then
-        frame.InspectExperiencePanel:SetShown(isInspectMode and inspectView == "experience")
+        frame.InspectExperiencePanel:SetShown(isInspectMode and activeView == "experience")
+    end
+
+    if frame.MainExperiencePanel then
+        frame.MainExperiencePanel:SetShown((not isInspectMode) and activeView == "experience")
     end
 
     frame.AttributesPanel:ClearAllPoints()
-    if isInspectMode and frame.InspectContentPanel then
+    if frame.InspectContentPanel then
         frame.AttributesPanel:SetPoint("TOPLEFT", frame.InspectContentPanel, "TOPLEFT", 0, 0)
         frame.AttributesPanel:SetPoint("BOTTOMRIGHT", frame.InspectContentPanel, "BOTTOMRIGHT", 0, 0)
-        frame.AttributesPanel:SetShown(inspectView == "attributes")
+        frame.AttributesPanel:SetShown(activeView == "attributes")
     else
         frame.AttributesPanel:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -30)
         frame.AttributesPanel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -32, 54)
         frame.AttributesPanel:Show()
     end
 
-    setInspectNavigationState(frame, inspectView)
+    setMainNavigationState(frame, activeView)
 end
 
 function addon:SelectMainFrameView(view)
@@ -140,17 +197,87 @@ function addon:SelectMainFrameView(view)
     self.inspectMainView = view or self.inspectMainView or "attributes"
     updateMainFrameLayout(frame, self.attributesUIReadOnly, self.inspectMainView)
 
+    if self.inspectMainView == "experience" then
+        if self.attributesUIReadOnly then
+            updateInspectInfoPanel(frame, self.currentInspectData)
+        else
+            self:RefreshMainExperiencePanel()
+        end
+    end
+
     if frame.SaveButton then
-        frame.SaveButton:SetShown(not self.attributesUIReadOnly)
+        frame.SaveButton:SetShown((not self.attributesUIReadOnly) and self.inspectMainView == "attributes")
     end
 
     if frame.ResetButton then
-        frame.ResetButton:SetShown(not self.attributesUIReadOnly)
+        frame.ResetButton:SetShown((not self.attributesUIReadOnly) and self.inspectMainView == "attributes")
     end
 
     if frame.TitleText then
         frame.TitleText:SetText(self.attributesUITitleText or "Sistema de Atributos y Talentos")
     end
+end
+
+function addon:RefreshMainExperiencePanel()
+    local frame = _G.GACAttributesFrame
+    if not frame or not frame.MainExperiencePanel then
+        return
+    end
+
+    local snapshot = self:GetExperienceProgressSnapshot()
+    local requiredExperienceText = snapshot.requiredExperience and tostring(snapshot.requiredExperience) or "MAX"
+
+    frame.MainExperienceLevelValue:SetText(tostring(snapshot.level))
+    frame.MainExperienceCategoryValue:SetText(snapshot.category)
+    frame.MainExperienceCurrentInput:SetText(tostring(snapshot.currentExperience))
+    frame.MainExperienceRequiredValue:SetText(requiredExperienceText)
+
+    local isPrestigeAvailable = self.IsPrestigeAvailable and self:IsPrestigeAvailable() or false
+    if frame.MainExperiencePrestigeMessage then
+        frame.MainExperiencePrestigeMessage:SetShown(isPrestigeAvailable)
+    end
+    if frame.MainExperiencePrestigeButton then
+        frame.MainExperiencePrestigeButton:SetShown(isPrestigeAvailable)
+    end
+
+    buildCategoryDropdown(frame)
+    buildLevelDropdown(frame, snapshot.category)
+
+    UIDropDownMenu_SetText(frame.MainExperienceCategoryDropdown, snapshot.category)
+    UIDropDownMenu_SetText(frame.MainExperienceLevelDropdown, tostring(snapshot.level))
+end
+
+function addon:ShowMainFrameExperienceUI()
+    local frame = _G.GACAttributesFrame
+    if not frame then
+        print("No se pudo crear la interfaz XML.")
+        return
+    end
+
+    self:BuildAttributesUI()
+    self.currentInspectTargetName = nil
+    self.currentInspectData = nil
+    self:SetAttributesUIReadOnly(false, "Sistema de Atributos y Talentos")
+    self:RefreshAttributesUIValues()
+    self:SelectMainFrameView("experience")
+    frame:Show()
+end
+
+function addon:ToggleMainFrameExperienceUI()
+    local frame = _G.GACAttributesFrame
+    if not frame then
+        print("No se pudo crear la interfaz XML.")
+        return
+    end
+
+    self:BuildAttributesUI()
+
+    if frame:IsShown() and (not self.attributesUIReadOnly) and self.inspectMainView == "experience" then
+        frame:Hide()
+        return
+    end
+
+    self:ShowMainFrameExperienceUI()
 end
 
 function addon:BuildAttributesUI()
@@ -169,9 +296,8 @@ function addon:BuildAttributesUI()
     }
 
     local inspectNavPanel = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-    inspectNavPanel:SetSize(110, 530)
+    inspectNavPanel:SetSize(128, 530)
     inspectNavPanel:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -30)
-    inspectNavPanel:Hide()
 
     inspectNavPanel:SetBackdrop({
         bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
@@ -207,7 +333,6 @@ function addon:BuildAttributesUI()
     local inspectContentPanel = CreateFrame("Frame", nil, frame)
     inspectContentPanel:SetPoint("TOPLEFT", inspectNavPanel, "TOPRIGHT", 8, 0)
     inspectContentPanel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -32, 54)
-    inspectContentPanel:Hide()
 
     local inspectInfoPanel = CreateFrame("Frame", nil, inspectContentPanel, "BackdropTemplate")
     inspectInfoPanel:SetAllPoints()
@@ -296,6 +421,121 @@ function addon:BuildAttributesUI()
     end)
     grantExpButton:Hide()
 
+    local mainExperiencePanel = CreateFrame("Frame", nil, inspectContentPanel, "BackdropTemplate")
+    mainExperiencePanel:SetAllPoints()
+    mainExperiencePanel:Hide()
+
+    mainExperiencePanel:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 8,
+        edgeSize = 10,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 },
+    })
+    mainExperiencePanel:SetBackdropColor(0.04, 0.07, 0.12, 0.72)
+    mainExperiencePanel:SetBackdropBorderColor(0.20, 0.45, 0.82, 0.85)
+
+    local configTitle = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    configTitle:SetPoint("TOPLEFT", 12, -12)
+    configTitle:SetText("Configuracion de EXP")
+
+    local categoryLabelMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    categoryLabelMain:SetPoint("TOPLEFT", 18, -36)
+    categoryLabelMain:SetText("Categoria")
+
+    local categoryValueMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    categoryValueMain:SetPoint("LEFT", categoryLabelMain, "RIGHT", 8, 0)
+    categoryValueMain:SetText("-")
+
+    local categoryDropdownMain = CreateFrame("Frame", nil, mainExperiencePanel, "UIDropDownMenuTemplate")
+    categoryDropdownMain:SetPoint("TOPLEFT", categoryLabelMain, "BOTTOMLEFT", -16, -6)
+    UIDropDownMenu_SetWidth(categoryDropdownMain, 150)
+
+    local levelLabelMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    levelLabelMain:SetPoint("TOPRIGHT", -120, -36)
+    levelLabelMain:SetText("Nivel")
+
+    local levelValueMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    levelValueMain:SetPoint("LEFT", levelLabelMain, "RIGHT", 8, 0)
+    levelValueMain:SetText("1")
+
+    local levelDropdownMain = CreateFrame("Frame", nil, mainExperiencePanel, "UIDropDownMenuTemplate")
+    levelDropdownMain:SetPoint("TOPLEFT", levelLabelMain, "BOTTOMLEFT", -16, -6)
+    UIDropDownMenu_SetWidth(levelDropdownMain, 90)
+
+    local currentExperienceLabelMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    currentExperienceLabelMain:SetPoint("TOPLEFT", categoryDropdownMain, "BOTTOMLEFT", 16, -16)
+    currentExperienceLabelMain:SetText("EXP actual")
+
+    local currentExperienceInputMain = CreateFrame("EditBox", nil, mainExperiencePanel, "InputBoxTemplate")
+    currentExperienceInputMain:SetSize(100, 20)
+    currentExperienceInputMain:SetPoint("LEFT", currentExperienceLabelMain, "RIGHT", 10, 0)
+    currentExperienceInputMain:SetAutoFocus(false)
+    currentExperienceInputMain:SetNumeric(true)
+    currentExperienceInputMain:SetMaxLetters(8)
+    currentExperienceInputMain:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+        addon:RefreshMainExperiencePanel()
+    end)
+    currentExperienceInputMain:SetScript("OnEnterPressed", function(self)
+        addon:SetCurrentExperience(self:GetText())
+        addon:RefreshMainExperiencePanel()
+        if addon.UpdateQuickExperienceBar then
+            addon:UpdateQuickExperienceBar()
+        end
+        self:ClearFocus()
+    end)
+
+    local requiredExperienceLabelMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    requiredExperienceLabelMain:SetPoint("TOPLEFT", currentExperienceLabelMain, "BOTTOMLEFT", 0, -22)
+    requiredExperienceLabelMain:SetText("EXP necesaria")
+
+    local requiredExperienceValueMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    requiredExperienceValueMain:SetPoint("LEFT", requiredExperienceLabelMain, "RIGHT", 10, 0)
+    requiredExperienceValueMain:SetText("-")
+
+    local applyButtonMain = CreateFrame("Button", nil, mainExperiencePanel, "UIPanelButtonTemplate")
+    applyButtonMain:SetSize(120, 24)
+    applyButtonMain:SetPoint("BOTTOM", mainExperiencePanel, "BOTTOM", 0, 14)
+    applyButtonMain:SetText("Aplicar")
+    applyButtonMain:SetScript("OnClick", function()
+        addon:SetCurrentExperience(currentExperienceInputMain:GetText())
+        addon:RefreshMainExperiencePanel()
+        if addon.UpdateQuickExperienceBar then
+            addon:UpdateQuickExperienceBar()
+        end
+        currentExperienceInputMain:ClearFocus()
+    end)
+
+    local helpTextMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    helpTextMain:SetPoint("BOTTOM", applyButtonMain, "TOP", 0, 6)
+    helpTextMain:SetText("Usa Enter o el boton Aplicar para confirmar EXP. Comando: /gacExp")
+
+    local prestigeMessageTextMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    prestigeMessageTextMain:SetPoint("TOPLEFT", requiredExperienceLabelMain, "BOTTOMLEFT", 0, -20)
+    prestigeMessageTextMain:SetPoint("RIGHT", mainExperiencePanel, "RIGHT", -20, 0)
+    prestigeMessageTextMain:SetJustifyH("LEFT")
+    prestigeMessageTextMain:SetText("Prestigio disponible. Reiniciaras tus atributos y talentos y volveras al nivel 1 de la siguiente categoria.")
+    prestigeMessageTextMain:Hide()
+
+    local prestigeButtonMain = CreateFrame("Button", nil, mainExperiencePanel, "UIPanelButtonTemplate")
+    prestigeButtonMain:SetSize(120, 24)
+    prestigeButtonMain:SetPoint("TOPLEFT", prestigeMessageTextMain, "BOTTOMLEFT", 0, -8)
+    prestigeButtonMain:SetText("Prestigiar")
+    prestigeButtonMain:SetScript("OnClick", function()
+        if addon.PrestigeToNextCategory and addon:PrestigeToNextCategory() then
+            addon:RefreshMainExperiencePanel()
+            if addon.RefreshAttributesUIValues then
+                addon:RefreshAttributesUIValues()
+            end
+            if addon.UpdateQuickExperienceBar then
+                addon:UpdateQuickExperienceBar()
+            end
+        end
+    end)
+    prestigeButtonMain:Hide()
+
     frame.InspectNavPanel = inspectNavPanel
     frame.InspectNavAttributesButton = inspectNavAttributesButton
     frame.InspectNavExperienceButton = inspectNavExperienceButton
@@ -308,6 +548,15 @@ function addon:BuildAttributesUI()
     frame.InspectGrantExpLabel = grantExpLabel
     frame.InspectGrantExpInput = grantExpInput
     frame.InspectGrantExpButton = grantExpButton
+    frame.MainExperiencePanel = mainExperiencePanel
+    frame.MainExperienceCategoryDropdown = categoryDropdownMain
+    frame.MainExperienceLevelDropdown = levelDropdownMain
+    frame.MainExperienceLevelValue = levelValueMain
+    frame.MainExperienceCategoryValue = categoryValueMain
+    frame.MainExperienceCurrentInput = currentExperienceInputMain
+    frame.MainExperienceRequiredValue = requiredExperienceValueMain
+    frame.MainExperiencePrestigeMessage = prestigeMessageTextMain
+    frame.MainExperiencePrestigeButton = prestigeButtonMain
 
     local content = frame.AttributesPanel.ScrollFrame.ScrollChild
     local columns = 3

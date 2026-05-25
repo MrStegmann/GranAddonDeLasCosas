@@ -198,6 +198,11 @@ function addon:CreateExperienceConfigFrame()
 end
 
 function addon:ToggleExperienceConfigUI()
+    if self.ToggleMainFrameExperienceUI then
+        self:ToggleMainFrameExperienceUI()
+        return
+    end
+
     if not self.experienceConfigFrame then
         self:CreateExperienceConfigFrame()
     end
