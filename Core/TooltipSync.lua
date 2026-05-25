@@ -148,6 +148,13 @@ function addon:BuildTooltipSyncPayload()
         end
     end
 
+    local shieldValue = self.GetPlayerHealthShieldValue and self:GetPlayerHealthShieldValue() or 0
+    if shieldValue and shieldValue > 0 then
+        if not appendEntry("H:S", math.floor(shieldValue)) then
+            return message
+        end
+    end
+
     return message
 end
 
@@ -162,6 +169,7 @@ function addon:ParseTooltipSyncPayload(message)
         talents = {},
         progress = {},
         profile = {},
+        healthConfig = {},
         timestamp = GetTime(),
     }
 
@@ -188,6 +196,8 @@ function addon:ParseTooltipSyncPayload(message)
                 data.profile.name = rawValue
             elseif label == "R:C" then
                 data.profile.color = rawValue
+            elseif label == "H:S" and value ~= nil then
+                data.healthConfig.shield = math.max(0, math.floor(value))
             end
         end
 
@@ -513,6 +523,9 @@ function addon:HandleTooltipSyncAddonMessage(message, sender)
             local currentTargetShortName = self:GetUnitShortName("target")
             if currentTargetShortName and currentTargetShortName == shortSender then
                 self:RefreshTargetLevelOverlay()
+                if self.RefreshTargetHealthBarMaxHealth then
+                    self:RefreshTargetHealthBarMaxHealth()
+                end
             end
         end
 

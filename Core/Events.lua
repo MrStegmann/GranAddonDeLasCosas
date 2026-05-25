@@ -52,6 +52,7 @@ function addon:PLAYER_LOGIN()
         addon.eventFrame:RegisterEvent("UNIT_LEVEL")
         addon.eventFrame:RegisterEvent("UNIT_HEALTH")
         addon.eventFrame:RegisterEvent("UNIT_MAXHEALTH")
+        addon.eventFrame:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
     end
 end
 
@@ -161,6 +162,17 @@ function addon:UNIT_HEALTH(unit)
 end
 
 function addon:UNIT_MAXHEALTH(unit)
+    if unit == "player" and addon.RefreshPlayerHealthBarMaxHealth then
+        addon:RefreshPlayerHealthBarMaxHealth()
+        return
+    end
+
+    if unit == "target" and addon.RefreshTargetHealthBarMaxHealth then
+        addon:RefreshTargetHealthBarMaxHealth()
+    end
+end
+
+function addon:UNIT_ABSORB_AMOUNT_CHANGED(unit)
     if unit == "player" and addon.RefreshPlayerHealthBarMaxHealth then
         addon:RefreshPlayerHealthBarMaxHealth()
         return

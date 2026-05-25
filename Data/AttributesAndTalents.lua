@@ -101,6 +101,11 @@ function addon:InitializeAttributeSystem()
         level = 1,
         currentExperience = 0,
     }
+    GranAddonDeLasCosasCharDB.healthConfig = GranAddonDeLasCosasCharDB.healthConfig or {
+        maxHealthModifier = 0,
+        lifeDelta = 0,
+        shield = 0,
+    }
 
     addon.characterData = GranAddonDeLasCosasCharDB
 

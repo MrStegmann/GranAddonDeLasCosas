@@ -151,6 +151,10 @@ local function setMainNavigationState(frame, activeView)
     if frame.InspectNavExperienceButton then
         frame.InspectNavExperienceButton:SetEnabled(activeView ~= "experience")
     end
+
+    if frame.InspectNavHealthBarButton then
+        frame.InspectNavHealthBarButton:SetEnabled(activeView ~= "healthBar")
+    end
 end
 
 local function updateMainFrameLayout(frame, isInspectMode, activeView)
@@ -174,6 +178,14 @@ local function updateMainFrameLayout(frame, isInspectMode, activeView)
         frame.MainExperiencePanel:SetShown((not isInspectMode) and activeView == "experience")
     end
 
+    if frame.MainHealthBarPanel then
+        frame.MainHealthBarPanel:SetShown((not isInspectMode) and activeView == "healthBar")
+    end
+
+    if frame.InspectNavHealthBarButton then
+        frame.InspectNavHealthBarButton:SetShown(not isInspectMode)
+    end
+
     frame.AttributesPanel:ClearAllPoints()
     if frame.InspectContentPanel then
         frame.AttributesPanel:SetPoint("TOPLEFT", frame.InspectContentPanel, "TOPLEFT", 0, 0)
@@ -194,7 +206,12 @@ function addon:SelectMainFrameView(view)
         return
     end
 
-    self.inspectMainView = view or self.inspectMainView or "attributes"
+    local requestedView = view or self.inspectMainView or "attributes"
+    if self.attributesUIReadOnly and requestedView == "healthBar" then
+        requestedView = "attributes"
+    end
+
+    self.inspectMainView = requestedView
     updateMainFrameLayout(frame, self.attributesUIReadOnly, self.inspectMainView)
 
     if self.inspectMainView == "experience" then
@@ -202,6 +219,10 @@ function addon:SelectMainFrameView(view)
             updateInspectInfoPanel(frame, self.currentInspectData)
         else
             self:RefreshMainExperiencePanel()
+        end
+    elseif self.inspectMainView == "healthBar" then
+        if self.RefreshMainHealthConfigPanel then
+            self:RefreshMainHealthConfigPanel()
         end
     end
 
@@ -215,6 +236,66 @@ function addon:SelectMainFrameView(view)
 
     if frame.TitleText then
         frame.TitleText:SetText(self.attributesUITitleText or "Sistema de Atributos y Talentos")
+    end
+end
+
+function addon:RefreshMainHealthConfigPanel()
+    local frame = _G.GACAttributesFrame
+    if not frame or not frame.MainHealthBarPanel then
+        return
+    end
+
+    local maxAmount = tonumber(frame.HealthBarAmountInput and frame.HealthBarAmountInput:GetText()) or 10
+    if maxAmount <= 0 then
+        maxAmount = 10
+    end
+    maxAmount = math.floor(maxAmount)
+
+    local lifeAmount = tonumber(frame.HealthBarLifeAmountInput and frame.HealthBarLifeAmountInput:GetText()) or 10
+    if lifeAmount <= 0 then
+        lifeAmount = 10
+    end
+    lifeAmount = math.floor(lifeAmount)
+
+    local shieldAmount = tonumber(frame.HealthBarShieldAmountInput and frame.HealthBarShieldAmountInput:GetText()) or 10
+    if shieldAmount <= 0 then
+        shieldAmount = 10
+    end
+    shieldAmount = math.floor(shieldAmount)
+
+    local maxModifier = self.GetPlayerHealthMaxModifier and self:GetPlayerHealthMaxModifier() or 0
+    local shieldValue = self.GetPlayerHealthShieldValue and self:GetPlayerHealthShieldValue() or 0
+
+    if frame.HealthBarCurrentModifierValue then
+        frame.HealthBarCurrentModifierValue:SetText(tostring(maxModifier))
+    end
+
+    if frame.HealthBarCurrentShieldValue then
+        frame.HealthBarCurrentShieldValue:SetText(tostring(shieldValue))
+    end
+
+    if frame.HealthBarAddLifeButton then
+        frame.HealthBarAddLifeButton:SetText("Dar vida")
+    end
+
+    if frame.HealthBarRemoveLifeButton then
+        frame.HealthBarRemoveLifeButton:SetText("Quitar vida")
+    end
+
+    if frame.HealthBarAddShieldButton then
+        frame.HealthBarAddShieldButton:SetText("Dar escudo")
+    end
+
+    if frame.HealthBarRemoveShieldButton then
+        frame.HealthBarRemoveShieldButton:SetText("Quitar escudo")
+    end
+
+    if frame.HealthBarAddMaxButton then
+        frame.HealthBarAddMaxButton:SetText("Añadir a vida maxima")
+    end
+
+    if frame.HealthBarRemoveMaxButton then
+        frame.HealthBarRemoveMaxButton:SetText("Quitar de vida maxima")
     end
 end
 
@@ -328,6 +409,14 @@ function addon:BuildAttributesUI()
     inspectNavExperienceButton:SetText("Experiencia")
     inspectNavExperienceButton:SetScript("OnClick", function()
         addon:SelectMainFrameView("experience")
+    end)
+
+    local inspectNavHealthBarButton = CreateFrame("Button", nil, inspectNavPanel, "UIPanelButtonTemplate")
+    inspectNavHealthBarButton:SetSize(112, 24)
+    inspectNavHealthBarButton:SetPoint("TOP", inspectNavExperienceButton, "BOTTOM", 0, -6)
+    inspectNavHealthBarButton:SetText("Barra de salud")
+    inspectNavHealthBarButton:SetScript("OnClick", function()
+        addon:SelectMainFrameView("healthBar")
     end)
 
     local inspectContentPanel = CreateFrame("Frame", nil, frame)
@@ -536,9 +625,159 @@ function addon:BuildAttributesUI()
     end)
     prestigeButtonMain:Hide()
 
+    local mainHealthBarPanel = CreateFrame("Frame", nil, inspectContentPanel, "BackdropTemplate")
+    mainHealthBarPanel:SetAllPoints()
+    mainHealthBarPanel:Hide()
+
+    mainHealthBarPanel:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 8,
+        edgeSize = 10,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 },
+    })
+    mainHealthBarPanel:SetBackdropColor(0.04, 0.07, 0.12, 0.72)
+    mainHealthBarPanel:SetBackdropBorderColor(0.20, 0.45, 0.82, 0.85)
+
+    local healthConfigTitle = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    healthConfigTitle:SetPoint("TOPLEFT", 12, -12)
+    healthConfigTitle:SetText("Barra de salud")
+
+    local healthConfigSection = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    healthConfigSection:SetPoint("TOPLEFT", 18, -38)
+    healthConfigSection:SetText("Modificadores de vida maxima")
+
+    local amountLabel = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    amountLabel:SetPoint("TOPLEFT", healthConfigSection, "BOTTOMLEFT", 0, -12)
+    amountLabel:SetText("Cantidad mod. maxima")
+
+    local amountInput = createNumericInput(mainHealthBarPanel, 64, 20)
+    amountInput:SetPoint("LEFT", amountLabel, "RIGHT", 10, 0)
+    amountInput:SetText("10")
+    amountInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+        addon:RefreshMainHealthConfigPanel()
+    end)
+    amountInput:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+        addon:RefreshMainHealthConfigPanel()
+    end)
+
+    local currentModifierLabel = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    currentModifierLabel:SetPoint("LEFT", amountInput, "RIGHT", 24, 0)
+    currentModifierLabel:SetText("Modificador actual:")
+
+    local currentModifierValue = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    currentModifierValue:SetPoint("LEFT", currentModifierLabel, "RIGHT", 8, 0)
+    currentModifierValue:SetText("0")
+
+    local addMaxButton = CreateFrame("Button", nil, mainHealthBarPanel, "UIPanelButtonTemplate")
+    addMaxButton:SetSize(170, 24)
+    addMaxButton:SetPoint("TOPLEFT", amountLabel, "BOTTOMLEFT", 0, -12)
+    addMaxButton:SetText("Añadir a vida maxima")
+    addMaxButton:SetScript("OnClick", function()
+        local amount = math.max(1, math.floor(tonumber(amountInput:GetText()) or 0))
+        addon:AddPlayerHealthMaxModifier(amount)
+    end)
+
+    local removeMaxButton = CreateFrame("Button", nil, mainHealthBarPanel, "UIPanelButtonTemplate")
+    removeMaxButton:SetSize(170, 24)
+    removeMaxButton:SetPoint("LEFT", addMaxButton, "RIGHT", 8, 0)
+    removeMaxButton:SetText("Quitar de vida maxima")
+    removeMaxButton:SetScript("OnClick", function()
+        local amount = math.max(1, math.floor(tonumber(amountInput:GetText()) or 0))
+        addon:AddPlayerHealthMaxModifier(-amount)
+    end)
+
+    local lifeSection = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    lifeSection:SetPoint("TOPLEFT", addMaxButton, "BOTTOMLEFT", 0, -20)
+    lifeSection:SetText("Ajuste de vida")
+
+    local lifeAmountLabel = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    lifeAmountLabel:SetPoint("TOPLEFT", lifeSection, "BOTTOMLEFT", 0, -10)
+    lifeAmountLabel:SetText("Cantidad de vida")
+
+    local lifeAmountInput = createNumericInput(mainHealthBarPanel, 64, 20)
+    lifeAmountInput:SetPoint("LEFT", lifeAmountLabel, "RIGHT", 10, 0)
+    lifeAmountInput:SetText("10")
+    lifeAmountInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+        addon:RefreshMainHealthConfigPanel()
+    end)
+    lifeAmountInput:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+        addon:RefreshMainHealthConfigPanel()
+    end)
+
+    local addLifeButton = CreateFrame("Button", nil, mainHealthBarPanel, "UIPanelButtonTemplate")
+    addLifeButton:SetSize(170, 24)
+    addLifeButton:SetPoint("TOPLEFT", lifeAmountLabel, "BOTTOMLEFT", 0, -10)
+    addLifeButton:SetText("Dar vida")
+    addLifeButton:SetScript("OnClick", function()
+        local amount = math.max(1, math.floor(tonumber(lifeAmountInput:GetText()) or 0))
+        addon:ModifyPlayerLife(amount)
+    end)
+
+    local removeLifeButton = CreateFrame("Button", nil, mainHealthBarPanel, "UIPanelButtonTemplate")
+    removeLifeButton:SetSize(170, 24)
+    removeLifeButton:SetPoint("LEFT", addLifeButton, "RIGHT", 8, 0)
+    removeLifeButton:SetText("Quitar vida")
+    removeLifeButton:SetScript("OnClick", function()
+        local amount = math.max(1, math.floor(tonumber(lifeAmountInput:GetText()) or 0))
+        addon:ModifyPlayerLife(-amount)
+    end)
+
+    local shieldSection = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    shieldSection:SetPoint("TOPLEFT", addLifeButton, "BOTTOMLEFT", 0, -20)
+    shieldSection:SetText("Escudo")
+
+    local shieldAmountLabel = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    shieldAmountLabel:SetPoint("TOPLEFT", shieldSection, "BOTTOMLEFT", 0, -10)
+    shieldAmountLabel:SetText("Cantidad de escudo")
+
+    local shieldAmountInput = createNumericInput(mainHealthBarPanel, 64, 20)
+    shieldAmountInput:SetPoint("LEFT", shieldAmountLabel, "RIGHT", 10, 0)
+    shieldAmountInput:SetText("10")
+    shieldAmountInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+        addon:RefreshMainHealthConfigPanel()
+    end)
+    shieldAmountInput:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+        addon:RefreshMainHealthConfigPanel()
+    end)
+
+    local currentShieldLabel = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    currentShieldLabel:SetPoint("TOPLEFT", shieldAmountLabel, "BOTTOMLEFT", 0, -10)
+    currentShieldLabel:SetText("Escudo actual:")
+
+    local currentShieldValue = mainHealthBarPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    currentShieldValue:SetPoint("LEFT", currentShieldLabel, "RIGHT", 8, 0)
+    currentShieldValue:SetText("0")
+
+    local addShieldButton = CreateFrame("Button", nil, mainHealthBarPanel, "UIPanelButtonTemplate")
+    addShieldButton:SetSize(170, 24)
+    addShieldButton:SetPoint("TOPLEFT", currentShieldLabel, "BOTTOMLEFT", 0, -10)
+    addShieldButton:SetText("Dar escudo")
+    addShieldButton:SetScript("OnClick", function()
+        local amount = math.max(1, math.floor(tonumber(shieldAmountInput:GetText()) or 0))
+        addon:ModifyPlayerShield(amount)
+    end)
+
+    local removeShieldButton = CreateFrame("Button", nil, mainHealthBarPanel, "UIPanelButtonTemplate")
+    removeShieldButton:SetSize(170, 24)
+    removeShieldButton:SetPoint("LEFT", addShieldButton, "RIGHT", 8, 0)
+    removeShieldButton:SetText("Quitar escudo")
+    removeShieldButton:SetScript("OnClick", function()
+        local amount = math.max(1, math.floor(tonumber(shieldAmountInput:GetText()) or 0))
+        addon:ModifyPlayerShield(-amount)
+    end)
+
     frame.InspectNavPanel = inspectNavPanel
     frame.InspectNavAttributesButton = inspectNavAttributesButton
     frame.InspectNavExperienceButton = inspectNavExperienceButton
+    frame.InspectNavHealthBarButton = inspectNavHealthBarButton
     frame.InspectContentPanel = inspectContentPanel
     frame.InspectExperiencePanel = inspectInfoPanel
     frame.InspectInfoCategoryValue = categoryValue
@@ -557,6 +796,18 @@ function addon:BuildAttributesUI()
     frame.MainExperienceRequiredValue = requiredExperienceValueMain
     frame.MainExperiencePrestigeMessage = prestigeMessageTextMain
     frame.MainExperiencePrestigeButton = prestigeButtonMain
+    frame.MainHealthBarPanel = mainHealthBarPanel
+    frame.HealthBarAmountInput = amountInput
+    frame.HealthBarLifeAmountInput = lifeAmountInput
+    frame.HealthBarShieldAmountInput = shieldAmountInput
+    frame.HealthBarCurrentModifierValue = currentModifierValue
+    frame.HealthBarCurrentShieldValue = currentShieldValue
+    frame.HealthBarAddMaxButton = addMaxButton
+    frame.HealthBarRemoveMaxButton = removeMaxButton
+    frame.HealthBarAddLifeButton = addLifeButton
+    frame.HealthBarRemoveLifeButton = removeLifeButton
+    frame.HealthBarAddShieldButton = addShieldButton
+    frame.HealthBarRemoveShieldButton = removeShieldButton
 
     local content = frame.AttributesPanel.ScrollFrame.ScrollChild
     local columns = 3

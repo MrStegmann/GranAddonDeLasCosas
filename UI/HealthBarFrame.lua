@@ -104,6 +104,186 @@ local function findTargetHealthBar()
 	return nil
 end
 
+local function getHealthBarWidth(healthBar)
+	if not healthBar then
+		return 0
+	end
+
+	local width = tonumber(healthBar:GetWidth()) or 0
+	if width > 0 then
+		return width
+	end
+
+	if type(healthBar.GetStatusBarTexture) == "function" then
+		local statusTexture = healthBar:GetStatusBarTexture()
+		if statusTexture then
+			local textureWidth = tonumber(statusTexture:GetWidth()) or 0
+			if textureWidth > 0 then
+				return textureWidth
+			end
+		end
+	end
+
+	return 0
+end
+
+local function findPlayerHealthText(healthBar)
+	local directCandidates = {
+		_G.PlayerFrameHealthBarText,
+		_G.PlayerFrameHealthBarTextLeft,
+		_G.PlayerFrameHealthBarTextRight,
+	}
+
+	for _, candidate in ipairs(directCandidates) do
+		if candidate and type(candidate.GetText) == "function" and type(candidate.SetText) == "function" then
+			return candidate
+		end
+	end
+
+	if healthBar then
+		local barCandidates = {
+			healthBar.TextString,
+			healthBar.LeftText,
+			healthBar.rightText,
+			healthBar.RightText,
+		}
+
+		for _, candidate in ipairs(barCandidates) do
+			if candidate and type(candidate.GetText) == "function" and type(candidate.SetText) == "function" then
+				return candidate
+			end
+		end
+	end
+
+	if type(_G.PlayerFrame) == "table" then
+		local frame = _G.PlayerFrame
+		local content = frame.PlayerFrameContent
+		local main = content and content.PlayerFrameContentMain
+		local healthText = main and main.HealthBarArea and main.HealthBarArea.HealthBar and main.HealthBarArea.HealthBar.TextString
+		if healthText and type(healthText.GetText) == "function" and type(healthText.SetText) == "function" then
+			return healthText
+		end
+	end
+
+	return nil
+end
+
+local function findTargetHealthText(healthBar)
+	local directCandidates = {
+		_G.TargetFrameHealthBarText,
+		_G.TargetFrameHealthBarTextLeft,
+		_G.TargetFrameHealthBarTextRight,
+	}
+
+	for _, candidate in ipairs(directCandidates) do
+		if candidate and type(candidate.GetText) == "function" and type(candidate.SetText) == "function" then
+			return candidate
+		end
+	end
+
+	if healthBar then
+		local barCandidates = {
+			healthBar.TextString,
+			healthBar.LeftText,
+			healthBar.rightText,
+			healthBar.RightText,
+		}
+
+		for _, candidate in ipairs(barCandidates) do
+			if candidate and type(candidate.GetText) == "function" and type(candidate.SetText) == "function" then
+				return candidate
+			end
+		end
+	end
+
+	if type(_G.TargetFrame) == "table" then
+		local frame = _G.TargetFrame
+		local content = frame.TargetFrameContent
+		local main = content and content.TargetFrameContentMain
+		local healthText = main and main.HealthBarArea and main.HealthBarArea.HealthBar and main.HealthBarArea.HealthBar.TextString
+		if healthText and type(healthText.GetText) == "function" and type(healthText.SetText) == "function" then
+			return healthText
+		end
+	end
+
+	return nil
+end
+
+local function collectAbsorbCandidates(frame, out, depth)
+	if not frame or depth > 3 then
+		return
+	end
+
+	local frameName = type(frame.GetName) == "function" and frame:GetName() or nil
+	if type(frameName) == "string" and string.find(frameName, "TotalAbsorb") then
+		out[#out + 1] = frame
+	end
+
+	if type(frame.GetChildren) == "function" then
+		local children = { frame:GetChildren() }
+		for _, child in ipairs(children) do
+			collectAbsorbCandidates(child, out, depth + 1)
+		end
+	end
+end
+
+local function resolveNativeAbsorbWidgets(healthBar)
+	if not healthBar then
+		return nil, nil
+	end
+
+	local absorbBar = healthBar.totalAbsorbBar or healthBar.TotalAbsorbBar or nil
+	local absorbFrame = healthBar.totalAbsorb or healthBar.TotalAbsorb or nil
+	local ownerFrame = type(healthBar.GetParent) == "function" and healthBar:GetParent() or nil
+
+	if not absorbFrame and ownerFrame then
+		absorbFrame = ownerFrame.totalAbsorb or ownerFrame.TotalAbsorb or nil
+	end
+
+	if not absorbFrame and type(_G.PlayerFrame) == "table" then
+		local playerFrame = _G.PlayerFrame
+		absorbFrame = playerFrame.totalAbsorb or playerFrame.TotalAbsorb or absorbFrame
+	end
+
+	if not absorbBar and absorbFrame and absorbFrame.bar then
+		absorbBar = absorbFrame.bar
+	end
+
+	if not absorbBar and absorbFrame and type(absorbFrame.SetMinMaxValues) == "function" then
+		absorbBar = absorbFrame
+	end
+
+	if absorbBar then
+		return absorbBar, absorbFrame
+	end
+
+	local parent = ownerFrame
+	local candidates = {}
+	collectAbsorbCandidates(parent, candidates, 0)
+	if type(_G.PlayerFrame) == "table" then
+		collectAbsorbCandidates(_G.PlayerFrame, candidates, 0)
+	end
+
+	for _, candidate in ipairs(candidates) do
+		if not absorbFrame and type(candidate) == "table" and type(candidate.Show) == "function" then
+			absorbFrame = candidate
+		end
+
+		if not absorbBar and type(candidate.SetMinMaxValues) == "function" then
+			absorbBar = candidate
+		elseif not absorbBar and type(candidate) == "table" and candidate.bar and type(candidate.bar.SetMinMaxValues) == "function" then
+			absorbBar = candidate.bar
+			absorbFrame = candidate
+		end
+
+		if absorbBar then
+			break
+		end
+	end
+
+	return absorbBar, absorbFrame
+end
+
 local function createOverlayFontString(parentFrame, relativeFrame, globalName)
 	if not canCreateFontString(parentFrame) or not relativeFrame then
 		return nil
@@ -422,8 +602,350 @@ function addon:GetConfiguredPlayerMaxHealth()
 	local attributes = self.characterData and self.characterData.attributes or nil
 	local constitution = attributes and tonumber(attributes["Constitución"]) or 0
 	local constitutionValue = math.max(0, math.floor(constitution or 0))
+	local maxModifier = self.GetPlayerHealthMaxModifier and self:GetPlayerHealthMaxModifier() or 0
 
-	return math.max(1, math.floor(baseHealth) + constitutionValue)
+	return math.max(1, math.floor(baseHealth) + constitutionValue + maxModifier)
+end
+
+function addon:GetHealthConfigState()
+	if not self.characterData then
+		return nil
+	end
+
+	self.characterData.healthConfig = self.characterData.healthConfig or {
+		maxHealthModifier = 0,
+		lifeDelta = 0,
+		shield = 0,
+	}
+
+	local state = self.characterData.healthConfig
+	state.maxHealthModifier = math.floor(tonumber(state.maxHealthModifier) or 0)
+	state.lifeDelta = math.floor(tonumber(state.lifeDelta) or 0)
+	state.shield = math.max(0, math.floor(tonumber(state.shield) or 0))
+
+	return state
+end
+
+function addon:GetPlayerHealthMaxModifier()
+	local state = self.GetHealthConfigState and self:GetHealthConfigState() or nil
+	return state and state.maxHealthModifier or 0
+end
+
+function addon:GetPlayerHealthShieldValue()
+	local state = self.GetHealthConfigState and self:GetHealthConfigState() or nil
+	return state and state.shield or 0
+end
+
+function addon:GetConfiguredTargetShieldValue()
+	if not UnitExists("target") or not UnitIsPlayer("target") then
+		return 0
+	end
+
+	if UnitIsUnit("target", "player") then
+		return math.max(0, math.floor(self.GetPlayerHealthShieldValue and self:GetPlayerHealthShieldValue() or 0))
+	end
+
+	local shortName = self.GetUnitShortName and self:GetUnitShortName("target")
+	local cached = shortName and self.tooltipSyncCache and self.tooltipSyncCache[shortName] or nil
+	if not cached then
+		return 0
+	end
+
+	if (GetTime() - (cached.timestamp or 0)) > TOOLTIP_CACHE_TTL then
+		return 0
+	end
+
+	local shield = cached.healthConfig and tonumber(cached.healthConfig.shield) or 0
+	return math.max(0, math.floor(shield or 0))
+end
+
+function addon:AddPlayerHealthMaxModifier(amount)
+	local state = self.GetHealthConfigState and self:GetHealthConfigState() or nil
+	if not state then
+		return
+	end
+
+	local delta = math.floor(tonumber(amount) or 0)
+	if delta == 0 then
+		return
+	end
+
+	state.maxHealthModifier = state.maxHealthModifier + delta
+
+	if self.RefreshPlayerHealthBarMaxHealth then
+		self:RefreshPlayerHealthBarMaxHealth()
+	end
+
+	if self.RefreshMainHealthConfigPanel then
+		self:RefreshMainHealthConfigPanel()
+	end
+end
+
+function addon:ModifyPlayerLife(amount)
+	local state = self.GetHealthConfigState and self:GetHealthConfigState() or nil
+	if not state then
+		return
+	end
+
+	local delta = math.floor(tonumber(amount) or 0)
+	if delta == 0 then
+		return
+	end
+
+	state.lifeDelta = state.lifeDelta + delta
+
+	if self.RefreshPlayerHealthBarMaxHealth then
+		self:RefreshPlayerHealthBarMaxHealth()
+	end
+
+	if self.RefreshMainHealthConfigPanel then
+		self:RefreshMainHealthConfigPanel()
+	end
+end
+
+function addon:ModifyPlayerShield(amount)
+	local state = self.GetHealthConfigState and self:GetHealthConfigState() or nil
+	if not state then
+		return
+	end
+
+	local delta = math.floor(tonumber(amount) or 0)
+	if delta == 0 then
+		return
+	end
+
+	state.shield = math.max(0, state.shield + delta)
+
+	if self.RefreshPlayerHealthBarMaxHealth then
+		self:RefreshPlayerHealthBarMaxHealth()
+	end
+
+	if self.RefreshMainHealthConfigPanel then
+		self:RefreshMainHealthConfigPanel()
+	end
+end
+
+function addon:EnsurePlayerShieldVisuals(healthBar)
+	if not healthBar then
+		return
+	end
+
+	if not self.playerShieldBar then
+		local shieldBar = CreateFrame("StatusBar", nil, healthBar)
+		shieldBar:SetFrameStrata(healthBar:GetFrameStrata())
+		shieldBar:SetFrameLevel((healthBar:GetFrameLevel() or 1) + 1)
+		shieldBar:SetStatusBarTexture("Interface\\TARGETINGFRAME\\UI-StatusBar")
+		shieldBar:SetStatusBarColor(0.00, 1.00, 1.00, 1.00)
+		shieldBar:SetMinMaxValues(0, 1)
+		shieldBar:SetValue(1)
+		shieldBar:SetSize(1, 3)
+		shieldBar:SetPoint("BOTTOMLEFT", healthBar, "BOTTOMLEFT", 0, 0)
+		shieldBar:Hide()
+		self.playerShieldBar = shieldBar
+	end
+
+	if not self.playerShieldText then
+		local shieldText = healthBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		shieldText:SetPoint("LEFT", healthBar, "LEFT", 6, 0)
+		shieldText:SetTextColor(0.45, 0.75, 1.0)
+		shieldText:SetShadowColor(0, 0, 0, 1)
+		shieldText:SetShadowOffset(1, -1)
+		shieldText:Hide()
+		self.playerShieldText = shieldText
+	end
+end
+
+function addon:UpdatePlayerShieldVisuals(healthBar, currentHealth, customMaxHealth)
+	if not healthBar then
+		return
+	end
+
+	self:EnsurePlayerShieldVisuals(healthBar)
+
+	local shieldBar = self.playerShieldBar
+	local shieldText = self.playerShieldText
+	if not shieldText then
+		return
+	end
+
+	local healthText = findPlayerHealthText(healthBar)
+	local function updateHealthTextWithShield(shieldAmount)
+		if not healthText then
+			return
+		end
+
+		local currentText = healthText:GetText() or ""
+		local cleanText = string.gsub(currentText, "%s*%(%+%d+%)", "")
+		if cleanText == "" then
+			cleanText = tostring(math.max(0, math.floor(currentHealth))) .. " / " .. tostring(math.max(1, math.floor(customMaxHealth)))
+		end
+
+		if shieldAmount and shieldAmount > 0 then
+			healthText:SetText(cleanText .. " (+" .. tostring(shieldAmount) .. ")")
+		else
+			healthText:SetText(cleanText)
+		end
+	end
+
+	local shieldValue = self.GetPlayerHealthShieldValue and self:GetPlayerHealthShieldValue() or 0
+	if shieldValue <= 0 or customMaxHealth <= 0 or not shieldBar then
+		if shieldBar and type(shieldBar.Hide) == "function" then
+			shieldBar:Hide()
+		end
+		shieldText:Hide()
+		updateHealthTextWithShield(0)
+		return
+	end
+
+	local cappedShield = math.max(0, math.floor(shieldValue))
+	local clampedShield = math.min(cappedShield, customMaxHealth)
+	if clampedShield <= 0 then
+		if type(shieldBar.Hide) == "function" then
+			shieldBar:Hide()
+		end
+		shieldText:Hide()
+		updateHealthTextWithShield(0)
+		return
+	end
+
+	local barWidth = getHealthBarWidth(healthBar)
+	if barWidth <= 0 then
+		shieldBar:Hide()
+		shieldText:Hide()
+		updateHealthTextWithShield(0)
+		return
+	end
+
+	local shieldRatio = math.max(0, math.min(1, clampedShield / customMaxHealth))
+	local shieldWidth = math.max(1, math.floor((barWidth * shieldRatio) + 0.5))
+	local shieldHeight = 3
+
+	shieldBar:ClearAllPoints()
+	shieldBar:SetMinMaxValues(0, 1)
+	shieldBar:SetValue(1)
+	shieldBar:SetSize(shieldWidth, shieldHeight)
+	shieldBar:SetPoint("BOTTOMLEFT", healthBar, "BOTTOMLEFT", 0, 0)
+	shieldBar:Show()
+
+	shieldText:Hide()
+	updateHealthTextWithShield(cappedShield)
+end
+
+function addon:HideTargetShieldVisuals()
+	if self.targetShieldBar and type(self.targetShieldBar.Hide) == "function" then
+		self.targetShieldBar:Hide()
+	end
+
+	if self.targetShieldText and type(self.targetShieldText.Hide) == "function" then
+		self.targetShieldText:Hide()
+	end
+
+	local targetHealthBar = findTargetHealthBar()
+	local healthText = findTargetHealthText(targetHealthBar)
+	if healthText and type(healthText.GetText) == "function" and type(healthText.SetText) == "function" then
+		local currentText = healthText:GetText() or ""
+		healthText:SetText(string.gsub(currentText, "%s*%(%+%d+%)", ""))
+	end
+end
+
+function addon:EnsureTargetShieldVisuals(healthBar)
+	if not healthBar then
+		return
+	end
+
+	if not self.targetShieldBar then
+		local shieldBar = CreateFrame("StatusBar", nil, healthBar)
+		shieldBar:SetFrameStrata(healthBar:GetFrameStrata())
+		shieldBar:SetFrameLevel((healthBar:GetFrameLevel() or 1) + 1)
+		shieldBar:SetStatusBarTexture("Interface\\TARGETINGFRAME\\UI-StatusBar")
+		shieldBar:SetStatusBarColor(0.00, 1.00, 1.00, 1.00)
+		shieldBar:SetMinMaxValues(0, 1)
+		shieldBar:SetValue(1)
+		shieldBar:SetSize(1, 3)
+		shieldBar:SetPoint("BOTTOMLEFT", healthBar, "BOTTOMLEFT", 0, 0)
+		shieldBar:Hide()
+		self.targetShieldBar = shieldBar
+	end
+
+	if not self.targetShieldText then
+		local shieldText = healthBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		shieldText:SetPoint("LEFT", healthBar, "LEFT", 6, 0)
+		shieldText:SetTextColor(0.45, 0.75, 1.0)
+		shieldText:SetShadowColor(0, 0, 0, 1)
+		shieldText:SetShadowOffset(1, -1)
+		shieldText:Hide()
+		self.targetShieldText = shieldText
+	end
+end
+
+function addon:UpdateTargetShieldVisuals(healthBar, currentHealth, customMaxHealth)
+	if not healthBar then
+		self:HideTargetShieldVisuals()
+		return
+	end
+
+	self:EnsureTargetShieldVisuals(healthBar)
+
+	local shieldBar = self.targetShieldBar
+	local shieldText = self.targetShieldText
+	if not shieldBar or not shieldText or customMaxHealth <= 0 then
+		self:HideTargetShieldVisuals()
+		return
+	end
+
+	local healthText = findTargetHealthText(healthBar)
+	local function updateHealthTextWithShield(shieldAmount)
+		if not healthText then
+			return
+		end
+
+		local currentText = healthText:GetText() or ""
+		local cleanText = string.gsub(currentText, "%s*%(%+%d+%)", "")
+		if cleanText == "" then
+			cleanText = tostring(math.max(0, math.floor(currentHealth))) .. " / " .. tostring(math.max(1, math.floor(customMaxHealth)))
+		end
+
+		if shieldAmount and shieldAmount > 0 then
+			healthText:SetText(cleanText .. " (+" .. tostring(shieldAmount) .. ")")
+		else
+			healthText:SetText(cleanText)
+		end
+	end
+
+	local shieldValue = self.GetConfiguredTargetShieldValue and self:GetConfiguredTargetShieldValue() or 0
+	if shieldValue <= 0 then
+		self:HideTargetShieldVisuals()
+		updateHealthTextWithShield(0)
+		return
+	end
+
+	local clampedShield = math.min(shieldValue, customMaxHealth)
+	if clampedShield <= 0 then
+		self:HideTargetShieldVisuals()
+		updateHealthTextWithShield(0)
+		return
+	end
+
+	local barWidth = getHealthBarWidth(healthBar)
+	if barWidth <= 0 then
+		self:HideTargetShieldVisuals()
+		updateHealthTextWithShield(0)
+		return
+	end
+
+	local shieldRatio = math.max(0, math.min(1, clampedShield / customMaxHealth))
+	local shieldWidth = math.max(1, math.floor((barWidth * shieldRatio) + 0.5))
+	local shieldHeight = 3
+
+	shieldBar:ClearAllPoints()
+	shieldBar:SetMinMaxValues(0, 1)
+	shieldBar:SetValue(1)
+	shieldBar:SetSize(shieldWidth, shieldHeight)
+	shieldBar:SetPoint("BOTTOMLEFT", healthBar, "BOTTOMLEFT", 0, 0)
+	shieldBar:Show()
+
+	shieldText:Hide()
+	updateHealthTextWithShield(shieldValue)
 end
 
 function addon:GetConfiguredTargetMaxHealth()
@@ -501,21 +1023,42 @@ function addon:RefreshPlayerHealthBarMaxHealth()
 		healthRatio = math.max(0, math.min(1, currentHealth / gameMaxHealth))
 	end
 
+	local state = self.GetHealthConfigState and self:GetHealthConfigState() or nil
+	local lifeDelta = state and tonumber(state.lifeDelta) or 0
+
 	local displayHealth = math.floor((customMaxHealth * healthRatio) + 0.5)
+	displayHealth = displayHealth + math.floor(lifeDelta or 0)
 	displayHealth = math.max(0, math.min(customMaxHealth, displayHealth))
+	if state then
+		state.lifeDelta = displayHealth - math.floor((customMaxHealth * healthRatio) + 0.5)
+	end
 
 	healthBar:SetMinMaxValues(0, customMaxHealth)
 	healthBar:SetValue(displayHealth)
+	self:UpdatePlayerShieldVisuals(healthBar, displayHealth, customMaxHealth)
 end
 
 function addon:RefreshTargetHealthBarMaxHealth()
 	local healthBar = findTargetHealthBar()
 	if not healthBar then
+		if self.HideTargetShieldVisuals then
+			self:HideTargetShieldVisuals()
+		end
+		return
+	end
+
+	if not UnitExists("target") or not UnitIsPlayer("target") then
+		if self.HideTargetShieldVisuals then
+			self:HideTargetShieldVisuals()
+		end
 		return
 	end
 
 	local customMaxHealth = self.GetConfiguredTargetMaxHealth and self:GetConfiguredTargetMaxHealth() or nil
 	if not customMaxHealth then
+		if self.HideTargetShieldVisuals then
+			self:HideTargetShieldVisuals()
+		end
 		return
 	end
 
@@ -531,6 +1074,7 @@ function addon:RefreshTargetHealthBarMaxHealth()
 
 	healthBar:SetMinMaxValues(0, customMaxHealth)
 	healthBar:SetValue(displayHealth)
+	self:UpdateTargetShieldVisuals(healthBar, displayHealth, customMaxHealth)
 end
 
 function addon:OnCustomProgressUpdated()
