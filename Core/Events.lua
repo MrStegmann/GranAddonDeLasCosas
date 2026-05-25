@@ -39,12 +39,17 @@ function addon:PLAYER_LOGIN()
         addon:CreateTurnOrderFrame()
     end
 
+    if addon.CreateLevelOverlayFrame then
+        addon:CreateLevelOverlayFrame()
+    end
+
     if addon.eventFrame then
         addon.eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
         addon.eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
         addon.eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
         addon.eventFrame:RegisterEvent("PLAYER_XP_UPDATE")
         addon.eventFrame:RegisterEvent("PLAYER_LEVEL_UP")
+        addon.eventFrame:RegisterEvent("UNIT_LEVEL")
     end
 end
 
@@ -66,11 +71,24 @@ function addon:PLAYER_ENTERING_WORLD()
     if addon.UpdateQuickExperienceBar then
         addon:UpdateQuickExperienceBar()
     end
+
+    if addon.RefreshLevelOverlays then
+        addon:RefreshLevelOverlays()
+    end
+
 end
 
 function addon:PLAYER_TARGET_CHANGED()
     if addon.UpdateTargetInspectButtonVisibility then
         addon:UpdateTargetInspectButtonVisibility()
+    end
+
+    if addon.RequestTargetLevelData then
+        addon:RequestTargetLevelData(true)
+    end
+
+    if addon.RefreshTargetLevelOverlay then
+        addon:RefreshTargetLevelOverlay()
     end
 end
 
@@ -78,10 +96,29 @@ function addon:PLAYER_XP_UPDATE()
     if addon.UpdateQuickExperienceBar then
         addon:UpdateQuickExperienceBar()
     end
+
 end
 
 function addon:PLAYER_LEVEL_UP()
     if addon.UpdateQuickExperienceBar then
         addon:UpdateQuickExperienceBar()
+    end
+
+    if addon.RefreshPlayerLevelOverlay then
+        addon:RefreshPlayerLevelOverlay()
+    end
+
+end
+
+function addon:UNIT_LEVEL(unit)
+    if unit == "player" then
+        if addon.RefreshPlayerLevelOverlay then
+            addon:RefreshPlayerLevelOverlay()
+        end
+        return
+    end
+
+    if unit == "target" and addon.RefreshTargetLevelOverlay then
+        addon:RefreshTargetLevelOverlay()
     end
 end

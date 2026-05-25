@@ -509,6 +509,13 @@ function addon:HandleTooltipSyncAddonMessage(message, sender)
             self:AddTooltipDataLines(shortSender, parsed)
         end
 
+        if self.RefreshTargetLevelOverlay and self.GetUnitShortName then
+            local currentTargetShortName = self:GetUnitShortName("target")
+            if currentTargetShortName and currentTargetShortName == shortSender then
+                self:RefreshTargetLevelOverlay()
+            end
+        end
+
         return true
     end
 

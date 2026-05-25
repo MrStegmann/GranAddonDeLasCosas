@@ -16,6 +16,7 @@ Core/RollCommunication.lua
 Core/TooltipSync.lua
 UI/MainFrame.xml
 UI/MainFrame.lua
+UI/HealthBarFrame.lua
 UI/MinimapButton.lua
 UI/ExperienceConfigFrame.lua
 UI/QuickActionsFrame.lua
