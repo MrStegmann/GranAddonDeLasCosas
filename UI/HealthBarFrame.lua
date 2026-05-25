@@ -60,6 +60,50 @@ local function findTargetDefaultLevelFontString()
 	})
 end
 
+local function findPlayerHealthBar()
+	if _G.PlayerFrameHealthBar and type(_G.PlayerFrameHealthBar.SetMinMaxValues) == "function" then
+		return _G.PlayerFrameHealthBar
+	end
+
+	if type(_G.PlayerFrame) == "table" then
+		local playerFrame = _G.PlayerFrame
+		if playerFrame.healthbar and type(playerFrame.healthbar.SetMinMaxValues) == "function" then
+			return playerFrame.healthbar
+		end
+
+		local content = playerFrame.PlayerFrameContent
+		local main = content and content.PlayerFrameContentMain
+		local healthBar = main and main.HealthBar
+		if healthBar and type(healthBar.SetMinMaxValues) == "function" then
+			return healthBar
+		end
+	end
+
+	return nil
+end
+
+local function findTargetHealthBar()
+	if _G.TargetFrameHealthBar and type(_G.TargetFrameHealthBar.SetMinMaxValues) == "function" then
+		return _G.TargetFrameHealthBar
+	end
+
+	if type(_G.TargetFrame) == "table" then
+		local targetFrame = _G.TargetFrame
+		if targetFrame.healthbar and type(targetFrame.healthbar.SetMinMaxValues) == "function" then
+			return targetFrame.healthbar
+		end
+
+		local content = targetFrame.TargetFrameContent
+		local main = content and content.TargetFrameContentMain
+		local healthBar = main and main.HealthBar
+		if healthBar and type(healthBar.SetMinMaxValues) == "function" then
+			return healthBar
+		end
+	end
+
+	return nil
+end
+
 local function createOverlayFontString(parentFrame, relativeFrame, globalName)
 	if not canCreateFontString(parentFrame) or not relativeFrame then
 		return nil
@@ -363,12 +407,158 @@ function addon:RefreshLevelOverlays()
 	self:RefreshTargetLevelOverlay()
 end
 
+function addon:GetConfiguredPlayerMaxHealth()
+	local snapshot = self.GetExperienceProgressSnapshot and self:GetExperienceProgressSnapshot() or nil
+	if not snapshot then
+		return nil
+	end
+
+	local levelEntry = self.GetLevelEntry and self:GetLevelEntry(snapshot.category, snapshot.level) or nil
+	local baseHealth = levelEntry and tonumber(levelEntry.maxHealth) or nil
+	if not baseHealth then
+		return nil
+	end
+
+	local attributes = self.characterData and self.characterData.attributes or nil
+	local constitution = attributes and tonumber(attributes["Constitución"]) or 0
+	local constitutionValue = math.max(0, math.floor(constitution or 0))
+
+	return math.max(1, math.floor(baseHealth) + constitutionValue)
+end
+
+function addon:GetConfiguredTargetMaxHealth()
+	if not UnitExists("target") or not UnitIsPlayer("target") then
+		return nil
+	end
+
+	local category = nil
+	local level = nil
+	local constitutionValue = 0
+
+	if UnitIsUnit("target", "player") then
+		local snapshot = self.GetExperienceProgressSnapshot and self:GetExperienceProgressSnapshot() or nil
+		if not snapshot then
+			return nil
+		end
+
+		category = snapshot.category
+		level = tonumber(snapshot.level)
+
+		local attributes = self.characterData and self.characterData.attributes or nil
+		local constitution = attributes and tonumber(attributes["Constitución"]) or 0
+		constitutionValue = math.max(0, math.floor(constitution or 0))
+	else
+		local shortName = self.GetUnitShortName and self:GetUnitShortName("target")
+		local cached = shortName and self.tooltipSyncCache and self.tooltipSyncCache[shortName] or nil
+		if not cached then
+			return nil
+		end
+
+		if (GetTime() - (cached.timestamp or 0)) > TOOLTIP_CACHE_TTL then
+			return nil
+		end
+
+		local progress = cached.progress
+		local attributes = cached.attributes
+		if type(progress) ~= "table" then
+			return nil
+		end
+
+		category = progress.category
+		level = tonumber(progress.level)
+		local constitution = type(attributes) == "table" and tonumber(attributes["Constitución"]) or 0
+		constitutionValue = math.max(0, math.floor(constitution or 0))
+	end
+
+	if not category or not level then
+		return nil
+	end
+
+	local levelEntry = self.GetLevelEntry and self:GetLevelEntry(category, math.floor(level)) or nil
+	local baseHealth = levelEntry and tonumber(levelEntry.maxHealth) or nil
+	if not baseHealth then
+		return nil
+	end
+
+	return math.max(1, math.floor(baseHealth) + constitutionValue)
+end
+
+function addon:RefreshPlayerHealthBarMaxHealth()
+	local healthBar = findPlayerHealthBar()
+	if not healthBar then
+		return
+	end
+
+	local customMaxHealth = self.GetConfiguredPlayerMaxHealth and self:GetConfiguredPlayerMaxHealth() or nil
+	if not customMaxHealth then
+		return
+	end
+
+	local currentHealth = tonumber(UnitHealth("player")) or 0
+	local gameMaxHealth = tonumber(UnitHealthMax("player")) or 0
+	local healthRatio = 0
+	if gameMaxHealth > 0 then
+		healthRatio = math.max(0, math.min(1, currentHealth / gameMaxHealth))
+	end
+
+	local displayHealth = math.floor((customMaxHealth * healthRatio) + 0.5)
+	displayHealth = math.max(0, math.min(customMaxHealth, displayHealth))
+
+	healthBar:SetMinMaxValues(0, customMaxHealth)
+	healthBar:SetValue(displayHealth)
+end
+
+function addon:RefreshTargetHealthBarMaxHealth()
+	local healthBar = findTargetHealthBar()
+	if not healthBar then
+		return
+	end
+
+	local customMaxHealth = self.GetConfiguredTargetMaxHealth and self:GetConfiguredTargetMaxHealth() or nil
+	if not customMaxHealth then
+		return
+	end
+
+	local currentHealth = tonumber(UnitHealth("target")) or 0
+	local gameMaxHealth = tonumber(UnitHealthMax("target")) or 0
+	local healthRatio = 0
+	if gameMaxHealth > 0 then
+		healthRatio = math.max(0, math.min(1, currentHealth / gameMaxHealth))
+	end
+
+	local displayHealth = math.floor((customMaxHealth * healthRatio) + 0.5)
+	displayHealth = math.max(0, math.min(customMaxHealth, displayHealth))
+
+	healthBar:SetMinMaxValues(0, customMaxHealth)
+	healthBar:SetValue(displayHealth)
+end
+
 function addon:OnCustomProgressUpdated()
 	self:RefreshPlayerLevelOverlay()
 	self:UpdatePlayerCategoryOverlay()
+	self:RefreshPlayerHealthBarMaxHealth()
+	self:RefreshTargetHealthBarMaxHealth()
 
 	if self.BroadcastTooltipSyncPayload then
 		self:BroadcastTooltipSyncPayload()
+	end
+end
+
+function addon:InstallPlayerHealthBarHooks()
+	if self.playerHealthBarHooksInstalled then
+		return
+	end
+
+	self.playerHealthBarHooksInstalled = true
+
+	if type(hooksecurefunc) == "function" then
+		hooksecurefunc("UnitFrameHealthBar_Update", function(_, unit)
+			if unit == "player" then
+				addon:RefreshPlayerHealthBarMaxHealth()
+			elseif unit == "target" then
+				addon:RefreshTargetHealthBarMaxHealth()
+			end
+		end)
 	end
 end
 
@@ -389,6 +579,8 @@ function addon:InstallLevelOverlayProgressHooks()
 		"SetCurrentExperience",
 		"AddExperience",
 		"PrestigeToNextCategory",
+		"SaveAttributesUIValues",
+		"ResetAttributesUIValues",
 	}
 
 	for _, methodName in ipairs(trackedMethods) do
@@ -463,7 +655,10 @@ function addon:CreateLevelOverlayFrame()
 	end
 
 	self:InstallLevelOverlayProgressHooks()
+	self:InstallPlayerHealthBarHooks()
 	self:RefreshLevelOverlays()
 	self:UpdatePlayerCategoryOverlay()
 	self:UpdateTargetCategoryOverlay()
+	self:RefreshPlayerHealthBarMaxHealth()
+	self:RefreshTargetHealthBarMaxHealth()
 end

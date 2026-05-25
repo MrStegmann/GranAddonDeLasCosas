@@ -50,6 +50,8 @@ function addon:PLAYER_LOGIN()
         addon.eventFrame:RegisterEvent("PLAYER_XP_UPDATE")
         addon.eventFrame:RegisterEvent("PLAYER_LEVEL_UP")
         addon.eventFrame:RegisterEvent("UNIT_LEVEL")
+        addon.eventFrame:RegisterEvent("UNIT_HEALTH")
+        addon.eventFrame:RegisterEvent("UNIT_MAXHEALTH")
     end
 end
 
@@ -76,6 +78,14 @@ function addon:PLAYER_ENTERING_WORLD()
         addon:RefreshLevelOverlays()
     end
 
+    if addon.RefreshPlayerHealthBarMaxHealth then
+        addon:RefreshPlayerHealthBarMaxHealth()
+    end
+
+    if addon.RefreshTargetHealthBarMaxHealth then
+        addon:RefreshTargetHealthBarMaxHealth()
+    end
+
 end
 
 function addon:PLAYER_TARGET_CHANGED()
@@ -89,6 +99,10 @@ function addon:PLAYER_TARGET_CHANGED()
 
     if addon.RefreshTargetLevelOverlay then
         addon:RefreshTargetLevelOverlay()
+    end
+
+    if addon.RefreshTargetHealthBarMaxHealth then
+        addon:RefreshTargetHealthBarMaxHealth()
     end
 end
 
@@ -108,6 +122,10 @@ function addon:PLAYER_LEVEL_UP()
         addon:RefreshPlayerLevelOverlay()
     end
 
+    if addon.RefreshPlayerHealthBarMaxHealth then
+        addon:RefreshPlayerHealthBarMaxHealth()
+    end
+
 end
 
 function addon:UNIT_LEVEL(unit)
@@ -115,10 +133,40 @@ function addon:UNIT_LEVEL(unit)
         if addon.RefreshPlayerLevelOverlay then
             addon:RefreshPlayerLevelOverlay()
         end
+        if addon.RefreshPlayerHealthBarMaxHealth then
+            addon:RefreshPlayerHealthBarMaxHealth()
+        end
         return
     end
 
-    if unit == "target" and addon.RefreshTargetLevelOverlay then
-        addon:RefreshTargetLevelOverlay()
+    if unit == "target" then
+        if addon.RefreshTargetLevelOverlay then
+            addon:RefreshTargetLevelOverlay()
+        end
+        if addon.RefreshTargetHealthBarMaxHealth then
+            addon:RefreshTargetHealthBarMaxHealth()
+        end
+    end
+end
+
+function addon:UNIT_HEALTH(unit)
+    if unit == "player" and addon.RefreshPlayerHealthBarMaxHealth then
+        addon:RefreshPlayerHealthBarMaxHealth()
+        return
+    end
+
+    if unit == "target" and addon.RefreshTargetHealthBarMaxHealth then
+        addon:RefreshTargetHealthBarMaxHealth()
+    end
+end
+
+function addon:UNIT_MAXHEALTH(unit)
+    if unit == "player" and addon.RefreshPlayerHealthBarMaxHealth then
+        addon:RefreshPlayerHealthBarMaxHealth()
+        return
+    end
+
+    if unit == "target" and addon.RefreshTargetHealthBarMaxHealth then
+        addon:RefreshTargetHealthBarMaxHealth()
     end
 end
