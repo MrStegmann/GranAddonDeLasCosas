@@ -80,17 +80,27 @@ local function createOverlayFontString(parentFrame, relativeFrame, globalName)
 	return text
 end
 
-local function createCategoryOverlayTexture(parentFrame, relativeFrame, texturePath, globalName)
+local function createCategoryOverlayTexture(parentFrame, relativeFrame, texturePath, globalName, isMirrored)
 	if type(parentFrame) ~= "table" or type(parentFrame.CreateTexture) ~= "function" or not relativeFrame then
 		return nil
 	end
 
-	local overlay = parentFrame:CreateTexture(globalName, "ARTWORK")
+	local container = CreateFrame("Frame", nil, parentFrame)
+	container:SetAllPoints(relativeFrame)
+	container:SetFrameStrata("HIGH")
+	container:SetFrameLevel((parentFrame:GetFrameLevel() or 1) + 10)
+
+	local overlay = container:CreateTexture(globalName, "OVERLAY")
 	overlay:SetSize(256, 128)
-	overlay:SetPoint("TOPLEFT", relativeFrame, "TOPLEFT", 0, 0)
+	overlay:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
 	overlay:SetTexture(texturePath)
-	overlay:SetTexCoord(1, 0, 0, 1)
+	if isMirrored then
+		overlay:SetTexCoord(0, 1, 0, 1)
+	else
+		overlay:SetTexCoord(1, 0, 0, 1)
+	end
 	overlay:Hide()
+	overlay.container = container
 
 	return overlay
 end
@@ -107,6 +117,20 @@ local function updateLevelOverlayPosition(text, level)
 	text:SetPoint("BOTTOMRIGHT", text.container, "BOTTOMRIGHT", xOffset, 3)
 end
 
+local function updateTargetLevelOverlayPosition(text, level)
+	if not text or not text.container then
+		return
+	end
+
+	local numericLevel = tonumber(level) or 0
+	local xOffset = (numericLevel == 10) and -5 or -7
+
+	text:ClearAllPoints()
+	text:SetPoint("BOTTOMRIGHT", text.container, "BOTTOMRIGHT", xOffset, 3)
+end
+
+local applyCategoryToOverlays
+
 function addon:UpdatePlayerCategoryOverlay()
 	local overlays = self.playerCategoryOverlays
 	if not overlays then
@@ -115,6 +139,13 @@ function addon:UpdatePlayerCategoryOverlay()
 
 	local snapshot = self.GetExperienceProgressSnapshot and self:GetExperienceProgressSnapshot() or nil
 	local category = snapshot and snapshot.category or nil
+	applyCategoryToOverlays(overlays, category)
+end
+
+applyCategoryToOverlays = function(overlays, category)
+	if not overlays then
+		return
+	end
 
 	if overlays.rare then
 		overlays.rare:SetShown(category == "Normal")
@@ -128,6 +159,41 @@ function addon:UpdatePlayerCategoryOverlay()
 			overlays.rareElite:SetVertexColor(1.0, 1.0, 1.0, 1.0)
 		end
 	end
+end
+
+function addon:UpdateTargetCategoryOverlay()
+	local overlays = self.targetCategoryOverlays
+	if not overlays then
+		return
+	end
+
+	if not UnitExists("target") or not UnitIsPlayer("target") then
+		applyCategoryToOverlays(overlays, nil)
+		return
+	end
+
+	if UnitIsUnit("target", "player") then
+		local snapshot = self.GetExperienceProgressSnapshot and self:GetExperienceProgressSnapshot() or nil
+		local category = snapshot and snapshot.category or nil
+		applyCategoryToOverlays(overlays, category)
+		return
+	end
+
+	local shortName = self.GetUnitShortName and self:GetUnitShortName("target")
+	local cached = shortName and self.tooltipSyncCache and self.tooltipSyncCache[shortName] or nil
+	if not cached then
+		applyCategoryToOverlays(overlays, nil)
+		return
+	end
+
+	if (GetTime() - (cached.timestamp or 0)) > TOOLTIP_CACHE_TTL then
+		applyCategoryToOverlays(overlays, nil)
+		return
+	end
+
+	local progress = cached.progress
+	local category = type(progress) == "table" and progress.category or nil
+	applyCategoryToOverlays(overlays, category)
 end
 function addon:GetUnitShortName(unit)
 	if not UnitExists(unit) or not UnitIsPlayer(unit) then
@@ -235,12 +301,32 @@ function addon:RefreshTargetLevelOverlay()
 	end
 
 	if not UnitExists("target") or not UnitIsPlayer("target") then
+		if self.UpdateTargetCategoryOverlay then
+			self:UpdateTargetCategoryOverlay()
+		end
 		targetOverlay:Hide()
 		self:UpdateDefaultLevelTextVisibility("target", true)
 		return
 	end
 
 	if UnitIsUnit("target", "player") then
+		local snapshot = self.GetExperienceProgressSnapshot and self:GetExperienceProgressSnapshot() or nil
+		local level = snapshot and tonumber(snapshot.level) or nil
+
+		if level then
+			updateTargetLevelOverlayPosition(targetOverlay, level)
+			targetOverlay:SetText(tostring(math.max(1, math.floor(level))))
+			targetOverlay:Show()
+			self:UpdateDefaultLevelTextVisibility("target", false)
+			if self.UpdateTargetCategoryOverlay then
+				self:UpdateTargetCategoryOverlay()
+			end
+			return
+		end
+
+		if self.UpdateTargetCategoryOverlay then
+			self:UpdateTargetCategoryOverlay()
+		end
 		targetOverlay:Hide()
 		self:UpdateDefaultLevelTextVisibility("target", true)
 		return
@@ -250,15 +336,21 @@ function addon:RefreshTargetLevelOverlay()
 	local level = self.GetCachedProgressLevelForShortName and self:GetCachedProgressLevelForShortName(shortName)
 
 	if level then
-		updateLevelOverlayPosition(targetOverlay, level)
+		updateTargetLevelOverlayPosition(targetOverlay, level)
 		targetOverlay:SetText(tostring(level))
 		targetOverlay:Show()
 		self:UpdateDefaultLevelTextVisibility("target", false)
+		if self.UpdateTargetCategoryOverlay then
+			self:UpdateTargetCategoryOverlay()
+		end
 		return
 	end
 
 	targetOverlay:Hide()
 	self:UpdateDefaultLevelTextVisibility("target", true)
+	if self.UpdateTargetCategoryOverlay then
+		self:UpdateTargetCategoryOverlay()
+	end
 	self:RequestTargetLevelData(false)
 end
 
@@ -311,6 +403,7 @@ end
 function addon:CreateLevelOverlayFrame()
 	self.levelOverlayTexts = self.levelOverlayTexts or {}
 	self.playerCategoryOverlays = self.playerCategoryOverlays or {}
+	self.targetCategoryOverlays = self.targetCategoryOverlays or {}
 
 	if not self.levelOverlayTexts.player then
 		local playerParent = getFirstExistingGlobal({ "PlayerFrame", "UIParent" })
@@ -340,9 +433,37 @@ function addon:CreateLevelOverlayFrame()
 		local targetParent = getFirstExistingGlobal({ "TargetFrame", "UIParent" })
 		local targetAnchor = findTargetAnchorFrame() or targetParent
 		self.levelOverlayTexts.target = createOverlayFontString(targetParent, targetAnchor, "GACTargetLevelOverlayText")
+
+		if not self.targetCategoryOverlays.rareElite then
+			self.targetCategoryOverlays.rareElite = createCategoryOverlayTexture(
+				targetParent,
+				targetParent,
+				"Interface\\TargetingFrame\\UI-TargetingFrame-Elite",
+				"GACTargetCategoryRareEliteOverlay",
+				true
+			)
+			if self.targetCategoryOverlays.rareElite then
+				self.targetCategoryOverlays.rareElite:ClearAllPoints()
+				self.targetCategoryOverlays.rareElite:SetPoint("TOPLEFT", targetParent, "TOPLEFT", -25, 0)
+			end
+		end
+
+		if not self.targetCategoryOverlays.rare then
+			self.targetCategoryOverlays.rare = createCategoryOverlayTexture(
+				targetParent,
+				targetParent,
+				"Interface\\TargetingFrame\\UI-TargetingFrame-Rare",
+				"GACTargetCategoryRareOverlay",
+				true
+			)			if self.targetCategoryOverlays.rare then
+				self.targetCategoryOverlays.rare:ClearAllPoints()
+				self.targetCategoryOverlays.rare:SetPoint("TOPLEFT", targetParent, "TOPLEFT", -25, 0)
+			end
+		end
 	end
 
 	self:InstallLevelOverlayProgressHooks()
 	self:RefreshLevelOverlays()
 	self:UpdatePlayerCategoryOverlay()
+	self:UpdateTargetCategoryOverlay()
 end
