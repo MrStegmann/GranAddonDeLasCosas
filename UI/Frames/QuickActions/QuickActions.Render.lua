@@ -134,13 +134,14 @@ function addon:CreateQuickActionsFrame()
     end
 
     -- Botones en una sola fila, alineados horizontalmente
-    local buttonY = -2
+    local buttonBottomInset = 0
     local buttonX = 8
     local buttonSpacing = 1
+    local buttonRowSpacing = 1
 
     local diceButton = CreateFrame("Button", "GACQuickDiceButton", frame, "UIPanelButtonTemplate")
     diceButton:SetSize(28, 22)
-    diceButton:SetPoint("LEFT", frame, "LEFT", buttonX, buttonY)
+    diceButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", buttonX, buttonBottomInset)
 
     local diceIcon = diceButton:CreateTexture(nil, "ARTWORK")
     diceIcon:SetTexture("Interface\\Icons\\INV_Misc_Dice_01")
@@ -197,7 +198,7 @@ function addon:CreateQuickActionsFrame()
 
     local addLifeQuickButton = CreateFrame("Button", "GACQuickAddLifeButton", frame, "UIPanelButtonTemplate")
     addLifeQuickButton:SetSize(28, 22)
-    addLifeQuickButton:SetPoint("BOTTOMLEFT", diceButton, "TOPLEFT", 0, 1)
+    addLifeQuickButton:SetPoint("BOTTOMLEFT", diceButton, "TOPLEFT", 0, buttonRowSpacing)
 
     local addLifeIcon = addLifeQuickButton:CreateTexture(nil, "ARTWORK")
     addLifeIcon:SetTexture("Interface\\Icons\\Spell_Holy_Renew")
@@ -276,6 +277,9 @@ function addon:CreateQuickActionsFrame()
     local removeShieldQuickButton = CreateFrame("Button", "GACQuickRemoveShieldButton", frame, "UIPanelButtonTemplate")
     removeShieldQuickButton:SetSize(28, 22)
     removeShieldQuickButton:SetPoint("LEFT", addShieldQuickButton, "RIGHT", buttonSpacing, 0)
+
+    local frameHeight = diceButton:GetHeight() + addLifeQuickButton:GetHeight() + buttonRowSpacing + buttonBottomInset
+    frame:SetHeight(frameHeight)
 
     local removeShieldIcon = removeShieldQuickButton:CreateTexture(nil, "ARTWORK")
     removeShieldIcon:SetTexture("Interface\\Icons\\Ability_Warrior_ShieldBreak")
