@@ -6,6 +6,36 @@ local hb = addon.healthBar
 
 hb.TOOLTIP_CACHE_TTL = 300
 
+hb.PLAYER_PLATE_LEVEL_X_OFFSET_BY_LEVEL = {
+	[1] = -47,
+	[2] = -45.5,
+	[3] = -47,
+	[4] = -45.5,
+	[5] = -46,
+	[6] = -45.5,
+	[7] = -45,
+	[8] = -45.5,
+	[9] = -45.5,
+	[10] = -43,
+}
+
+hb.PLAYER_PLATE_LEVEL_X_OFFSET_DEFAULT = -47
+
+hb.TARGET_PLATE_LEVEL_X_OFFSET_BY_LEVEL = {
+	[1] = -8.7,
+	[2] = -8,
+	[3] = -10,
+	[4] = -8.7,
+	[5] = -8.7,
+	[6] = -8.5,
+	[7] = -8,
+	[8] = -8,
+	[9] = -7.8,
+	[10] = -5.5,
+}
+
+hb.TARGET_PLATE_LEVEL_X_OFFSET_DEFAULT = -7
+
 function hb.getUnitFullName(unit)
 	local name, realm = UnitName(unit)
 	if not name or name == "" then
@@ -338,8 +368,9 @@ function hb.updateLevelOverlayPosition(text, level)
 		return
 	end
 
-	local numericLevel = tonumber(level) or 0
-	local xOffset = (numericLevel == 10) and -43 or -47
+	local numericLevel = math.max(0, math.floor(tonumber(level) or 0))
+	local xOffset = hb.PLAYER_PLATE_LEVEL_X_OFFSET_BY_LEVEL[numericLevel] or hb.PLAYER_PLATE_LEVEL_X_OFFSET_DEFAULT
+
 
 	text:ClearAllPoints()
 	text:SetPoint("BOTTOMRIGHT", text.container, "BOTTOMRIGHT", xOffset, 3)
@@ -350,8 +381,8 @@ function hb.updateTargetLevelOverlayPosition(text, level)
 		return
 	end
 
-	local numericLevel = tonumber(level) or 0
-	local xOffset = (numericLevel == 10) and -5 or -7
+	local numericLevel = math.max(0, math.floor(tonumber(level) or 0))
+	local xOffset = hb.TARGET_PLATE_LEVEL_X_OFFSET_BY_LEVEL[numericLevel] or hb.TARGET_PLATE_LEVEL_X_OFFSET_DEFAULT
 
 	text:ClearAllPoints()
 	text:SetPoint("BOTTOMRIGHT", text.container, "BOTTOMRIGHT", xOffset, 3)
