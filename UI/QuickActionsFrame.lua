@@ -680,6 +680,110 @@ function addon:CreateQuickActionsFrame()
         GameTooltip:Hide()
     end)
 
+    local addLifeQuickButton = CreateFrame("Button", "GACQuickAddLifeButton", frame, "UIPanelButtonTemplate")
+    addLifeQuickButton:SetSize(28, 22)
+    addLifeQuickButton:SetPoint("BOTTOMLEFT", diceButton, "TOPLEFT", 0, 1)
+
+    local addLifeIcon = addLifeQuickButton:CreateTexture(nil, "ARTWORK")
+    addLifeIcon:SetTexture("Interface\\Icons\\Spell_Holy_Renew")
+    addLifeIcon:SetPoint("CENTER")
+    addLifeIcon:SetSize(15, 15)
+
+    addLifeQuickButton:SetScript("OnClick", function()
+        if addon.ModifyPlayerLife then
+            addon:ModifyPlayerLife(1)
+        end
+    end)
+
+    addLifeQuickButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Dar 1 de vida")
+        GameTooltip:AddLine("Te añade 1 punto de vida.", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+
+    addLifeQuickButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+
+    local removeLifeQuickButton = CreateFrame("Button", "GACQuickRemoveLifeButton", frame, "UIPanelButtonTemplate")
+    removeLifeQuickButton:SetSize(28, 22)
+    removeLifeQuickButton:SetPoint("LEFT", addLifeQuickButton, "RIGHT", buttonSpacing, 0)
+
+    local removeLifeIcon = removeLifeQuickButton:CreateTexture(nil, "ARTWORK")
+    removeLifeIcon:SetTexture("Interface\\Icons\\Spell_Shadow_DeathCoil")
+    removeLifeIcon:SetPoint("CENTER")
+    removeLifeIcon:SetSize(15, 15)
+
+    removeLifeQuickButton:SetScript("OnClick", function()
+        if addon.ModifyPlayerLife then
+            addon:ModifyPlayerLife(-1)
+        end
+    end)
+
+    removeLifeQuickButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Quitar 1 de vida")
+        GameTooltip:AddLine("Te quita 1 punto de vida.", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+
+    removeLifeQuickButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+
+    local addShieldQuickButton = CreateFrame("Button", "GACQuickAddShieldButton", frame, "UIPanelButtonTemplate")
+    addShieldQuickButton:SetSize(28, 22)
+    addShieldQuickButton:SetPoint("LEFT", removeLifeQuickButton, "RIGHT", buttonSpacing, 0)
+
+    local addShieldIcon = addShieldQuickButton:CreateTexture(nil, "ARTWORK")
+    addShieldIcon:SetTexture("Interface\\Icons\\Spell_Holy_PowerWordShield")
+    addShieldIcon:SetPoint("CENTER")
+    addShieldIcon:SetSize(15, 15)
+
+    addShieldQuickButton:SetScript("OnClick", function()
+        if addon.ModifyPlayerShield then
+            addon:ModifyPlayerShield(1)
+        end
+    end)
+
+    addShieldQuickButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Dar 1 de escudo")
+        GameTooltip:AddLine("Te añade 1 punto de escudo.", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+
+    addShieldQuickButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+
+    local removeShieldQuickButton = CreateFrame("Button", "GACQuickRemoveShieldButton", frame, "UIPanelButtonTemplate")
+    removeShieldQuickButton:SetSize(28, 22)
+    removeShieldQuickButton:SetPoint("LEFT", addShieldQuickButton, "RIGHT", buttonSpacing, 0)
+
+    local removeShieldIcon = removeShieldQuickButton:CreateTexture(nil, "ARTWORK")
+    removeShieldIcon:SetTexture("Interface\\Icons\\Ability_Warrior_ShieldBreak")
+    removeShieldIcon:SetPoint("CENTER")
+    removeShieldIcon:SetSize(15, 15)
+
+    removeShieldQuickButton:SetScript("OnClick", function()
+        if addon.ModifyPlayerShield then
+            addon:ModifyPlayerShield(-1)
+        end
+    end)
+
+    removeShieldQuickButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Quitar 1 de escudo")
+        GameTooltip:AddLine("Te quita 1 punto de escudo.", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+
+    removeShieldQuickButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+
     local swordButton = CreateFrame("Button", "GACQuickSwordButton", frame, "UIPanelButtonTemplate")
     swordButton:SetSize(28, 22)
     swordButton:SetPoint("LEFT", attributeButton, "RIGHT", buttonSpacing, 0)
@@ -952,7 +1056,7 @@ function addon:CreateQuickActionsFrame()
 
     local expandTurnOrderButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     expandTurnOrderButton:SetSize(96, 20)
-    expandTurnOrderButton:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 8, -1)
+    expandTurnOrderButton:SetPoint("LEFT", removeShieldQuickButton, "RIGHT", 8, 0)
     expandTurnOrderButton:SetText("Orden Turnos")
     expandTurnOrderButton:SetShown(false)
     expandTurnOrderButton:SetScript("OnClick", function()
