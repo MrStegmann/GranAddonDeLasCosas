@@ -8,6 +8,8 @@ local function applyCategoryToOverlays(overlays, category)
 
 	if overlays.rare then
 		overlays.rare:SetShown(category == "Normal")
+		overlays.rare:SetDesaturated(true)
+		overlays.rare:SetVertexColor(1.0, 1.0, 1.0, 1.0)
 	end
 
 	if overlays.rareElite then
