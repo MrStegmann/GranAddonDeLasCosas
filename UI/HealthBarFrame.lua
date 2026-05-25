@@ -476,6 +476,23 @@ function addon:RequestTargetLevelData(force)
 	end
 end
 
+function addon:OnUpdate(elapsed)
+	self.targetSyncPollElapsed = (self.targetSyncPollElapsed or 0) + (tonumber(elapsed) or 0)
+	if self.targetSyncPollElapsed < 1.0 then
+		return
+	end
+
+	self.targetSyncPollElapsed = 0
+
+	if not UnitExists("target") or not UnitIsPlayer("target") or UnitIsUnit("target", "player") then
+		return
+	end
+
+	if self.RequestTargetLevelData then
+		self:RequestTargetLevelData(false)
+	end
+end
+
 function addon:UpdateDefaultLevelTextVisibility(unit, shouldShow)
 	local fontString = nil
 	if unit == "player" then
@@ -701,6 +718,10 @@ function addon:ModifyPlayerLife(amount)
 	if self.RefreshMainHealthConfigPanel then
 		self:RefreshMainHealthConfigPanel()
 	end
+
+	if self.BroadcastTooltipSyncPayload then
+		self:BroadcastTooltipSyncPayload()
+	end
 end
 
 function addon:ModifyPlayerShield(amount)
@@ -722,6 +743,10 @@ function addon:ModifyPlayerShield(amount)
 
 	if self.RefreshMainHealthConfigPanel then
 		self:RefreshMainHealthConfigPanel()
+	end
+
+	if self.BroadcastTooltipSyncPayload then
+		self:BroadcastTooltipSyncPayload()
 	end
 end
 
@@ -1070,6 +1095,14 @@ function addon:RefreshTargetHealthBarMaxHealth()
 	end
 
 	local displayHealth = math.floor((customMaxHealth * healthRatio) + 0.5)
+	if not UnitIsUnit("target", "player") then
+		local shortName = self.GetUnitShortName and self:GetUnitShortName("target")
+		local cached = shortName and self.tooltipSyncCache and self.tooltipSyncCache[shortName] or nil
+		if cached and (GetTime() - (cached.timestamp or 0)) <= TOOLTIP_CACHE_TTL then
+			local lifeDelta = cached.healthConfig and tonumber(cached.healthConfig.lifeDelta) or 0
+			displayHealth = displayHealth + math.floor(lifeDelta or 0)
+		end
+	end
 	displayHealth = math.max(0, math.min(customMaxHealth, displayHealth))
 
 	healthBar:SetMinMaxValues(0, customMaxHealth)

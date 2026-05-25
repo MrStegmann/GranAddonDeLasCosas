@@ -16,6 +16,12 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
     end
 end)
 
+eventFrame:SetScript("OnUpdate", function(_, elapsed)
+    if addon.OnUpdate then
+        addon:OnUpdate(elapsed)
+    end
+end)
+
 eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:RegisterEvent("CHAT_MSG_SYSTEM")

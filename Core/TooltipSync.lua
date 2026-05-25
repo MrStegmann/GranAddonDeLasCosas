@@ -155,6 +155,15 @@ function addon:BuildTooltipSyncPayload()
         end
     end
 
+    local healthState = self.GetHealthConfigState and self:GetHealthConfigState() or nil
+    local lifeDeltaValue = healthState and tonumber(healthState.lifeDelta) or 0
+    lifeDeltaValue = math.floor(lifeDeltaValue or 0)
+    if lifeDeltaValue ~= 0 then
+        if not appendEntry("H:L", lifeDeltaValue) then
+            return message
+        end
+    end
+
     return message
 end
 
@@ -198,6 +207,8 @@ function addon:ParseTooltipSyncPayload(message)
                 data.profile.color = rawValue
             elseif label == "H:S" and value ~= nil then
                 data.healthConfig.shield = math.max(0, math.floor(value))
+            elseif label == "H:L" and value ~= nil then
+                data.healthConfig.lifeDelta = math.floor(value)
             end
         end
 
