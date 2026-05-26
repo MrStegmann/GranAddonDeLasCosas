@@ -2,6 +2,21 @@ local _, addon = ...
 
 addon.rollMessagePrefix = "GAC_ROLL_V1"
 
+function addon:GetRollDisplayName()
+    return self:GetActiveTRP3ProfileName() or UnitName("player") or self.name
+end
+
+function addon:GetRollDisplayNameWithColor()
+    local name = self:GetRollDisplayName()
+    local color = self:GetActiveTRP3ProfileColor()
+
+    if not color then
+        return name
+    end
+
+    return "|cff" .. color .. name .. "|r"
+end
+
 local function getDistributionChannel()
     if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
         return "INSTANCE_CHAT"

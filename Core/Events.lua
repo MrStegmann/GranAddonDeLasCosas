@@ -15,6 +15,10 @@ function addon:ADDON_LOADED(loadedAddonName)
 end
 
 function addon:PLAYER_LOGIN()
+    if addon.RegisterTRP3ArmorPenaltyAutoSync then
+        addon:RegisterTRP3ArmorPenaltyAutoSync()
+    end
+
     if addon.RegisterRollCommunication then
         addon:RegisterRollCommunication()
     end
@@ -63,6 +67,14 @@ function addon:GROUP_ROSTER_UPDATE()
 end
 
 function addon:PLAYER_ENTERING_WORLD()
+    if addon.RegisterTRP3ArmorPenaltyAutoSync then
+        addon:RegisterTRP3ArmorPenaltyAutoSync()
+    end
+
+    if addon.QueueTRP3ArmorPenaltyRefresh then
+        addon:QueueTRP3ArmorPenaltyRefresh("player_entering_world")
+    end
+
     if addon.UpdateTurnOrderFrameVisibility then
         addon:UpdateTurnOrderFrameVisibility()
     end

@@ -158,6 +158,10 @@ local function setMainNavigationState(frame, activeView)
     if frame.InspectNavHealthBarButton then
         frame.InspectNavHealthBarButton:SetEnabled(activeView ~= "healthBar")
     end
+
+    if frame.InspectNavArmourButton then
+        frame.InspectNavArmourButton:SetEnabled(activeView ~= "armour")
+    end
 end
 
 function mainFrame.updateLayout(frame, isInspectMode, activeView)
@@ -183,6 +187,10 @@ function mainFrame.updateLayout(frame, isInspectMode, activeView)
 
     if frame.MainHealthBarPanel then
         frame.MainHealthBarPanel:SetShown((not isInspectMode) and activeView == "healthBar")
+    end
+
+    if frame.MainArmourPanel then
+        frame.MainArmourPanel:SetShown((not isInspectMode) and activeView == "armour")
     end
 
     if frame.InspectNavHealthBarButton then
@@ -226,6 +234,11 @@ function addon:SelectMainFrameView(view)
     elseif self.inspectMainView == "healthBar" then
         if self.RefreshMainHealthConfigPanel then
             self:RefreshMainHealthConfigPanel()
+        end
+    elseif self.inspectMainView == "armour" then
+        self.attributesUITitleText = "Resumen de Armadura"
+        if self.RefreshMainArmourPanel then
+            self:RefreshMainArmourPanel()
         end
     end
 

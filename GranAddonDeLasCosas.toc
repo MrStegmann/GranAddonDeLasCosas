@@ -9,9 +9,11 @@
 Core/Init.lua
 Data/AttributesAndTalents.lua
 Data/LevelsTable.lua
+Data/Armour.lua
 Core/Events.lua
 Core/Commands.lua
 Core/TRP3Bridge.lua
+UI/Frames/Armour/Armour.Values.lua
 Core/RollCommunication.lua
 Core/TooltipSync.lua
 UI/Frames/MainFrame/MainFrame.xml

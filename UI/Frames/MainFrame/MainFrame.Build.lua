@@ -59,6 +59,14 @@ function addon:BuildAttributesUI()
         addon:SelectMainFrameView("healthBar")
     end)
 
+    local inspectNavArmourButton = CreateFrame("Button", nil, inspectNavPanel, "UIPanelButtonTemplate")
+    inspectNavArmourButton:SetSize(112, 24)
+    inspectNavArmourButton:SetPoint("TOP", inspectNavHealthBarButton, "BOTTOM", 0, -6)
+    inspectNavArmourButton:SetText("Armadura")
+    inspectNavArmourButton:SetScript("OnClick", function()
+        addon:SelectMainFrameView("armour")
+    end)
+
     local inspectContentPanel = CreateFrame("Frame", nil, frame)
     inspectContentPanel:SetPoint("TOPLEFT", inspectNavPanel, "TOPRIGHT", 8, 0)
     inspectContentPanel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -32, 54)
@@ -418,6 +426,7 @@ function addon:BuildAttributesUI()
     frame.InspectNavAttributesButton = inspectNavAttributesButton
     frame.InspectNavExperienceButton = inspectNavExperienceButton
     frame.InspectNavHealthBarButton = inspectNavHealthBarButton
+    frame.InspectNavArmourButton = inspectNavArmourButton
     frame.InspectContentPanel = inspectContentPanel
     frame.InspectExperiencePanel = inspectInfoPanel
     frame.InspectInfoCategoryValue = categoryValue

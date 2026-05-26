@@ -17,11 +17,28 @@ function addon:CHAT_MSG_SYSTEM(message)
         return
     end
 
+    -- Lógica de validación y obtención de penalizadores de armadura
+    local requirementsMet = true
+    local allPenalties = {}
+    if self.CheckArmourRequirementsMet and self.GetArmourTotalPenalties then
+        requirementsMet = self:CheckArmourRequirementsMet()
+        allPenalties = self:GetArmourTotalPenalties()
+    end
+    local penaltyMultiplier = requirementsMet and 1 or 2
+
+    local function getPenalty(key)
+        if not key then return 0 end
+        return math.abs(tonumber(allPenalties[key]) or 0) * penaltyMultiplier
+    end
+
     local rollValue = tonumber(roll)
     local lowValue = tonumber(low)
     local highValue = tonumber(high)
+
     if self.pendingTalentRoll and (lowValue == self.pendingTalentRoll.min and highValue == self.pendingTalentRoll.max) then
-        local total = rollValue + self.pendingTalentRoll.attributeValue + self.pendingTalentRoll.talentValue
+        local armorPenalty = getPenalty(self.pendingTalentRoll.attributeName) + getPenalty(self.pendingTalentRoll.talentName)
+        
+        local total = rollValue + self.pendingTalentRoll.attributeValue + self.pendingTalentRoll.talentValue - armorPenalty
         if self.pendingTalentRoll.hasModifier then
             total = total + self.pendingTalentRoll.modifierValue
         end
@@ -34,6 +51,7 @@ function addon:CHAT_MSG_SYSTEM(message)
             .. self.pendingTalentRoll.attributeName .. " (" .. self.pendingTalentRoll.attributeValue .. ") + "
             .. self.pendingTalentRoll.talentName .. " (" .. self.pendingTalentRoll.talentValue .. ")"
             .. qa.buildModifierSegment(self.pendingTalentRoll.hasModifier, self.pendingTalentRoll.modifierValue)
+            .. (armorPenalty > 0 and (" - Armadura (" .. armorPenalty .. ")") or "")
             .. " = " .. total
 
         print(finalMessage)
@@ -44,7 +62,8 @@ function addon:CHAT_MSG_SYSTEM(message)
 
         self.pendingTalentRoll = nil
     elseif self.pendingAttributeRoll and (lowValue == self.pendingAttributeRoll.min and highValue == self.pendingAttributeRoll.max) then
-        local total = rollValue + self.pendingAttributeRoll.attributeValue
+        local armorPenalty = getPenalty(self.pendingAttributeRoll.attributeName)
+        local total = rollValue + self.pendingAttributeRoll.attributeValue - armorPenalty
         if self.pendingAttributeRoll.hasModifier then
             total = total + self.pendingAttributeRoll.modifierValue
         end
@@ -57,6 +76,7 @@ function addon:CHAT_MSG_SYSTEM(message)
             .. " 1D20 (" .. formattedRoll .. ") + "
             .. self.pendingAttributeRoll.attributeName .. " (" .. self.pendingAttributeRoll.attributeValue .. ")"
             .. qa.buildModifierSegment(self.pendingAttributeRoll.hasModifier, self.pendingAttributeRoll.modifierValue)
+            .. (armorPenalty > 0 and (" - Armadura (" .. armorPenalty .. ")") or "")
             .. " = " .. total
 
         print(finalMessage)
@@ -67,7 +87,8 @@ function addon:CHAT_MSG_SYSTEM(message)
 
         self.pendingAttributeRoll = nil
     elseif self.pendingAttackRoll and (lowValue == self.pendingAttackRoll.min and highValue == self.pendingAttackRoll.max) then
-        local total = rollValue + self.pendingAttackRoll.talentValue
+        local armorPenalty = getPenalty(self.pendingAttackRoll.talentKey)
+        local total = rollValue + self.pendingAttackRoll.talentValue - armorPenalty
         if self.pendingAttackRoll.hasModifier then
             total = total + self.pendingAttackRoll.modifierValue
         end
@@ -79,6 +100,7 @@ function addon:CHAT_MSG_SYSTEM(message)
             .. " (" .. formattedRoll .. ") + "
             .. self.pendingAttackRoll.talentLabel .. " (" .. self.pendingAttackRoll.talentValue .. ")"
             .. qa.buildModifierSegment(self.pendingAttackRoll.hasModifier, self.pendingAttackRoll.modifierValue)
+            .. (armorPenalty > 0 and (" - Armadura (" .. armorPenalty .. ")") or "")
             .. " = " .. total
 
         print(finalMessage)
@@ -89,6 +111,7 @@ function addon:CHAT_MSG_SYSTEM(message)
 
         self.pendingAttackRoll = nil
     elseif self.pendingInitiativeRoll and (lowValue == self.pendingInitiativeRoll.min and highValue == self.pendingInitiativeRoll.max) then
+        local armorPenalty = getPenalty("Iniciativa")
         local plainDisplayName = self.GetRollDisplayName and self:GetRollDisplayName() or addonName
         local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
             or plainDisplayName
@@ -98,12 +121,15 @@ function addon:CHAT_MSG_SYSTEM(message)
         local hasModifier = self.pendingInitiativeRoll.hasModifier
         local finalMessage
         if hasModifier then
-            local total = rollValue + modifierValue
+            local total = rollValue + modifierValue - armorPenalty
             finalMessage = displayName .. " tira por Iniciativa: " .. formattedRoll
                 .. qa.buildModifierSegment(true, modifierValue)
+                .. (armorPenalty > 0 and (" - Armadura (" .. armorPenalty .. ")") or "")
                 .. " = " .. total
         else
+            local total = rollValue - armorPenalty
             finalMessage = displayName .. " tira por Iniciativa: " .. formattedRoll
+                .. (armorPenalty > 0 and (" - Armadura (" .. armorPenalty .. ") = " .. total) or "")
         end
 
         print(finalMessage)
@@ -117,4 +143,3 @@ function addon:CHAT_MSG_SYSTEM(message)
         return
     end
 end
-

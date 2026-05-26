@@ -154,3 +154,91 @@ function addon:ToggleAttributesUI()
         frame:Show()
     end
 end
+
+local function formatValueMap(values)
+    if not values or not next(values) then return nil end
+    local parts = {}
+    for k, v in pairs(values) do
+        table.insert(parts, k .. ": " .. tostring(v))
+    end
+    table.sort(parts)
+    return table.concat(parts, ", ")
+end
+
+function addon:RefreshMainArmourPanel()
+    local frame = _G.GACAttributesFrame
+    if not frame then return end
+
+    -- Crear panel de armadura si no existe
+    if not frame.MainArmourPanel then
+        frame.MainArmourPanel = CreateFrame("Frame", nil, frame.InspectContentPanel or frame)
+        frame.MainArmourPanel:SetAllPoints()
+        
+        local scrollFrame = CreateFrame("ScrollFrame", "$parentArmourScroll", frame.MainArmourPanel, "UIPanelScrollFrameTemplate")
+        scrollFrame:SetPoint("TOPLEFT", 8, -8)
+        scrollFrame:SetPoint("BOTTOMRIGHT", -28, 8)
+        
+        local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+        scrollChild:SetSize(scrollFrame:GetWidth() - 10, 1)
+        scrollFrame:SetScrollChild(scrollChild)
+        frame.MainArmourPanel.scrollChild = scrollChild
+        frame.MainArmourPanel.cards = {}
+    end
+
+    local scrollChild = frame.MainArmourPanel.scrollChild
+    for _, card in ipairs(frame.MainArmourPanel.cards) do card:Hide() end
+
+    local summary = self.GetTRP3ExtendedEquippedArmourSummary and self:GetTRP3ExtendedEquippedArmourSummary()
+    if not summary or #summary.pieces == 0 then return end
+
+    local yOffset = 0
+    for i, piece in ipairs(summary.pieces) do
+        local card = frame.MainArmourPanel.cards[i]
+        if not card then
+            card = CreateFrame("Frame", nil, scrollChild, "BackdropTemplate")
+            card:SetBackdrop({
+                bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+                edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+                tile = true, tileSize = 16, edgeSize = 12,
+                insets = { left = 2, right = 2, top = 2, bottom = 2 }
+            })
+            card:SetBackdropColor(0, 0, 0, 0.4)
+            card:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+            
+            card.title = card:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            card.title:SetPoint("TOPLEFT", 12, -12)
+            
+            card.details = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            card.details:SetPoint("TOPLEFT", card.title, "BOTTOMLEFT", 0, -4)
+            card.details:SetWidth(scrollChild:GetWidth() - 24)
+            card.details:SetJustifyH("LEFT")
+            
+            table.insert(frame.MainArmourPanel.cards, card)
+        end
+        
+        card:Show()
+        card:SetPoint("TOPLEFT", 0, yOffset)
+        card:SetWidth(scrollChild:GetWidth())
+        
+        card.title:SetText(piece.pieceName .. " (|cffffd100" .. piece.armourType .. "|r)")
+        
+        local lines = {}
+        table.insert(lines, "|cff808080Item:|r " .. piece.itemName)
+        table.insert(lines, "|cff808080Refuerzo:|r " .. piece.reinforcement)
+        
+        local attr = formatValueMap(piece.attributes)
+        if attr then table.insert(lines, "|cff00ff00Atributos:|r " .. attr) end
+        local prop = formatValueMap(piece.properties)
+        if prop then table.insert(lines, "|cff00ffffPropiedades:|r " .. prop) end
+        local req = formatValueMap(piece.requirements)
+        if req then table.insert(lines, "|cffff0000Requisitos:|r " .. req) end
+        local pen = formatValueMap(piece.penalties)
+        if pen then table.insert(lines, "|cffff8000Penalizaciones:|r " .. pen) end
+        
+        card.details:SetText(table.concat(lines, "\n"))
+        local h = card.details:GetStringHeight() + 32
+        card:SetHeight(h)
+        yOffset = yOffset - (h + 6)
+    end
+    scrollChild:SetHeight(math.abs(yOffset))
+end
