@@ -8,7 +8,7 @@ local function buildCategoryDropdown(frame)
 
         for _, categoryName in ipairs(addon.levelCategories or {}) do
             local info = UIDropDownMenu_CreateInfo()
-            info.text = categoryName
+            info.text = addon:GetLocalizedText(categoryName)
             info.value = categoryName
             info.func = function()
                 addon:SetExperienceCategory(categoryName)
@@ -55,7 +55,7 @@ function addon:RefreshExperienceConfigFrame()
     local requiredExperienceText = snapshot.requiredExperience and tostring(snapshot.requiredExperience) or "MAX"
 
     frame.levelValue:SetText(tostring(snapshot.level))
-    frame.categoryValue:SetText(snapshot.category)
+    frame.categoryValue:SetText(self:GetLocalizedText(snapshot.category))
     frame.currentExperienceInput:SetText(tostring(snapshot.currentExperience))
     frame.requiredExperienceValue:SetText(requiredExperienceText)
 
@@ -70,7 +70,7 @@ function addon:RefreshExperienceConfigFrame()
     buildCategoryDropdown(frame)
     buildLevelDropdown(frame, snapshot.category)
 
-    UIDropDownMenu_SetText(frame.categoryDropdown, snapshot.category)
+    UIDropDownMenu_SetText(frame.categoryDropdown, self:GetLocalizedText(snapshot.category))
     UIDropDownMenu_SetText(frame.levelDropdown, tostring(snapshot.level))
 end
 

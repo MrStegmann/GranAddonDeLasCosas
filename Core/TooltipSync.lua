@@ -358,7 +358,7 @@ function addon:AddTooltipDataLines(targetName, data)
         for _, talentName in ipairs(group.talents or {}) do
             local talentValue = tonumber((data.talents or {})[talentName]) or 0
             if talentValue ~= 0 then
-                talentLines[#talentLines + 1] = talentName .. ": " .. talentValue
+                talentLines[#talentLines + 1] = addon:GetLocalizedText(talentName) .. ": " .. talentValue
                 includedTalents[talentName] = true
             end
         end
@@ -377,9 +377,9 @@ function addon:AddTooltipDataLines(targetName, data)
     for talentName, talentValue in pairs(data.talents or {}) do
         if talentValue ~= 0 and not includedTalents[talentName] then
             groupedLines[#groupedLines + 1] = {
-                attribute = "Otros",
+                attribute = "others",
                 value = nil,
-                talents = { talentName .. ": " .. talentValue },
+                talents = { addon:GetLocalizedText(talentName) .. ": " .. talentValue },
             }
         end
     end
@@ -397,10 +397,11 @@ function addon:AddTooltipDataLines(targetName, data)
 
     GameTooltip:AddLine("Atributos y talentos", 0.75, 0.87, 1)
     for _, groupEntry in ipairs(groupedLines) do
+        local attrName = addon:GetLocalizedText(groupEntry.attribute)
         if groupEntry.value ~= nil then
-            GameTooltip:AddLine("  " .. groupEntry.attribute .. ": " .. groupEntry.value, 1, 1, 1)
+            GameTooltip:AddLine("  " .. attrName .. ": " .. groupEntry.value, 1, 1, 1)
         else
-            GameTooltip:AddLine("  " .. groupEntry.attribute .. ":", 1, 1, 1)
+            GameTooltip:AddLine("  " .. attrName .. ":", 1, 1, 1)
         end
 
         for _, talentLine in ipairs(groupEntry.talents) do

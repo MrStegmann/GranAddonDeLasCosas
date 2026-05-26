@@ -15,7 +15,7 @@ function addon:GetTalentRollMenu()
 
         for _, talent in ipairs(group.talents or {}) do
             subMenu[#subMenu + 1] = {
-                text = talent,
+                text = addon:GetLocalizedText(talent),
                 notCheckable = true,
                 func = function()
                     addon:StartTalentRoll(group.name, talent)
@@ -24,7 +24,7 @@ function addon:GetTalentRollMenu()
         end
 
         menu[#menu + 1] = {
-            text = group.name,
+            text = addon:GetLocalizedText(group.name),
             notCheckable = true,
             hasArrow = true,
             menuList = subMenu,
@@ -45,7 +45,7 @@ function addon:GetAttributeRollMenu()
 
     for _, group in ipairs(self.attributeGroups or {}) do
         menu[#menu + 1] = {
-            text = group.name,
+            text = addon:GetLocalizedText(group.name),
             notCheckable = true,
             func = function()
                 addon:StartAttributeRoll(group.name)

@@ -159,7 +159,8 @@ local function formatValueMap(values)
     if not values or not next(values) then return nil end
     local parts = {}
     for k, v in pairs(values) do
-        table.insert(parts, k .. ": " .. tostring(v))
+        local localizedKey = addon:GetLocalizedText(k)
+        table.insert(parts, localizedKey .. ": " .. tostring(v))
     end
     table.sort(parts)
     return table.concat(parts, ", ")
@@ -219,12 +220,16 @@ function addon:RefreshMainArmourPanel()
         card:Show()
         card:SetPoint("TOPLEFT", 0, yOffset)
         card:SetWidth(scrollChild:GetWidth())
+
+        local pieceName = addon:GetLocalizedText(piece.pieceName)
+        local armourType = addon:GetLocalizedText(piece.armourType)
+        local reinforcement = addon:GetLocalizedText(piece.reinforcement)
         
-        card.title:SetText(piece.pieceName .. " (|cffffd100" .. piece.armourType .. "|r)")
+        card.title:SetText(pieceName .. " (|cffffd100" .. armourType .. "|r)")
         
         local lines = {}
         table.insert(lines, "|cff808080Item:|r " .. piece.itemName)
-        table.insert(lines, "|cff808080Refuerzo:|r " .. piece.reinforcement)
+        table.insert(lines, "|cff808080Refuerzo:|r " .. reinforcement)
         
         local attr = formatValueMap(piece.attributes)
         if attr then table.insert(lines, "|cff00ff00Atributos:|r " .. attr) end

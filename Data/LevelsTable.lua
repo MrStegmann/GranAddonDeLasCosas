@@ -1,21 +1,21 @@
 local _, addon = ...
 
 addon.levelCategories = {
-    "Novato",
-    "Normal",
-    "Élite",
-    "Jefe",
+    "novice",
+    "normal",
+    "elite",
+    "boss",
 }
 
 addon.levelsTable = {
-    ["Novato"] = {
+    ["novice"] = {
         [1] = { maxHealth = 10, expToLevel = 10 },
         [2] = { maxHealth = 11, expToLevel = 12 },
         [3] = { maxHealth = 13, expToLevel = 14 },
         [4] = { maxHealth = 16, expToLevel = 16 },
         [5] = { maxHealth = 20, expToLevel = 20 },
     },
-    ["Normal"] = {
+    ["normal"] = {
         [1] = { maxHealth = 20, expToLevel = 30 },
         [2] = { maxHealth = 27, expToLevel = 45 },
         [3] = { maxHealth = 34, expToLevel = 68 },
@@ -27,7 +27,7 @@ addon.levelsTable = {
         [9] = { maxHealth = 83, expToLevel = 777 },
         [10] = { maxHealth = 92, expToLevel = 1166 },
     },
-    ["Élite"] = {
+    ["elite"] = {
         [1] = { maxHealth = 40, expToLevel = 1749 },
         [2] = { maxHealth = 54, expToLevel = 2624 },
         [3] = { maxHealth = 68, expToLevel = 3936 },
@@ -39,7 +39,7 @@ addon.levelsTable = {
         [9] = { maxHealth = 166, expToLevel = 9511 },
         [10] = { maxHealth = 184, expToLevel = 10462 },
     },
-    ["Jefe"] = {
+    ["boss"] = {
         [1] = { maxHealth = 80, expToLevel = 11508 },
         [2] = { maxHealth = 108, expToLevel = 12659 },
         [3] = { maxHealth = 136, expToLevel = 13925 },
@@ -178,7 +178,7 @@ function addon:NormalizeExperienceProgressData()
     local category = progress.category
 
     if not self.levelsTable[category] then
-        category = "Normal"
+        category = "normal"
     end
 
     local maxLevel = self:GetMaxLevelForCategory(category)
@@ -199,7 +199,7 @@ function addon:GetExperienceProgressSnapshot()
     self:NormalizeExperienceProgressData()
 
     local progress = self.characterData and self.characterData.progress or {}
-    local category = progress.category or "Normal"
+    local category = progress.category or "normal"
     local level = progress.level or 1
     local currentExperience = progress.currentExperience or 0
     local requiredExperience = self:GetRequiredExperience(category, level)
@@ -240,9 +240,9 @@ function addon:SetExperienceLevel(level)
 
     self.characterData.progress = self.characterData.progress or {}
 
-    local category = self.characterData.progress.category or "Normal"
+    local category = self.characterData.progress.category or "normal"
     if not self.levelsTable[category] then
-        category = "Normal"
+        category = "normal"
     end
 
     local maxLevel = self:GetMaxLevelForCategory(category)

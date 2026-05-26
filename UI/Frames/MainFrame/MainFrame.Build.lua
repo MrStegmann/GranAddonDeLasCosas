@@ -512,7 +512,7 @@ function addon:BuildAttributesUI()
 
         local header = card:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         header:SetPoint("TOPLEFT", 8, -8)
-        header:SetText(group.name)
+        header:SetText(addon:GetLocalizedText(group.name))
 
         local attrInput = mainFrame.createNumericInput(card, 44, 20)
         attrInput:SetPoint("TOPRIGHT", -8, -6)
@@ -530,7 +530,7 @@ function addon:BuildAttributesUI()
             talentLabel:SetPoint("TOPLEFT", 8, cursorYInCard)
             talentLabel:SetWidth(cardWidth - 62)
             talentLabel:SetJustifyH("LEFT")
-            talentLabel:SetText(talent)
+            talentLabel:SetText(addon:GetLocalizedText(talent))
 
             local talentInput = mainFrame.createNumericInput(card, 44, 18)
             talentInput:SetPoint("TOPRIGHT", -8, cursorYInCard + 2)

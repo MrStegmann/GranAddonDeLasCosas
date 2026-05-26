@@ -1,28 +1,28 @@
 local _, addon = ...
 
 local ARMOUR_TYPE_ALIASES = {
-    ["tela"] = "Tela",
-    ["telas"] = "Tela",
-    ["cuero"] = "Cuero",
-    ["cueros"] = "Cuero",
-    ["malla"] = "Malla",
-    ["mallas"] = "Malla",
-    ["placa"] = "Placa",
-    ["placas"] = "Placa",
+    ["tela"] = "cloth",
+    ["telas"] = "cloth",
+    ["cuero"] = "leather",
+    ["cueros"] = "leather",
+    ["malla"] = "mail",
+    ["mallas"] = "mail",
+    ["placa"] = "plate",
+    ["placas"] = "plate",
 }
 
 local ARMOUR_PIECE_ALIASES = {
-    ["cabeza"] = "Cabeza",
-    ["pecho"] = "Pecho",
-    ["guantes"] = "Guantes",
-    ["piernas"] = "Piernas",
+    ["cabeza"] = "head",
+    ["pecho"] = "chest",
+    ["guantes"] = "hands",
+    ["piernas"] = "legs",
 }
 
 local ARMOUR_PIECE_TYPE_FALLBACK_KEYS = {
-    Tela = { "Telas" },
-    Cuero = { "Cueros" },
-    Malla = { "Mallas" },
-    Placa = { "Placas" },
+    cloth = { "cloth" },
+    leather = { "leather" },
+    mail = { "mail" },
+    plate = { "plate" },
 }
 
 local function trim(text)
@@ -69,6 +69,12 @@ local function resolveDataKey(data, value, aliases)
     local clean = trim(value)
     if type(data) ~= "table" or not clean then
         return nil
+    end
+
+    -- Primero intentamos usar el mapeo interno (localizado a interno)
+    local internalKey = addon:GetInternalKey(clean)
+    if internalKey and data[internalKey] ~= nil then
+        return internalKey
     end
 
     local candidates = {}
@@ -141,9 +147,9 @@ function addon:GetArmourInfoFromTooltips(tooltipLeft, tooltipRight)
         return info
     end
 
-    local armours = data["Armaduras"]
-    local pieces = data["Piezas"]
-    local reinforcements = data["Refuerzos"]
+    local armours = data.armors
+    local pieces = data.pieces
+    local reinforcements = data.reinforcements
 
     info.armourKey = resolveDataKey(armours, armourType, ARMOUR_TYPE_ALIASES)
     info.armourData = info.armourKey and armours[info.armourKey] or nil
@@ -160,15 +166,15 @@ function addon:GetArmourInfoFromTooltips(tooltipLeft, tooltipRight)
 end
 
 local SUMMED_ARMOUR_ATTRIBUTE_EXCLUSIONS = {
-    ["Requisitos"] = true,
-    ["Penalizaciones"] = true,
+    ["requirements"] = true,
+    ["penalties"] = true,
 }
 
 local function addNamedValue(total, name, value)
     local numericValue = tonumber(value)
-    local cleanName = trim(name) or name
-    if type(total) == "table" and type(cleanName) == "string" and numericValue then
-        total[cleanName] = (total[cleanName] or 0) + numericValue
+    local internalKey = addon:GetInternalKey(name)
+    if type(total) == "table" and type(internalKey) == "string" and numericValue then
+        total[internalKey] = (total[internalKey] or 0) + numericValue
     end
 end
 
@@ -227,8 +233,8 @@ local function addArmourRequirementsAndPenalties(totals, data)
         return
     end
 
-    addNamedValuesFromEntries(totals.requirements, data["Requisitos"])
-    addNamedValuesFromEntries(totals.penalties, data["Penalizaciones"])
+    addNamedValuesFromEntries(totals.requirements, data.requirements)
+    addNamedValuesFromEntries(totals.penalties, data.penalties)
 end
 
 local function addArmourAttributes(totals, data)
@@ -237,7 +243,8 @@ local function addArmourAttributes(totals, data)
     end
 
     for name, value in pairs(data) do
-        if not SUMMED_ARMOUR_ATTRIBUTE_EXCLUSIONS[name] and type(value) ~= "table" then
+        local internalKey = addon:GetInternalKey(name)
+        if not SUMMED_ARMOUR_ATTRIBUTE_EXCLUSIONS[internalKey] and type(value) ~= "table" then
             if tonumber(value) then
                 addNamedValue(totals.attributes, name, value)
             else
@@ -327,9 +334,9 @@ function addon:GetTRP3ExtendedEquippedArmourSummary()
             local pieceEntry = {
                 slotID = item.slotID,
                 itemName = item.itemName or "Desconocido",
-                pieceName = armourInfo.pieceKey or armourInfo.pieceName or "Desconocida",
-                armourType = armourInfo.armourKey or armourInfo.armourType or "Desconocida",
-                reinforcement = armourInfo.reinforcementKey or armourInfo.reinforcementType or "Ninguno",
+                pieceName = armourInfo.pieceKey or armourInfo.pieceName or "unknown",
+                armourType = armourInfo.armourKey or armourInfo.armourType or "unknown",
+                reinforcement = armourInfo.reinforcementKey or armourInfo.reinforcementType or "none",
                 attributes = pieceTotals.attributes,
                 properties = pieceTotals.properties,
                 requirements = pieceTotals.requirements,

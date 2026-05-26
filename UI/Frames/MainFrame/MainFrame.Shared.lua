@@ -68,7 +68,7 @@ function mainFrame.updateInspectInfoPanel(frame, data)
     end
 
     local category, level, expText = normalizeInspectProgressData(data)
-    frame.InspectInfoCategoryValue:SetText(category)
+    frame.InspectInfoCategoryValue:SetText(addon:GetLocalizedText(category))
     frame.InspectInfoLevelValue:SetText(level)
     frame.InspectInfoExperienceValue:SetText(expText)
 
@@ -101,7 +101,7 @@ local function buildCategoryDropdown(frame)
 
         for _, categoryName in ipairs(addon.levelCategories or {}) do
             local info = UIDropDownMenu_CreateInfo()
-            info.text = categoryName
+            info.text = addon:GetLocalizedText(categoryName)
             info.value = categoryName
             info.func = function()
                 addon:SetExperienceCategory(categoryName)
@@ -307,7 +307,7 @@ function addon:RefreshMainExperiencePanel()
     local requiredExperienceText = snapshot.requiredExperience and tostring(snapshot.requiredExperience) or "MAX"
 
     frame.MainExperienceLevelValue:SetText(tostring(snapshot.level))
-    frame.MainExperienceCategoryValue:SetText(snapshot.category)
+    frame.MainExperienceCategoryValue:SetText(self:GetLocalizedText(snapshot.category))
     frame.MainExperienceCurrentInput:SetText(tostring(snapshot.currentExperience))
     frame.MainExperienceRequiredValue:SetText(requiredExperienceText)
 
@@ -322,7 +322,7 @@ function addon:RefreshMainExperiencePanel()
     buildCategoryDropdown(frame)
     buildLevelDropdown(frame, snapshot.category)
 
-    UIDropDownMenu_SetText(frame.MainExperienceCategoryDropdown, snapshot.category)
+    UIDropDownMenu_SetText(frame.MainExperienceCategoryDropdown, self:GetLocalizedText(snapshot.category))
     UIDropDownMenu_SetText(frame.MainExperienceLevelDropdown, tostring(snapshot.level))
 end
 

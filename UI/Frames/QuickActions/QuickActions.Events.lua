@@ -42,14 +42,17 @@ function addon:CHAT_MSG_SYSTEM(message)
         if self.pendingTalentRoll.hasModifier then
             total = total + self.pendingTalentRoll.modifierValue
         end
+        local localizedAttr = addon:GetLocalizedText(self.pendingTalentRoll.attributeName)
+        local localizedTal = addon:GetLocalizedText(self.pendingTalentRoll.talentName)
         local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
             or (self.GetRollDisplayName and self:GetRollDisplayName())
             or addonName
+
         local formattedRoll = qa.formatRollValue(rollValue)
         local finalMessage = displayName .. " tira "
             .. " 1D20 (" .. formattedRoll .. ") + "
-            .. self.pendingTalentRoll.attributeName .. " (" .. self.pendingTalentRoll.attributeValue .. ") + "
-            .. self.pendingTalentRoll.talentName .. " (" .. self.pendingTalentRoll.talentValue .. ")"
+        .. localizedAttr .. " (" .. self.pendingTalentRoll.attributeValue .. ") + "
+        .. localizedTal .. " (" .. self.pendingTalentRoll.talentValue .. ")"
             .. qa.buildModifierSegment(self.pendingTalentRoll.hasModifier, self.pendingTalentRoll.modifierValue)
             .. (armorPenalty > 0 and (" - Armadura (" .. armorPenalty .. ")") or "")
             .. " = " .. total
@@ -67,14 +70,15 @@ function addon:CHAT_MSG_SYSTEM(message)
         if self.pendingAttributeRoll.hasModifier then
             total = total + self.pendingAttributeRoll.modifierValue
         end
+        local localizedAttr = addon:GetLocalizedText(self.pendingAttributeRoll.attributeName)
         local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
             or (self.GetRollDisplayName and self:GetRollDisplayName())
             or addonName
         local formattedRoll = qa.formatRollValue(rollValue)
         local finalMessage = displayName .. " tira "
-            .. self.pendingAttributeRoll.attributeName
+            .. localizedAttr
             .. " 1D20 (" .. formattedRoll .. ") + "
-            .. self.pendingAttributeRoll.attributeName .. " (" .. self.pendingAttributeRoll.attributeValue .. ")"
+            .. localizedAttr .. " (" .. self.pendingAttributeRoll.attributeValue .. ")"
             .. qa.buildModifierSegment(self.pendingAttributeRoll.hasModifier, self.pendingAttributeRoll.modifierValue)
             .. (armorPenalty > 0 and (" - Armadura (" .. armorPenalty .. ")") or "")
             .. " = " .. total
@@ -95,10 +99,11 @@ function addon:CHAT_MSG_SYSTEM(message)
         local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
             or (self.GetRollDisplayName and self:GetRollDisplayName())
             or addonName
+        local talentLabel = addon:GetLocalizedText(self.pendingAttackRoll.talentKey or self.pendingAttackRoll.talentLabel)
         local formattedRoll = qa.formatRollValue(rollValue)
         local finalMessage = displayName .. " tira 1D" .. self.pendingAttackRoll.diceSides
             .. " (" .. formattedRoll .. ") + "
-            .. self.pendingAttackRoll.talentLabel .. " (" .. self.pendingAttackRoll.talentValue .. ")"
+            .. talentLabel .. " (" .. self.pendingAttackRoll.talentValue .. ")"
             .. qa.buildModifierSegment(self.pendingAttackRoll.hasModifier, self.pendingAttackRoll.modifierValue)
             .. (armorPenalty > 0 and (" - Armadura (" .. armorPenalty .. ")") or "")
             .. " = " .. total

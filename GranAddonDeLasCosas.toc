@@ -7,6 +7,7 @@
 ## SavedVariablesPerCharacter: GranAddonDeLasCosasCharDB
 
 Core/Init.lua
+Locales/es_ES.lua
 Data/AttributesAndTalents.lua
 Data/LevelsTable.lua
 Data/Armour.lua
