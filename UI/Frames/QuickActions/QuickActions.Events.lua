@@ -116,7 +116,7 @@ function addon:CHAT_MSG_SYSTEM(message)
 
         self.pendingAttackRoll = nil
     elseif self.pendingInitiativeRoll and (lowValue == self.pendingInitiativeRoll.min and highValue == self.pendingInitiativeRoll.max) then
-        local armorPenalty = getPenalty("Iniciativa")
+        local armorPenalty = getPenalty("initiative")
         local plainDisplayName = self.GetRollDisplayName and self:GetRollDisplayName() or addonName
         local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
             or plainDisplayName

@@ -55,7 +55,7 @@ function addon:GetConfiguredPlayerMaxHealth()
 	end
 
 	local attributes = self.characterData and self.characterData.attributes or nil
-	local constitution = attributes and tonumber(attributes["Constitución"]) or 0
+	local constitution = attributes and tonumber(attributes.constitution) or 0
 	local constitutionValue = math.max(0, math.floor(constitution or 0))
 	local maxModifier = self.GetPlayerHealthMaxModifier and self:GetPlayerHealthMaxModifier() or 0
 
@@ -208,7 +208,7 @@ function addon:GetConfiguredTargetMaxHealth()
 		level = tonumber(snapshot.level)
 
 		local attributes = self.characterData and self.characterData.attributes or nil
-		local constitution = attributes and tonumber(attributes["Constitución"]) or 0
+		local constitution = attributes and tonumber(attributes.constitution) or 0
 		constitutionValue = math.max(0, math.floor(constitution or 0))
 	else
 		local shortName = self.GetUnitShortName and self:GetUnitShortName("target")
@@ -229,7 +229,7 @@ function addon:GetConfiguredTargetMaxHealth()
 
 		category = progress.category
 		level = tonumber(progress.level)
-		local constitution = type(attributes) == "table" and tonumber(attributes["Constitución"]) or 0
+		local constitution = type(attributes) == "table" and tonumber(attributes.constitution) or 0
 		constitutionValue = math.max(0, math.floor(constitution or 0))
 	end
 
@@ -245,4 +245,3 @@ function addon:GetConfiguredTargetMaxHealth()
 
 	return math.max(1, math.floor(baseHealth) + constitutionValue)
 end
-

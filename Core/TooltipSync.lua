@@ -97,7 +97,7 @@ function addon:BuildTooltipSyncPayload()
     -- Prioritize progression data so it is included even if payload gets truncated.
     local snapshot = self.GetExperienceProgressSnapshot and self:GetExperienceProgressSnapshot() or nil
     if snapshot then
-        if not appendEntry("P:C", snapshot.category or "Normal") then
+        if not appendEntry("P:C", snapshot.category or "normal") then
             return message
         end
         if not appendEntry("P:L", tonumber(snapshot.level) or 1) then

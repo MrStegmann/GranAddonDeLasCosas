@@ -97,7 +97,7 @@ function addon:InitializeAttributeSystem()
         sequence = 0,
     }
     GranAddonDeLasCosasCharDB.progress = GranAddonDeLasCosasCharDB.progress or {
-        category = "Normal",
+        category = "normal",
         level = 1,
         currentExperience = 0,
     }

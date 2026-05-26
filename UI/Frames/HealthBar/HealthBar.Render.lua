@@ -7,12 +7,12 @@ local function applyCategoryToOverlays(overlays, category)
 	end
 
 	if overlays.rare then
-		overlays.rare:SetShown(category == "Normal")
+		overlays.rare:SetShown(category == "normal")
 	end
 
 	if overlays.rareElite then
-		overlays.rareElite:SetShown(category == "Élite" or category == "Jefe")
-		if category == "Jefe" then
+		overlays.rareElite:SetShown(category == "elite" or category == "boss")
+		if category == "boss" then
 			overlays.rareElite:SetVertexColor(1.0, 0.82, 0.15, 1.0)
 		else
 			overlays.rareElite:SetVertexColor(1.0, 1.0, 1.0, 1.0)

@@ -284,7 +284,7 @@ function addon:AddExperience(experienceAmount)
     self:NormalizeExperienceProgressData()
 
     local progress = self.characterData.progress
-    local category = progress.category or "Normal"
+    local category = progress.category or "normal"
     local level = tonumber(progress.level) or 1
     local currentExperience = tonumber(progress.currentExperience) or 0
     local maxLevel = self:GetMaxLevelForCategory(category)
