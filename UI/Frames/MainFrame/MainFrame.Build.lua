@@ -224,6 +224,50 @@ function addon:BuildAttributesUI()
     requiredExperienceValueMain:SetPoint("LEFT", requiredExperienceLabelMain, "RIGHT", 10, 0)
     requiredExperienceValueMain:SetText("-")
 
+    local mainHPLabel = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    mainHPLabel:SetPoint("TOPLEFT", requiredExperienceLabelMain, "BOTTOMLEFT", 0, -12)
+    mainHPLabel:SetText("Vida:")
+
+    local mainHPValue = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    mainHPValue:SetPoint("LEFT", mainHPLabel, "RIGHT", 4, 0)
+    mainHPValue:SetText("-")
+
+    local mainAttLimitLabel = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    mainAttLimitLabel:SetPoint("LEFT", mainHPValue, "RIGHT", 10, 0)
+    mainAttLimitLabel:SetText("Atr:")
+
+    local mainAttLimitValue = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    mainAttLimitValue:SetPoint("LEFT", mainAttLimitLabel, "RIGHT", 4, 0)
+    mainAttLimitValue:SetText("-")
+
+    local mainSkillLimitLabel = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    mainSkillLimitLabel:SetPoint("LEFT", mainAttLimitValue, "RIGHT", 10, 0)
+    mainSkillLimitLabel:SetText("Hab:")
+
+    local mainSkillLimitValue = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    mainSkillLimitValue:SetPoint("LEFT", mainSkillLimitLabel, "RIGHT", 4, 0)
+    mainSkillLimitValue:SetText("-")
+
+    local mainHeroicLimitLabel = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    mainHeroicLimitLabel:SetPoint("LEFT", mainSkillLimitValue, "RIGHT", 10, 0)
+    mainHeroicLimitLabel:SetText("Hero:")
+
+    local mainHeroicLimitValue = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    mainHeroicLimitValue:SetPoint("LEFT", mainHeroicLimitLabel, "RIGHT", 4, 0)
+    mainHeroicLimitValue:SetText("-")
+
+    local mainTraitsLimitLabel = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    mainTraitsLimitLabel:SetPoint("LEFT", mainHeroicLimitValue, "RIGHT", 10, 0)
+    mainTraitsLimitLabel:SetText("Rasg:")
+
+    local mainTraitsLimitValue = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    mainTraitsLimitValue:SetPoint("LEFT", mainTraitsLimitLabel, "RIGHT", 4, 0)
+    mainTraitsLimitValue:SetText("-")
+
+    local mainStatsWarningText = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    mainStatsWarningText:SetPoint("TOPLEFT", mainHPLabel, "BOTTOMLEFT", 0, -6)
+    mainStatsWarningText:SetText("Estos valores máximos.")
+
     local applyButtonMain = CreateFrame("Button", nil, mainExperiencePanel, "UIPanelButtonTemplate")
     applyButtonMain:SetSize(120, 24)
     applyButtonMain:SetPoint("BOTTOM", mainExperiencePanel, "BOTTOM", 0, 14)
@@ -242,7 +286,7 @@ function addon:BuildAttributesUI()
     helpTextMain:SetText("Usa Enter o el boton Aplicar para confirmar EXP. Comando: /gacExp")
 
     local prestigeMessageTextMain = mainExperiencePanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    prestigeMessageTextMain:SetPoint("TOPLEFT", requiredExperienceLabelMain, "BOTTOMLEFT", 0, -20)
+    prestigeMessageTextMain:SetPoint("TOPLEFT", mainStatsWarningText, "BOTTOMLEFT", 0, -12)
     prestigeMessageTextMain:SetPoint("RIGHT", mainExperiencePanel, "RIGHT", -20, 0)
     prestigeMessageTextMain:SetJustifyH("LEFT")
     prestigeMessageTextMain:SetText("Prestigio disponible. Reiniciaras tus atributos y talentos y volveras al nivel 1 de la siguiente categoria.")
@@ -434,6 +478,11 @@ function addon:BuildAttributesUI()
     frame.MainExperienceCategoryValue = categoryValueMain
     frame.MainExperienceCurrentInput = currentExperienceInputMain
     frame.MainExperienceRequiredValue = requiredExperienceValueMain
+    frame.MainExperienceHPValue = mainHPValue
+    frame.MainExperienceAttLimitValue = mainAttLimitValue
+    frame.MainExperienceSkillLimitValue = mainSkillLimitValue
+    frame.MainExperienceHeroicLimitValue = mainHeroicLimitValue
+    frame.MainExperienceTraitsLimitValue = mainTraitsLimitValue
     frame.MainExperiencePrestigeMessage = prestigeMessageTextMain
     frame.MainExperiencePrestigeButton = prestigeButtonMain
     frame.MainHealthBarPanel = mainHealthBarPanel

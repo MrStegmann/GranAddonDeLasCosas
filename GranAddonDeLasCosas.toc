@@ -9,9 +9,9 @@
 Core/Init.lua
 Data/AttributesAndTalents.lua
 Data/LevelsTable.lua
+Core/TRP3Bridge.lua
 Core/Events.lua
 Core/Commands.lua
-Core/TRP3Bridge.lua
 Core/RollCommunication.lua
 Core/TooltipSync.lua
 UI/Frames/MainFrame/MainFrame.xml

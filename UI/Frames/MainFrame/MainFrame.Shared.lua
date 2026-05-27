@@ -298,6 +298,17 @@ function addon:RefreshMainExperiencePanel()
     frame.MainExperienceCurrentInput:SetText(tostring(snapshot.currentExperience))
     frame.MainExperienceRequiredValue:SetText(requiredExperienceText)
 
+    local entry = self.GetLevelEntry and self:GetLevelEntry(snapshot.category, snapshot.level)
+    if entry then
+        frame.MainExperienceHPValue:SetText(tostring(entry.maxHealth or "-"))
+        frame.MainExperienceAttLimitValue:SetText(tostring(entry.attPoints or "-"))
+        frame.MainExperienceSkillLimitValue:SetText(tostring(entry.skillPoints or "-"))
+        frame.MainExperienceHeroicLimitValue:SetText(tostring(entry.heroicPoints or "-"))
+        frame.MainExperienceTraitsLimitValue:SetText(tostring(entry.maxPositiveTraits or "-"))
+    else
+        frame.MainExperienceHPValue:SetText("-")
+    end
+
     local isPrestigeAvailable = self.IsPrestigeAvailable and self:IsPrestigeAvailable() or false
     if frame.MainExperiencePrestigeMessage then
         frame.MainExperiencePrestigeMessage:SetShown(isPrestigeAvailable)

@@ -36,216 +36,216 @@ Normal:
   # Una vez el personaje alcanza el nivel 10, podrá decidir si quiere pasar a la categoría Élite, aunque este paso conlleva un reinicio de vida y atributos, sin embargo, las subidas de nivel otorgan más puntos de vida y atributos con cada nivel. Los hechizos y habilidades no se pierden ni los objetos (a no ser que el jugador lo quiera así)
   Nivel 1:
     - Vida: 20
-    - Puntos de atributo: 5
-    - Ranuras de habilidad/hechizos: 5
-    - Ranuras de Heroicas: 2
-    - Rasgos positivos máximos: 2
+    - Puntos de atributo: 5 # attPoints
+    - Ranuras de habilidad/hechizos: 5 # skillPoints
+    - Ranuras de Heroicas: 2 # heroicPoints
+    - Rasgos positivos máximos: 2 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 30
   Nivel 2:
     - Vida: 27
-    - Puntos de atributo: 5
-    - Ranuras de habilidad/hechizos: 6
-    - Ranuras de Heroicas: 2
-    - Rasgos positivos máximos: 2
+    - Puntos de atributo: 5 # attPoints
+    - Ranuras de habilidad/hechizos: 6 # skillPoints
+    - Ranuras de Heroicas: 2 # heroicPoints
+    - Rasgos positivos máximos: 2 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 45
   Nivel 3:
     - Vida: 34
-    - Puntos de atributo: 6
-    - Ranuras de habilidad/hechizos: 6
-    - Ranuras de Heroicas: 2
-    - Rasgos positivos máximos: 2
+    - Puntos de atributo: 6 # attPoints
+    - Ranuras de habilidad/hechizos: 6 # skillPoints
+    - Ranuras de Heroicas: 2 # heroicPoints
+    - Rasgos positivos máximos: 2 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 68
   Nivel 4:
     - Vida: 41
-    - Puntos de atributo: 7
-    - Ranuras de habilidad/hechizos: 7
-    - Ranuras de Heroicas: 2
-    - Rasgos positivos máximos: 2
+    - Puntos de atributo: 7 # attPoints
+    - Ranuras de habilidad/hechizos: 7 # skillPoints
+    - Ranuras de Heroicas: 2 # heroicPoints
+    - Rasgos positivos máximos: 2 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 102
   Nivel 5:
     - Vida: 49
-    - Puntos de atributo: 7
-    - Ranuras de habilidad/hechizos: 7
-    - Ranuras de Heroicas: 3
-    - Rasgos positivos máximos: 2
+    - Puntos de atributo: 7 # attPoints
+    - Ranuras de habilidad/hechizos: 7 # skillPoints
+    - Ranuras de Heroicas: 3 # heroicPoints
+    - Rasgos positivos máximos: 2 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 153
   Nivel 6:
     - Vida: 57
-    - Puntos de atributo: 8
-    - Ranuras de habilidad/hechizos: 8
-    - Ranuras de Heroicas: 3
-    - Rasgos positivos máximos: 2
+    - Puntos de atributo: 8 # attPoints
+    - Ranuras de habilidad/hechizos: 8 # skillPoints
+    - Ranuras de Heroicas: 3 # heroicPoints
+    - Rasgos positivos máximos: 2 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 230
   Nivel 7:
     - Vida: 65
-    - Puntos de atributo: 9
-    - Ranuras de habilidad/hechizos: 8
-    - Ranuras de Heroicas: 3
-    - Rasgos positivos máximos: 2
+    - Puntos de atributo: 9 # attPoints
+    - Ranuras de habilidad/hechizos: 8 # skillPoints
+    - Ranuras de Heroicas: 3 # heroicPoints
+    - Rasgos positivos máximos: 2 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 345
   Nivel 8:
     - Vida: 74
     - Puntos de atributo: 9
-    - Ranuras de habilidad/hechizos: 9
-    - Ranuras de Heroicas: 3
-    - Rasgos positivos máximos: 2
+    - Ranuras de habilidad/hechizos: 9 # skillPoints
+    - Ranuras de Heroicas: 3 # heroicPoints
+    - Rasgos positivos máximos: 2 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 518
   Nivel 9:
     - Vida: 83
-    - Puntos de atributo: 10
-    - Ranuras de habilidad/hechizos: 9
-    - Ranuras de Heroicas: 3
-    - Rasgos positivos máximos: 2
+    - Puntos de atributo: 10 # attPoints
+    - Ranuras de habilidad/hechizos: 9 # skillPoints
+    - Ranuras de Heroicas: 3 # heroicPoints
+    - Rasgos positivos máximos: 2 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 777
   Nivel 10:
     - Vida: 92
-    - Puntos de atributo: 10
-    - Ranuras de habilidad/hechizos: 10
-    - Ranuras de Heroicas: 4
-    - Rasgos positivos máximos: 3
+    - Puntos de atributo: 10 # attPoints
+    - Ranuras de habilidad/hechizos: 10 # skillPoints
+    - Ranuras de Heroicas: 4 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 1166
 Élite:
   # Esta categoría está planteada para aquellos personajes que ya tengan una trayectoria en su vida y no son simples aventureros que empiezan sus andanzas.
   Nivel 1:
     - Vida: 40
-    - Puntos de atributo: 10
-    - Ranuras de habilidad/hechizos: 10
-    - Ranuras de Heroicas: 4
-    - Rasgos positivos máximos: 3
+    - Puntos de atributo: 10 # attPoints
+    - Ranuras de habilidad/hechizos: 10 # skillPoints
+    - Ranuras de Heroicas: 4 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 1749
   Nivel 2:
     - Vida: 54
-    - Puntos de atributo: 11
-    - Ranuras de habilidad/hechizos: 11
-    - Ranuras de Heroicas: 4
-    - Rasgos positivos máximos: 3
+    - Puntos de atributo: 11 # attPoints
+    - Ranuras de habilidad/hechizos: 11 # skillPoints
+    - Ranuras de Heroicas: 4 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 2624
   Nivel 3:
     - Vida: 68
-    - Puntos de atributo: 12
-    - Ranuras de habilidad/hechizos: 11
-    - Ranuras de Heroicas: 4
-    - Rasgos positivos máximos: 3
+    - Puntos de atributo: 12 # attPoints
+    - Ranuras de habilidad/hechizos: 11 # skillPoints
+    - Ranuras de Heroicas: 4 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 3936
   Nivel 4:
     - Vida: 82
-    - Puntos de atributo: 13
-    - Ranuras de habilidad/hechizos: 12
-    - Ranuras de Heroicas: 4
-    - Rasgos positivos máximos: 3
+    - Puntos de atributo: 13 # attPoints
+    - Ranuras de habilidad/hechizos: 12 # skillPoints
+    - Ranuras de Heroicas: 4 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 5904
   Nivel 5:
     - Vida: 98
-    - Puntos de atributo: 13
-    - Ranuras de habilidad/hechizos: 12
-    - Ranuras de Heroicas: 5
-    - Rasgos positivos máximos: 3
+    - Puntos de atributo: 13 # attPoints
+    - Ranuras de habilidad/hechizos: 12 # skillPoints
+    - Ranuras de Heroicas: 5 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 6495
   Nivel 6:
     - Vida: 114
-    - Puntos de atributo: 14
-    - Ranuras de habilidad/hechizos: 13
-    - Ranuras de Heroicas: 5
-    - Rasgos positivos máximos: 3
+    - Puntos de atributo: 14 # attPoints
+    - Ranuras de habilidad/hechizos: 13 # skillPoints
+    - Ranuras de Heroicas: 5 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 7145
   Nivel 7:
     - Vida: 130
     - Puntos de atributo: 14
-    - Ranuras de habilidad/hechizos: 13
-    - Ranuras de Heroicas: 5
-    - Rasgos positivos máximos: 3
+    - Ranuras de habilidad/hechizos: 13 # skillPoints
+    - Ranuras de Heroicas: 5 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 7858
   Nivel 8:
     - Vida: 148
-    - Puntos de atributo: 14
-    - Ranuras de habilidad/hechizos: 14
-    - Ranuras de Heroicas: 5
-    - Rasgos positivos máximos: 3
+    - Puntos de atributo: 14 # attPoints
+    - Ranuras de habilidad/hechizos: 14 # skillPoints
+    - Ranuras de Heroicas: 5 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 8646
   Nivel 9:
     - Vida: 166
-    - Puntos de atributo: 15
-    - Ranuras de habilidad/hechizos: 14
-    - Ranuras de Heroicas: 5
-    - Rasgos positivos máximos: 3
+    - Puntos de atributo: 15 # attPoints
+    - Ranuras de habilidad/hechizos: 14 # skillPoints
+    - Ranuras de Heroicas: 5 # heroicPoints
+    - Rasgos positivos máximos: 3 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 9511
   Nivel 10:
     - Vida: 184
-    - Puntos de atributo: 15
-    - Ranuras de habilidad/hechizos: 15
-    - Ranuras de Heroicas: 6
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 15 # attPoints
+    - Ranuras de habilidad/hechizos: 15 # skillPoints
+    - Ranuras de Heroicas: 6 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 10462
 
 Jefe:
   # La categoría de Jefe está reservada para personajes que, por su nivel de poder, no tiene sentido que tengan menor nivel.
   Nivel 1:
     - Vida: 80
-    - Puntos de atributo: 15
-    - Ranuras de habilidad/hechizos: 15
-    - Ranuras de Heroicas: 6
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 15 # attPoints
+    - Ranuras de habilidad/hechizos: 15 # skillPoints
+    - Ranuras de Heroicas: 6 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 11508
   Nivel 2:
     - Vida: 108
-    - Puntos de atributo: 16
-    - Ranuras de habilidad/hechizos: 16
-    - Ranuras de Heroicas: 6
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 16 # attPoints
+    - Ranuras de habilidad/hechizos: 16 # skillPoints
+    - Ranuras de Heroicas: 6 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 12659
   Nivel 3:
     - Vida: 136
-    - Puntos de atributo: 17
-    - Ranuras de habilidad/hechizos: 16
-    - Ranuras de Heroicas: 6
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 17 # attPoints
+    - Ranuras de habilidad/hechizos: 16 # skillPoints
+    - Ranuras de Heroicas: 6 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 13925
   Nivel 4:
     - Vida: 164
-    - Puntos de atributo: 18
-    - Ranuras de habilidad/hechizos: 17
-    - Ranuras de Heroicas: 6
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 18 # attPoints
+    - Ranuras de habilidad/hechizos: 17 # skillPoints
+    - Ranuras de Heroicas: 6 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 15318
   Nivel 5:
     - Vida: 196
-    - Puntos de atributo: 18
-    - Ranuras de habilidad/hechizos: 17
-    - Ranuras de Heroicas: 7
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 18 # attPoints
+    - Ranuras de habilidad/hechizos: 17 # skillPoints
+    - Ranuras de Heroicas: 7 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 16850
   Nivel 6:
     - Vida: 228
-    - Puntos de atributo: 19
-    - Ranuras de habilidad/hechizos: 18
-    - Ranuras de Heroicas: 7
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 19 # attPoints
+    - Ranuras de habilidad/hechizos: 18 # skillPoints
+    - Ranuras de Heroicas: 7 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 18535
   Nivel 7:
     - Vida: 260
-    - Puntos de atributo: 19
-    - Ranuras de habilidad/hechizos: 18
-    - Ranuras de Heroicas: 7
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 19 # attPoints
+    - Ranuras de habilidad/hechizos: 18 # skillPoints
+    - Ranuras de Heroicas: 7 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 20389
   Nivel 8:
     - Vida: 296
-    - Puntos de atributo: 19
-    - Ranuras de habilidad/hechizos: 19
-    - Ranuras de Heroicas: 7
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 19 # attPoints
+    - Ranuras de habilidad/hechizos: 19 # skillPoints
+    - Ranuras de Heroicas: 7 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 22428
   Nivel 9:
     - Vida: 332
-    - Puntos de atributo: 20
-    - Ranuras de habilidad/hechizos: 19
-    - Ranuras de Heroicas: 7
-    - Rasgos positivos máximos: 4
+    - Puntos de atributo: 20 # attPoints
+    - Ranuras de habilidad/hechizos: 19 # skillPoints
+    - Ranuras de Heroicas: 7 # heroicPoints
+    - Rasgos positivos máximos: 4 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: 24671
   Nivel 10:
     - Vida: 368
-    - Puntos de atributo: 20
-    - Ranuras de habilidad/hechizos: 20
-    - Ranuras de Heroicas: 8
-    - Rasgos positivos máximos: 5
+    - Puntos de atributo: 20 # attPoints
+    - Ranuras de habilidad/hechizos: 20 # skillPoints
+    - Ranuras de Heroicas: 8 # heroicPoints
+    - Rasgos positivos máximos: 5 # maxPositiveTraits
     - Experiencia necesaria para subir de nivel: null # El nivel 10 es el máximo, por lo que no se necesita experiencia para subir de nivel.
