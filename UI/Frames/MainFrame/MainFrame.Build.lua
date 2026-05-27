@@ -499,9 +499,9 @@ function addon:BuildAttributesUI()
     frame.HealthBarRemoveShieldButton = removeShieldButton
 
     local content = frame.AttributesPanel.ScrollFrame.ScrollChild
-    local columns = 3
-    local cardWidth = 142
-    local cardSpacingX = 8
+    local columns = 1
+    local cardWidth = 400
+    local cardSpacingX = 0
     local cardSpacingY = 14
     local startX = 8
     local currentY = -12
@@ -596,7 +596,7 @@ function addon:BuildAttributesUI()
     frame.SaveButton:SetScript("OnClick", function()
         addon:SaveAttributesUIValues()
     end)
-    frame.SaveButton:SetText("Guardar PJ")
+    frame.SaveButton:SetText("Guardar")
 
     frame.ResetButton:SetScript("OnClick", function()
         addon:ResetAttributesUIValues()

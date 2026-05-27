@@ -2,7 +2,7 @@
 ## Title: GranAddonDeLasCosas
 ## Notes: Addon para gestionar tiradas de dados basadas en nuestro sistema de rol.
 ## Author: PatrickJS
-## Version: 1.1.0
+## Version: 1.1.1
 ## SavedVariables: GranAddonDeLasCosasDB
 ## SavedVariablesPerCharacter: GranAddonDeLasCosasCharDB
 
