@@ -38,7 +38,7 @@ function addon:CHAT_MSG_SYSTEM(message)
 
         print(finalMessage)
 
-        if self.BroadcastRollMessage then
+        if self.BroadcastRollMessage and (IsInRaid() or IsInGroup()) then
             self:BroadcastRollMessage(finalMessage)
         end
 
@@ -61,7 +61,7 @@ function addon:CHAT_MSG_SYSTEM(message)
 
         print(finalMessage)
 
-        if self.BroadcastRollMessage then
+        if self.BroadcastRollMessage and (IsInRaid() or IsInGroup()) then
             self:BroadcastRollMessage(finalMessage)
         end
 
@@ -83,7 +83,7 @@ function addon:CHAT_MSG_SYSTEM(message)
 
         print(finalMessage)
 
-        if self.BroadcastRollMessage then
+        if self.BroadcastRollMessage and (IsInRaid() or IsInGroup()) then
             self:BroadcastRollMessage(finalMessage)
         end
 
@@ -108,7 +108,7 @@ function addon:CHAT_MSG_SYSTEM(message)
 
         print(finalMessage)
 
-        if self.BroadcastRollMessage then
+        if self.BroadcastRollMessage and (IsInRaid() or IsInGroup()) then
             self:BroadcastRollMessage(finalMessage)
         end
 
