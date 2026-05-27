@@ -127,6 +127,9 @@ function addon:PLAYER_LEVEL_UP()
         addon:RefreshPlayerHealthBarMaxHealth()
     end
 
+    if addon.PrintLevelUpMessage then
+        addon:PrintLevelUpMessage()
+    end
 end
 
 function addon:UNIT_LEVEL(unit)
