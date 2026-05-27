@@ -1,6 +1,89 @@
 local addonName, addon = ...
 local qa = addon.quickActions or {}
 
+local function getDurabilityColor(percent)
+    if percent >= 0.5 then
+        local ratio = (percent - 0.5) / 0.5
+        -- De Verde (0, 1, 0) a Amarillo (1, 1, 0)
+        return 1.0 - ratio, 1.0, 0.0
+    else
+        local ratio = percent / 0.5
+        -- De Amarillo (1, 1, 0) a Rojo (1, 0, 0)
+        return 1.0, ratio, 0.0
+    end
+end
+
+function addon:UpdateQuickDurabilityDoll()
+    local frame = self.quickDurabilityHUD
+    if not frame then return end
+
+    local summary = self.GetTRP3ExtendedEquippedArmourSummary and self:GetTRP3ExtendedEquippedArmourSummary()
+    
+    -- Ocultar iconos por defecto (se mostrarán solo si están equipados en TRP3)
+    for _, tex in pairs(frame.slots) do
+        tex:SetAlpha(0)
+    end
+
+    if not summary or not summary.pieces then return end
+
+    for _, piece in ipairs(summary.pieces) do
+        -- Asegurarse de que la clave de la pieza sea el nombre interno (ej. "head")
+        local tex = frame.slots[addon:GetInternalKey(piece.pieceName)]
+        if tex then
+            local percent = (piece.durabilityMax and piece.durabilityMax > 0) and (piece.durabilityCurrent / piece.durabilityMax) or 1
+            local r, g, b = getDurabilityColor(percent)
+            tex:SetVertexColor(r, g, b)
+            -- Mostrar con opacidad total siempre que la pieza esté equipada
+            tex:SetAlpha(1.0)
+        end
+    end
+end
+local DURABILITY_DATA = {
+    -- [Clave Interna] = { Ruta del Icono, Desvío Horizontal, Desvío Vertical }
+    ["head"]  = { "Interface\\Icons\\inv_helmet_20", 0, 18 },
+    ["chest"] = { "Interface\\Icons\\inv_chest_plate12", 0, 4 },
+    ["hands"] = { "Interface\\Icons\\inv_gauntlets_28", -15, 4 },
+    ["legs"]  = { "Interface\\Icons\\inv_pants_plate_09", 0, -10 },
+}
+
+local function createDurabilityHUD(parent)
+    local hud = CreateFrame("Frame", "GACQuickDurabilityHUD", parent)
+    -- Aumentamos ligeramente el contenedor para que la silueta oficial quepa bien
+    hud:SetSize(75, 95)
+    hud:SetPoint("RIGHT", parent, "LEFT", -10, 0)
+
+    local bg = hud:CreateTexture(nil, "BACKGROUND")
+    bg:SetAtlas("durability-main", true) -- Nombre de atlas correcto para el fondo del muñeco
+    bg:SetAllPoints(hud)
+    bg:SetAlpha(0.25)
+
+    hud.slots = {}
+
+    -- Generar dinámicamente tus iconos personalizados
+        for key, data in pairs(DURABILITY_DATA) do
+            -- Creamos el contenedor individual de la pieza para poder enmascararlo
+            local slotFrame = CreateFrame("Frame", nil, hud)
+            slotFrame:SetSize(24, 24) -- Tamaño estándar cuadrado para los iconos de ranura
+            slotFrame:SetPoint("CENTER", hud, "CENTER", data[2], data[3])
+            
+            -- Crear la textura visual del icono
+            local tex = slotFrame:CreateTexture(nil, "ARTWORK")
+            tex:SetAllPoints(slotFrame)
+            tex:SetTexture(data[1]) -- Carga la ruta "Interface\Icons\..."
+            tex:SetTexCoord(0, 1, 0, 1) -- Utiliza el icono completo
+            
+            -- Guardamos la referencia de la textura para actualizar su color
+            hud.slots[key] = tex
+        end
+
+    addon.quickDurabilityHUD = hud
+    
+    -- Inicializamos el refresco si la función ya existe en tu addon
+    if addon.UpdateQuickDurabilityDoll then
+        addon:UpdateQuickDurabilityDoll()
+    end
+end
+
 function addon:UpdateQuickExperienceBar()
     local frame = self.quickActionsFrame
     if not frame or not frame.experienceBar then
@@ -634,6 +717,7 @@ function addon:CreateQuickActionsFrame()
     self.targetInspectQuickButton = inspectTargetButton
 
     self.quickActionsFrame = frame
+    createDurabilityHUD(frame)
 
     if self.UpdateTurnOrderExpandButtonVisibility then
         self:UpdateTurnOrderExpandButtonVisibility()

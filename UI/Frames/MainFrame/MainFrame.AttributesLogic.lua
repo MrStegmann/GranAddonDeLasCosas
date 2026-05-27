@@ -190,6 +190,7 @@ function addon:RefreshMainArmourPanel()
     for _, card in ipairs(frame.MainArmourPanel.cards) do card:Hide() end
 
     local summary = self.GetTRP3ExtendedEquippedArmourSummary and self:GetTRP3ExtendedEquippedArmourSummary()
+
     if not summary or #summary.pieces == 0 then return end
 
     local yOffset = 0

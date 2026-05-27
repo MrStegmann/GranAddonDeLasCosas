@@ -331,6 +331,10 @@ function addon:GetTRP3ExtendedEquippedArmourSummary()
         if self:IsKnownArmourPiece(armourInfo) then
             local pieceTotals = self:BuildArmourPieceTotals(armourInfo)
             
+            local durMax = tonumber(self:GetTRP3ExtendedItemVariable(item.slotID, "dur_max")) or tonumber(pieceTotals.attributes.durability) or 0
+            local durCur = tonumber(self:GetTRP3ExtendedItemVariable(item.slotID, "dur_cur"))
+            if durCur == nil then durCur = durMax end
+
             local pieceEntry = {
                 slotID = item.slotID,
                 itemID = item.itemID,
@@ -338,6 +342,8 @@ function addon:GetTRP3ExtendedEquippedArmourSummary()
                 pieceName = armourInfo.pieceKey or armourInfo.pieceName or "unknown",
                 armourType = armourInfo.armourKey or armourInfo.armourType or "unknown",
                 reinforcement = armourInfo.reinforcementKey or armourInfo.reinforcementType or "none",
+                durabilityCurrent = durCur,
+                durabilityMax = durMax,
                 attributes = pieceTotals.attributes,
                 properties = pieceTotals.properties,
                 requirements = pieceTotals.requirements,
@@ -425,6 +431,11 @@ function addon:UpdateItemDurability(slotID, itemID, maxDurability, delta)
 
     -- Actualizar el campo BA.DE (Tooltip Description) de la clase del objeto
     self:SetTRP3ExtendedItemTooltipDescription(itemID, finalDescription)
+
+    -- Actualizar el muñeco de durabilidad en el HUD
+    if self.UpdateQuickDurabilityDoll then
+        self:UpdateQuickDurabilityDoll()
+    end
 
     -- Mostrar mensaje por chat sobre la modificación de durabilidad
     local itemName = self:GetTRP3ExtendedItemTooltipFields(itemID) or "Armadura"
