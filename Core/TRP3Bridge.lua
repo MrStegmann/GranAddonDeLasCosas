@@ -82,14 +82,15 @@ end
 local function getItemTooltipFields(slotInfo)
     local classData = getItemClassData(slotInfo)
     if type(classData) ~= "table" or type(classData.BA) ~= "table" then
-        return getItemDisplayName(slotInfo), nil, nil
+        return getItemDisplayName(slotInfo), nil, nil, nil
     end
 
     local itemName = parseTRP3Text(classData.BA.NA, slotInfo) or getItemDisplayName(slotInfo)
     local tooltipLeft = parseTRP3Text(classData.BA.LE, slotInfo)
     local tooltipRight = parseTRP3Text(classData.BA.RI, slotInfo)
+    local itemDescription = parseTRP3Text(classData.BA.DE, slotInfo)
 
-    return itemName, tooltipLeft, tooltipRight
+    return itemName, tooltipLeft, tooltipRight, itemDescription
 end
 
 local function findFirstTable(candidates)
@@ -276,6 +277,32 @@ local function getExtendedInventoryFromProfileData()
     return findFirstTable(equippedCandidates)
 end
 
+--[[
+    Obtiene un valor de las variables temporales (VA) de un objeto equipado.
+]]
+function addon:GetTRP3ExtendedItemVariable(slotID, varName)
+    local equipped = self:GetTRP3ExtendedEquippedSnapshot()
+    local itemData = readSlotValue(equipped, slotID)
+    if itemData and itemData.VA then
+        return itemData.VA[varName]
+    end
+    return nil
+end
+
+--[[
+    Establece un valor en las variables temporales (VA) de un objeto equipado.
+]]
+function addon:SetTRP3ExtendedItemVariable(slotID, varName, value)
+    local equipped = self:GetTRP3ExtendedEquippedSnapshot()
+    local itemData = readSlotValue(equipped, slotID)
+    if itemData then
+        itemData.VA = itemData.VA or {}
+        itemData.VA[varName] = value
+        return true
+    end
+    return false
+end
+
 function addon:GetTRP3ExtendedEquippedSnapshot()
     return getExtendedInventoryFromAPI() or getExtendedInventoryFromProfileData()
 end
@@ -291,12 +318,14 @@ function addon:GetTRP3ExtendedEquippedItems()
     for slotID = 1, WEARABLE_SLOT_COUNT do
         local itemData = readSlotValue(equipped, slotID)
         if itemData then
-            local itemName, tooltipLeft, tooltipRight = getItemTooltipFields(itemData)
+            local itemName, tooltipLeft, tooltipRight, itemDescription = getItemTooltipFields(itemData)
             items[#items + 1] = {
                 slotID = slotID,
+                itemID = itemData.id,
                 itemName = itemName,
                 tooltipLeft = tooltipLeft,
                 tooltipRight = tooltipRight,
+                itemDescription = itemDescription,
             }
         end
     end
@@ -448,6 +477,46 @@ local function getColorFromTRP3RegisterAPI(api)
     return getProfileColorFromData(profileData)
 end
 
+--[[
+    Obtiene los campos de tooltip actuales de un objeto de TRP3 Extended (Nombre, Left, Right, Descripción).
+]]
+function addon:GetTRP3ExtendedItemTooltipFields(itemID)
+    if not itemID or type(itemID) ~= "string" then
+        return nil, nil, nil, nil
+    end
+
+    -- Generamos un slotInfo mínimo para consultar la definición de la clase.
+    local slotInfo = { id = itemID }
+    return getItemTooltipFields(slotInfo)
+end
+
+--[[
+    Modifica la descripción del tooltip (campo BA.DE) de un objeto de TRP3 Extended.
+    itemID: El identificador único de la clase del objeto.
+    stringValue: El nuevo texto para la descripción.
+]]
+function addon:SetTRP3ExtendedItemTooltipDescription(itemID, stringValue)
+    if not itemID or type(itemID) ~= "string" or type(stringValue) ~= "string" then
+        return false
+    end
+
+    -- Obtenemos la definición de la clase del objeto
+    local classData = getItemClassData({ id = itemID })
+    if type(classData) ~= "table" or type(classData.BA) ~= "table" then
+        return false
+    end
+
+    -- BA.DE es el campo técnico para "Tooltip Description" en TRP3 Extended.
+    classData.BA.DE = stringValue
+
+    -- Disparamos el evento de actualización de TRP3 para refrescar la UI
+    if type(TRP3_API) == "table" and type(TRP3_API.events) == "table" and type(TRP3_API.events.fire) == "function" then
+        safeCall(TRP3_API.events.fire, "EXTENDED_CLASS_UPDATED", itemID)
+    end
+
+    return true
+end
+
 function addon:GetActiveTRP3ProfileName()
     if type(TRP3_API) ~= "table" then
         return nil
@@ -483,4 +552,3 @@ function addon:GetActiveTRP3ProfileColor()
 
     return nil
 end
-

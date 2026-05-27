@@ -333,6 +333,7 @@ function addon:GetTRP3ExtendedEquippedArmourSummary()
             
             local pieceEntry = {
                 slotID = item.slotID,
+                itemID = item.itemID,
                 itemName = item.itemName or "Desconocido",
                 pieceName = armourInfo.pieceKey or armourInfo.pieceName or "unknown",
                 armourType = armourInfo.armourKey or armourInfo.armourType or "unknown",
@@ -377,4 +378,56 @@ function addon:GetArmourTotalPenalties()
     end
 
     return summary.totalPenalties
+end
+
+--[[
+    Actualiza la durabilidad de un objeto en su descripción de TRP3 Extended.
+    slotID: Slot del objeto.
+    itemID: ID de la clase del objeto.
+    maxDurability: El valor máximo calculado (Atributos + Pieza + Refuerzos).
+    delta: Cantidad a sumar o restar.
+]]
+function addon:UpdateItemDurability(slotID, itemID, maxDurability, delta)
+    if not slotID or not itemID or not maxDurability or maxDurability <= 0 then return end
+
+    -- Obtener valores de las variables temporales (VA) para persistencia por instancia.
+    local currentVal = tonumber(self:GetTRP3ExtendedItemVariable(slotID, "dur_cur"))
+    local maxVal = tonumber(maxDurability)
+    
+    -- Si no existe el valor temporal, inicializar al máximo calculado.
+    if not currentVal then
+        currentVal = maxVal
+    end
+
+    -- Calcular nuevo valor con límites (clamping)
+    local newVal = currentVal + delta
+    if newVal < 0 then newVal = 0 end
+    if newVal > maxVal then newVal = maxVal end
+
+    -- Guardar en las variables temporales del objeto en el slot
+    self:SetTRP3ExtendedItemVariable(slotID, "dur_cur", newVal)
+    self:SetTRP3ExtendedItemVariable(slotID, "dur_max", maxVal)
+
+    -- Obtener el texto de la descripción (BA.DE) para modificarla visualmente
+    local _, _, _, currentDescription = self:GetTRP3ExtendedItemTooltipFields(itemID)
+    currentDescription = currentDescription or ""
+
+    local durabilityLabel = self:GetLocalizedText("durability")
+    local pattern = durabilityLabel .. ":%s*%d+/%d+"
+    local newDurabilityText = string.format("%s: %d/%d", durabilityLabel, newVal, maxVal)
+    local finalDescription
+
+    if currentDescription:match(pattern) then
+        finalDescription = currentDescription:gsub(pattern, newDurabilityText)
+    else
+        finalDescription = (currentDescription ~= "" and (currentDescription .. "\n") or "") .. newDurabilityText
+    end
+
+    -- Actualizar el campo BA.DE (Tooltip Description) de la clase del objeto
+    self:SetTRP3ExtendedItemTooltipDescription(itemID, finalDescription)
+
+    -- Mostrar mensaje por chat sobre la modificación de durabilidad
+    local itemName = self:GetTRP3ExtendedItemTooltipFields(itemID) or "Armadura"
+    local action = (delta > 0) and "gana" or "pierde"
+    print(string.format("%s %s 1 de Durabilidad. Estado actual %d/%d", itemName, action, newVal, maxVal))
 end

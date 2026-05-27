@@ -208,7 +208,36 @@ function addon:RefreshMainArmourPanel()
             
             card.title = card:CreateFontString(nil, "OVERLAY", "GameFontNormal")
             card.title:SetPoint("TOPLEFT", 12, -12)
-            
+
+            -- Botón de quitar durabilidad (Escudo roto)
+            card.breakButton = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
+            card.breakButton:SetSize(26, 22)
+            card.breakButton:SetPoint("TOPRIGHT", -8, -8)
+            local breakIcon = card.breakButton:CreateTexture(nil, "ARTWORK")
+            breakIcon:SetTexture("Interface\\Icons\\Ability_Warrior_ShieldBreak")
+            breakIcon:SetSize(14, 14)
+            breakIcon:SetPoint("CENTER")
+            card.breakButton:SetScript("OnClick", function()
+                addon:UpdateItemDurability(card.slotID, card.itemID, card.maxDurability, -1)
+                addon:RefreshMainArmourPanel()
+            end)
+
+            -- Botón de añadir durabilidad (Escudo normal)
+            card.normalButton = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
+            card.normalButton:SetSize(26, 22)
+            card.normalButton:SetPoint("RIGHT", card.breakButton, "LEFT", -2, 0)
+            local normalIcon = card.normalButton:CreateTexture(nil, "ARTWORK")
+            normalIcon:SetTexture("Interface\\Icons\\INV_Shield_01")
+            normalIcon:SetSize(14, 14)
+            normalIcon:SetPoint("CENTER")
+            card.normalButton:SetScript("OnClick", function()
+                addon:UpdateItemDurability(card.slotID, card.itemID, card.maxDurability, 1)
+                addon:RefreshMainArmourPanel()
+            end)
+
+            -- Ajustar título
+            card.title:SetPoint("RIGHT", card.normalButton, "LEFT", -4, 0)
+
             card.details = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
             card.details:SetPoint("TOPLEFT", card.title, "BOTTOMLEFT", 0, -4)
             card.details:SetWidth(scrollChild:GetWidth() - 24)
@@ -220,6 +249,11 @@ function addon:RefreshMainArmourPanel()
         card:Show()
         card:SetPoint("TOPLEFT", 0, yOffset)
         card:SetWidth(scrollChild:GetWidth())
+
+        -- Guardar referencias para la lógica de los botones
+        card.slotID = piece.slotID
+        card.itemID = piece.itemID
+        card.maxDurability = piece.attributes.durability or 0
 
         local pieceName = addon:GetLocalizedText(piece.pieceName)
         local armourType = addon:GetLocalizedText(piece.armourType)
