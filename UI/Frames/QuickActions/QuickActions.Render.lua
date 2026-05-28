@@ -67,18 +67,43 @@ function addon:UpdateTargetInspectButtonVisibility()
     self.targetInspectQuickButton:SetShown(self:CanShowTargetInspectButton())
 end
 
+local function ensureQuickFramePosition()
+    if not addon.characterData or not addon.characterData.ui then
+        return
+    end
+
+    addon.characterData.ui.quickFrame = addon.characterData.ui.quickFrame or {}
+
+    local position = addon.characterData.ui.quickFrame
+    if position.anchor == nil then
+        position.anchor = "CENTER"
+        position.relativeAnchor = "CENTER"
+        position.x = -260
+        position.y = -120
+    end
+end
 
 function addon:CreateQuickActionsFrame()
-    if self.quickActionsFrame then
+     if self.quickActionsFrame then
         return
     end
 
 
-    -- Anclar el frame de dados al lado derecho de la barra de acción principal
+    ensureQuickFramePosition()
+    local pos = self.characterData and self.characterData.ui and self.characterData.ui.quickFrame or nil
+    local anchor, relAnchor, x, y = "CENTER", "CENTER", -260, -120
+    if pos and type(pos) == "table" then
+        anchor = pos.anchor or anchor
+        relAnchor = pos.relativeAnchor or relAnchor
+        x = tonumber(pos.x) or x
+        y = tonumber(pos.y) or y
+    end
+
     local frame = CreateFrame("Frame", "GACQuickActionsFrame", UIParent, "BackdropTemplate")
     frame:SetHeight(34)
-    frame:SetMovable(false)
-    frame:EnableMouse(false)
+    frame:SetMovable(true)
+    frame:EnableMouse(true)
+    frame:RegisterForDrag("LeftButton")
     frame:SetClampedToScreen(true)
     frame:SetFrameStrata("MEDIUM")
 
@@ -93,27 +118,56 @@ function addon:CreateQuickActionsFrame()
     frame:SetBackdropColor(0.05, 0.06, 0.08, 0.78)
     frame:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.75)
 
+    frame:SetPoint(anchor, UIParent, relAnchor, x, y)
+
+
+    frame:SetScript("OnDragStart", function(self)
+        self:StartMoving()
+    end)
+    frame:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        local anchor, _, relativeAnchor, x, y = self:GetPoint(1)
+        if not addon.characterData then addon.characterData = {} end
+        if not addon.characterData.ui then addon.characterData.ui = {} end
+        if not addon.characterData.ui.quickFrame then addon.characterData.ui.quickFrame = {} end
+        addon.characterData.ui.quickFrame.anchor = anchor or "CENTER"
+        addon.characterData.ui.quickFrame.relativeAnchor = relativeAnchor or "CENTER"
+        addon.characterData.ui.quickFrame.x = math.floor((tonumber(x) or -260) + 0.5)
+        addon.characterData.ui.quickFrame.y = math.floor((tonumber(y) or -120) + 0.5)
+    end)
+
     local function anchorDiceFrameToMainActionBar()
+        -- Ajustar SIEMPRE el ancho del frame según la barra principal
         local minWidth = 340
         local maxWidth = 480
         local padding = 8
+        local diceFrameWidth = minWidth
         if MainMenuBarArtFrame then
             local actionBarWidth = MainMenuBarArtFrame:GetWidth()
             if not actionBarWidth or actionBarWidth <= 0 then
                 actionBarWidth = 1024
             end
-            local diceFrameWidth = math.max(minWidth, math.min(actionBarWidth * 0.48, maxWidth))
+            diceFrameWidth = math.max(minWidth, math.min(actionBarWidth * 0.48, maxWidth))
+        end
+        frame:SetWidth(diceFrameWidth)
+
+        -- Solo cambiar la posición si NO hay datos personalizados
+        local hasCustomPos = false
+        if addon.characterData and addon.characterData.ui and addon.characterData.ui.quickFrame then
+            local pos = addon.characterData.ui.quickFrame
+            if pos.anchor and pos.x and pos.y then
+                hasCustomPos = true
+            end
+        end
+        if not hasCustomPos then
             frame:ClearAllPoints()
-            frame:SetWidth(diceFrameWidth)
-            frame:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "TOPRIGHT", -padding, 44)
-        elseif MainMenuBar then
-            frame:ClearAllPoints()
-            frame:SetWidth(minWidth)
-            frame:SetPoint("BOTTOMRIGHT", MainMenuBar, "TOPRIGHT", -padding, 2)
-        else
-            frame:ClearAllPoints()
-            frame:SetWidth(minWidth)
-            frame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -200, 180)
+            if MainMenuBarArtFrame then
+                frame:SetPoint("BOTTOMRIGHT", MainMenuBarArtFrame, "TOPRIGHT", -padding, 44)
+            elseif MainMenuBar then
+                frame:SetPoint("BOTTOMRIGHT", MainMenuBar, "TOPRIGHT", -padding, 2)
+            else
+                frame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -200, 180)
+            end
         end
     end
 
@@ -140,7 +194,7 @@ function addon:CreateQuickActionsFrame()
     local buttonRowSpacing = 1
 
     local diceButton = CreateFrame("Button", "GACQuickDiceButton", frame, "UIPanelButtonTemplate")
-    diceButton:SetSize(28, 22)
+    diceButton:SetSize(33, 27)
     diceButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", buttonX, buttonBottomInset)
 
     local diceIcon = diceButton:CreateTexture(nil, "ARTWORK")
@@ -169,7 +223,7 @@ function addon:CreateQuickActionsFrame()
     end)
 
     local attributeButton = CreateFrame("Button", "GACQuickAttributeButton", frame, "UIPanelButtonTemplate")
-    attributeButton:SetSize(28, 22)
+    attributeButton:SetSize(33, 27)
     attributeButton:SetPoint("LEFT", diceButton, "RIGHT", buttonSpacing, 0)
 
     local attributeIcon = attributeButton:CreateTexture(nil, "ARTWORK")
@@ -196,115 +250,74 @@ function addon:CreateQuickActionsFrame()
         GameTooltip:Hide()
     end)
 
-    local addLifeQuickButton = CreateFrame("Button", "GACQuickAddLifeButton", frame, "UIPanelButtonTemplate")
-    addLifeQuickButton:SetSize(28, 22)
-    addLifeQuickButton:SetPoint("BOTTOMLEFT", diceButton, "TOPLEFT", 0, buttonRowSpacing)
 
-    local addLifeIcon = addLifeQuickButton:CreateTexture(nil, "ARTWORK")
-    addLifeIcon:SetTexture("Interface\\Icons\\Spell_Holy_Renew")
-    addLifeIcon:SetPoint("CENTER")
-    addLifeIcon:SetSize(15, 15)
+    local lifeQuickButton = CreateFrame("Button", "GACQuickLifeButton", frame, "UIPanelButtonTemplate")
+    lifeQuickButton:SetSize(33, 27)
+    lifeQuickButton:SetPoint("BOTTOMLEFT", diceButton, "TOPLEFT", 0, buttonRowSpacing)
 
-    addLifeQuickButton:SetScript("OnClick", function()
-        if addon.ModifyPlayerLife then
+    local lifeIcon = lifeQuickButton:CreateTexture(nil, "ARTWORK")
+    lifeIcon:SetTexture("Interface\\Icons\\Spell_Holy_Renew")
+    lifeIcon:SetPoint("CENTER")
+    lifeIcon:SetSize(15, 15)
+
+    lifeQuickButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    lifeQuickButton:SetScript("OnClick", function(self, button)
+        if not addon.ModifyPlayerLife then return end
+        if button == "RightButton" then
+            addon:ModifyPlayerLife(-1)
+        else
             addon:ModifyPlayerLife(1)
         end
     end)
 
-    addLifeQuickButton:SetScript("OnEnter", function(self)
+    lifeQuickButton:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText("Dar 1 de vida")
-        GameTooltip:AddLine("Te añade 1 punto de vida.", 1, 1, 1)
+        GameTooltip:SetText("Modificar vida ±1")
+        GameTooltip:AddLine("Clic izquierdo: Añade 1 punto de vida.", 1, 1, 1)
+        GameTooltip:AddLine("Clic derecho: Quita 1 punto de vida.", 1, 0.7, 0.7)
         GameTooltip:Show()
     end)
-
-    addLifeQuickButton:SetScript("OnLeave", function()
+    lifeQuickButton:SetScript("OnLeave", function()
         GameTooltip:Hide()
     end)
 
-    local removeLifeQuickButton = CreateFrame("Button", "GACQuickRemoveLifeButton", frame, "UIPanelButtonTemplate")
-    removeLifeQuickButton:SetSize(28, 22)
-    removeLifeQuickButton:SetPoint("LEFT", addLifeQuickButton, "RIGHT", buttonSpacing, 0)
 
-    local removeLifeIcon = removeLifeQuickButton:CreateTexture(nil, "ARTWORK")
-    removeLifeIcon:SetTexture("Interface\\Icons\\Spell_Shadow_DeathCoil")
-    removeLifeIcon:SetPoint("CENTER")
-    removeLifeIcon:SetSize(15, 15)
+    local shieldQuickButton = CreateFrame("Button", "GACQuickShieldButton", frame, "UIPanelButtonTemplate")
+    shieldQuickButton:SetSize(33, 27)
+    shieldQuickButton:SetPoint("LEFT", lifeQuickButton, "RIGHT", buttonSpacing, 0)
 
-    removeLifeQuickButton:SetScript("OnClick", function()
-        if addon.ModifyPlayerLife then
-            addon:ModifyPlayerLife(-1)
-        end
-    end)
+    local shieldIcon = shieldQuickButton:CreateTexture(nil, "ARTWORK")
+    shieldIcon:SetTexture("Interface\\Icons\\Spell_Holy_PowerWordShield")
+    shieldIcon:SetPoint("CENTER")
+    shieldIcon:SetSize(15, 15)
 
-    removeLifeQuickButton:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText("Quitar 1 de vida")
-        GameTooltip:AddLine("Te quita 1 punto de vida.", 1, 1, 1)
-        GameTooltip:Show()
-    end)
-
-    removeLifeQuickButton:SetScript("OnLeave", function()
-        GameTooltip:Hide()
-    end)
-
-    local addShieldQuickButton = CreateFrame("Button", "GACQuickAddShieldButton", frame, "UIPanelButtonTemplate")
-    addShieldQuickButton:SetSize(28, 22)
-    addShieldQuickButton:SetPoint("LEFT", removeLifeQuickButton, "RIGHT", buttonSpacing, 0)
-
-    local addShieldIcon = addShieldQuickButton:CreateTexture(nil, "ARTWORK")
-    addShieldIcon:SetTexture("Interface\\Icons\\Spell_Holy_PowerWordShield")
-    addShieldIcon:SetPoint("CENTER")
-    addShieldIcon:SetSize(15, 15)
-
-    addShieldQuickButton:SetScript("OnClick", function()
-        if addon.ModifyPlayerShield then
+    shieldQuickButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    shieldQuickButton:SetScript("OnClick", function(self, button)
+        if not addon.ModifyPlayerShield then return end
+        if button == "RightButton" then
+            addon:ModifyPlayerShield(-1)
+        else
             addon:ModifyPlayerShield(1)
         end
     end)
 
-    addShieldQuickButton:SetScript("OnEnter", function(self)
+    shieldQuickButton:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText("Dar 1 de escudo")
-        GameTooltip:AddLine("Te añade 1 punto de escudo.", 1, 1, 1)
+        GameTooltip:SetText("Modificar escudo ±1")
+        GameTooltip:AddLine("Clic izquierdo: Añade 1 punto de escudo.", 1, 1, 1)
+        GameTooltip:AddLine("Clic derecho: Quita 1 punto de escudo.", 1, 0.7, 0.7)
         GameTooltip:Show()
     end)
-
-    addShieldQuickButton:SetScript("OnLeave", function()
+    shieldQuickButton:SetScript("OnLeave", function()
         GameTooltip:Hide()
     end)
 
-    local removeShieldQuickButton = CreateFrame("Button", "GACQuickRemoveShieldButton", frame, "UIPanelButtonTemplate")
-    removeShieldQuickButton:SetSize(28, 22)
-    removeShieldQuickButton:SetPoint("LEFT", addShieldQuickButton, "RIGHT", buttonSpacing, 0)
 
-    local frameHeight = diceButton:GetHeight() + addLifeQuickButton:GetHeight() + buttonRowSpacing + buttonBottomInset
+    local frameHeight = diceButton:GetHeight() + lifeQuickButton:GetHeight() + buttonRowSpacing + buttonBottomInset
     frame:SetHeight(frameHeight)
 
-    local removeShieldIcon = removeShieldQuickButton:CreateTexture(nil, "ARTWORK")
-    removeShieldIcon:SetTexture("Interface\\Icons\\Ability_Warrior_ShieldBreak")
-    removeShieldIcon:SetPoint("CENTER")
-    removeShieldIcon:SetSize(15, 15)
-
-    removeShieldQuickButton:SetScript("OnClick", function()
-        if addon.ModifyPlayerShield then
-            addon:ModifyPlayerShield(-1)
-        end
-    end)
-
-    removeShieldQuickButton:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText("Quitar 1 de escudo")
-        GameTooltip:AddLine("Te quita 1 punto de escudo.", 1, 1, 1)
-        GameTooltip:Show()
-    end)
-
-    removeShieldQuickButton:SetScript("OnLeave", function()
-        GameTooltip:Hide()
-    end)
-
     local swordButton = CreateFrame("Button", "GACQuickSwordButton", frame, "UIPanelButtonTemplate")
-    swordButton:SetSize(28, 22)
+    swordButton:SetSize(33, 27)
     swordButton:SetPoint("LEFT", attributeButton, "RIGHT", buttonSpacing, 0)
 
     local swordIcon = swordButton:CreateTexture(nil, "ARTWORK")
@@ -343,7 +356,7 @@ function addon:CreateQuickActionsFrame()
     end)
 
     local attackButton = CreateFrame("Button", "GACQuickAttackButton", frame, "UIPanelButtonTemplate")
-    attackButton:SetSize(28, 22)
+    attackButton:SetSize(33, 27)
     attackButton:SetPoint("LEFT", swordButton, "RIGHT", buttonSpacing, 0)
 
     local attackIcon = attackButton:CreateTexture(nil, "ARTWORK")
@@ -369,6 +382,38 @@ function addon:CreateQuickActionsFrame()
     attackButton:SetScript("OnLeave", function()
         GameTooltip:Hide()
     end)
+
+
+    -- Botón de maximizar Orden de Turnos (nuevo lugar y estilo, icono cambiado)
+    local expandTurnOrderButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    expandTurnOrderButton:SetSize(33, 27)
+    expandTurnOrderButton:SetPoint("LEFT", shieldQuickButton, "RIGHT", buttonSpacing, 0)
+    expandTurnOrderButton:SetText("")
+    -- Icono alternativo para "orden de turnos" (mapa)
+    local expandTurnOrderIcon = expandTurnOrderButton:CreateTexture(nil, "ARTWORK")
+    expandTurnOrderIcon:SetTexture("Interface\\Icons\\INV_Misc_Map_01")
+    expandTurnOrderIcon:SetPoint("CENTER")
+    expandTurnOrderIcon:SetSize(15, 15)
+
+    expandTurnOrderButton:SetScript("OnClick", function()
+        if addon.SetTurnOrderMinimized then
+            addon:SetTurnOrderMinimized(false)
+        end
+        if addon.UpdateTurnOrderFrameVisibility then
+            addon:UpdateTurnOrderFrameVisibility()
+        end
+    end)
+    expandTurnOrderButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Maximizar Orden de Turnos")
+        GameTooltip:AddLine("Haz clic para mostrar el panel de orden de turnos si está minimizado.", 1, 1, 1)
+        GameTooltip:AddLine("Permite expandir el panel de gestión de turnos del grupo.", 0.8, 0.95, 1)
+        GameTooltip:Show()
+    end)
+    expandTurnOrderButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+    expandTurnOrderButton:SetShown(false)
 
     local modifierLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     modifierLabel:SetText("Mod")
@@ -426,7 +471,7 @@ function addon:CreateQuickActionsFrame()
     facesInput:SetPoint("LEFT", separator, "RIGHT", 2, 0)
 
     local customRollButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    customRollButton:SetSize(28, 22)
+    customRollButton:SetSize(33, 27)
     customRollButton:SetText("")
     customRollButton:SetPoint("LEFT", facesInput, "RIGHT", 1, 0)
 
@@ -573,34 +618,10 @@ function addon:CreateQuickActionsFrame()
         end
     end)
 
-    local expandTurnOrderButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    expandTurnOrderButton:SetSize(96, 20)
-    expandTurnOrderButton:SetPoint("LEFT", removeShieldQuickButton, "RIGHT", 8, 0)
-    expandTurnOrderButton:SetText("Orden Turnos")
-    expandTurnOrderButton:SetShown(false)
-    expandTurnOrderButton:SetScript("OnClick", function()
-        if addon.SetTurnOrderMinimized then
-            addon:SetTurnOrderMinimized(false)
-        end
 
-        if addon.UpdateTurnOrderFrameVisibility then
-            addon:UpdateTurnOrderFrameVisibility()
-        end
-    end)
-
-    expandTurnOrderButton:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText("Mostrar orden de turnos")
-        GameTooltip:AddLine("Expande el panel de orden de turnos minimizado.", 1, 1, 1)
-        GameTooltip:Show()
-    end)
-
-    expandTurnOrderButton:SetScript("OnLeave", function()
-        GameTooltip:Hide()
-    end)
 
     local inspectTargetButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    inspectTargetButton:SetSize(24, 24)
+    inspectTargetButton:SetSize(29, 29)
     inspectTargetButton:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -8, -1)
     inspectTargetButton:SetShown(false)
 

@@ -1,3 +1,4 @@
+
 local _, addon = ...
 
 local MAX_TURN_ROWS = 18
@@ -63,6 +64,46 @@ local function isNameInRaid(name)
     end
 
     return false
+end
+
+-- Etiqueta para sincronización manual
+local TURN_ORDER_MANUAL_SYNC_TAG = "TURN_MANUAL_SYNC"
+-- Serializa la lista de turnos para sincronización
+local function serializeTurnOrderList(list)
+    local parts = {}
+    for _, entry in ipairs(list or {}) do
+        local marker = entry.marker or ""
+        local key = entry.key or ""
+        table.insert(parts, table.concat({entry.name, entry.roll, marker, key}, ":"))
+    end
+    return table.concat(parts, ",")
+end
+
+-- Deserializa la lista de turnos recibida
+local function deserializeTurnOrderList(serialized)
+    local list = {}
+    for entryStr in string.gmatch(serialized or "", "[^,]+") do
+        local name, roll, marker, key = strsplit(":", entryStr)
+        table.insert(list, {
+            name = name,
+            roll = tonumber(roll),
+            marker = tonumber(marker) or nil,
+            key = key ~= "" and key or nil,
+        })
+    end
+    -- Reasignar secuencia
+    for i, entry in ipairs(list) do
+        entry.sequence = i
+    end
+    return list
+end
+function addon:BroadcastTurnOrderManualSync()
+    if type(C_ChatInfo) ~= "table" then return end
+    if not IsInRaid() then return end
+    if not self.initiativeRollHistory or #self.initiativeRollHistory == 0 then return end
+    local serialized = serializeTurnOrderList(self.initiativeRollHistory)
+    local channel = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and "INSTANCE_CHAT" or "RAID"
+    C_ChatInfo.SendAddonMessage(self.rollMessagePrefix, TURN_ORDER_MANUAL_SYNC_TAG .. "\t" .. serialized, channel)
 end
 
 local function buildMarkerInlineTexture(markerIndex)
@@ -253,17 +294,13 @@ function addon:SetTurnOrderEntryMarker(sequence, markerIndex, fromSyncMessage, e
     matchedEntry.marker = markerIndex
     self:RefreshTurnOrderFrame()
 
-    if not fromSyncMessage then
-        self:BroadcastTurnOrderMarkerSync(matchedEntry.sequence or sequence, markerIndex, matchedEntry.key or matchedEntry.name)
-    end
+    -- if not fromSyncMessage then
+    --     self:BroadcastTurnOrderMarkerSync(matchedEntry.sequence or sequence, markerIndex, matchedEntry.key or matchedEntry.name)
+    -- end
 end
 
 function addon:OpenTurnOrderMarkerMenu(entry, anchorFrame)
     if not self:CanEditTurnOrderFrame() then
-        return
-    end
-
-    if not self:IsOwnTurnOrderEntry(entry) then
         return
     end
 
@@ -272,6 +309,44 @@ function addon:OpenTurnOrderMarkerMenu(entry, anchorFrame)
     end
 
     local menu = {
+        {
+            text = "Opciones de turno",
+            isTitle = true,
+            notCheckable = true,
+        },
+        {
+            text = "Subir 1 puesto",
+            notCheckable = true,
+            func = function()
+                addon:MoveTurnOrderEntry(entry.sequence, "up")
+            end,
+        },
+        {
+            text = "Bajar 1 puesto",
+            notCheckable = true,
+            func = function()
+                addon:MoveTurnOrderEntry(entry.sequence, "down")
+            end,
+        },
+        {
+            text = "Situar primero",
+            notCheckable = true,
+            func = function()
+                addon:MoveTurnOrderEntry(entry.sequence, "first")
+            end,
+        },
+        {
+            text = "Situar último",
+            notCheckable = true,
+            func = function()
+                addon:MoveTurnOrderEntry(entry.sequence, "last")
+            end,
+        },
+        {
+            text = "-",
+            notCheckable = true,
+            disabled = true,
+        },
         {
             text = "Icono de tirada",
             isTitle = true,
@@ -299,6 +374,68 @@ function addon:OpenTurnOrderMarkerMenu(entry, anchorFrame)
     }
 
     EasyMenu(menu, self.turnOrderMarkerMenuFrame, "cursor", 0, 0, "MENU", 2)
+end
+
+function addon:MoveTurnOrderEntry(sequence, action, fromSyncMessage)
+    local storage = self:GetTurnOrderStorage()
+    if not storage or not storage.byGroup or not self.activeTurnOrderGroupKey then return end
+    local list = storage.byGroup[self.activeTurnOrderGroupKey]
+    if not list then return end
+
+    local idx
+    for i, entry in ipairs(list) do
+        if entry.sequence == sequence then
+            idx = i
+            break
+        end
+    end
+    if not idx then return end
+
+    if action == "up" and idx > 1 then
+        list[idx], list[idx-1] = list[idx-1], list[idx]
+    elseif action == "down" and idx < #list then
+        list[idx], list[idx+1] = list[idx+1], list[idx]
+    elseif action == "first" and idx > 1 then
+        table.insert(list, 1, table.remove(list, idx))
+    elseif action == "last" and idx < #list then
+        local entry = table.remove(list, idx)
+        table.insert(list, #list+1, entry)
+    else
+        return
+    end
+    -- Reasignar sequence para reflejar el nuevo orden
+    for i, entry in ipairs(list) do
+        entry.sequence = i
+    end
+
+    if not self.turnOrderRows then
+        return
+    end
+
+    local rebuildList = rebuildTurnList(list)
+
+    for i, row in ipairs(self.turnOrderRows) do
+        local entry = rebuildList[i]
+        if entry then
+            row.entry = entry
+            local markerText = buildMarkerInlineTexture(entry.marker)
+            if markerText ~= "" then
+                markerText = " " .. markerText
+            end
+
+            row.label:SetText(i .. ". " .. entry.name .. markerText .. " - " .. entry.roll)
+        else
+            row.entry = nil
+            row.label:SetText("")
+        end
+    end
+
+    self:RefreshTurnOrderFrame()
+
+    if not fromSyncMessage then
+        self:BroadcastTurnOrderSortSync()
+    end
+    
 end
 
 function addon:SetTurnOrderMinimized(isMinimized)
@@ -357,7 +494,9 @@ function addon:BroadcastTurnOrderSortSync()
         return
     end
 
+
     local channel = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and "INSTANCE_CHAT" or "RAID"
+
     C_ChatInfo.SendAddonMessage(self.rollMessagePrefix, TURN_ORDER_SORT_SYNC_TAG, channel)
 end
 
@@ -375,45 +514,42 @@ function addon:BroadcastTurnOrderResetSync()
 end
 
 function addon:HandleTurnOrderAddonMessage(message, sender)
-    local tag, sequenceText, markerText, entryKey = strsplit("\t", message)
-    local isMarkerSync = tag == TURN_ORDER_MARKER_SYNC_TAG
-
-    if not isMarkerSync and message ~= TURN_ORDER_SORT_SYNC_TAG and message ~= TURN_ORDER_RESET_SYNC_TAG then
-        return false
-    end
-
+    local tag, rest = strsplit("\t", message, 2)
     local playerName = UnitName("player")
     local senderName = sender and Ambiguate(sender, "none") or nil
     if senderName and playerName and senderName == playerName then
         return true
     end
-
     if not self:CanShowTurnOrderFrame() then
         return true
     end
-
     if not isSenderRaidLeader(sender) then
         return true
     end
 
-    if isMarkerSync then
+    if tag == TURN_ORDER_MARKER_SYNC_TAG then
+        local sequenceText, markerText, entryKey = strsplit("\t", rest or "")
         local sequence = tonumber(sequenceText)
-        if not sequence then
-            return true
-        end
-
+        if not sequence then return true end
         local markerValue = tonumber(markerText)
-        if markerValue == 0 then
-            markerValue = nil
-        end
-
+        if markerValue == 0 then markerValue = nil end
         self:SetTurnOrderEntryMarker(sequence, markerValue, true, entryKey)
-    elseif message == TURN_ORDER_SORT_SYNC_TAG then
+    elseif tag == TURN_ORDER_SORT_SYNC_TAG then
         self:SortTurnOrderResults(true)
-    else
+    elseif tag == TURN_ORDER_RESET_SYNC_TAG then
         self:ResetTurnOrderList(true)
+    elseif tag == TURN_ORDER_MANUAL_SYNC_TAG then
+        -- Recibido orden manual: deserializar y aplicar
+        local newList = deserializeTurnOrderList(rest)
+        if #newList > 0 then
+            local storage = self:GetTurnOrderStorage()
+            if storage and self.activeTurnOrderGroupKey then
+                storage.byGroup[self.activeTurnOrderGroupKey] = newList
+                self.initiativeRollHistory = newList
+                self:RefreshTurnOrderFrame()
+            end
+        end
     end
-
     return true
 end
 
@@ -587,6 +723,7 @@ function addon:UpdateTurnOrderExpandButtonVisibility()
 end
 
 function addon:CreateTurnOrderFrame()
+
     if self.turnOrderFrame then
         return
     end
@@ -635,9 +772,22 @@ function addon:CreateTurnOrderFrame()
     self.turnOrderToggleButton = toggleButton
 
     local resetButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    resetButton:SetSize(96, 24)
+    resetButton:SetSize(40, 40)
     resetButton:SetPoint("BOTTOMLEFT", 14, 12)
-    resetButton:SetText("Reset")
+    local resetIcon = resetButton:CreateTexture(nil, "ARTWORK")
+    resetIcon:SetTexture("Interface\\Icons\\inv_misc_noteblank2a")
+    resetIcon:SetPoint("CENTER")
+    resetIcon:SetSize(30, 30)
+
+    resetButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Reiniciar")
+        GameTooltip:AddLine("Reinicia el orden de turnos", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    resetButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
     resetButton:SetScript("OnClick", function()
         if addon:CanEditTurnOrderFrame() then
             addon:ResetTurnOrderList()
@@ -646,13 +796,58 @@ function addon:CreateTurnOrderFrame()
     self.turnOrderResetButton = resetButton
 
     local sortButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    sortButton:SetSize(96, 24)
+    sortButton:SetSize(40, 40)
     sortButton:SetPoint("BOTTOMRIGHT", -14, 12)
-    sortButton:SetText("Ordenar")
+
+    local sortIcon = sortButton:CreateTexture(nil, "ARTWORK")
+    sortIcon:SetTexture("Interface\\Icons\\inv_misc_scrollunrolled01")
+    sortIcon:SetPoint("CENTER")
+    sortIcon:SetSize(30, 30)
+
+    sortButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Ordenar")
+        GameTooltip:AddLine("Ordena el orden de turnos", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    sortButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+    
     sortButton:SetScript("OnClick", function()
         addon:SortTurnOrderResults()
     end)
     self.turnOrderSortButton = sortButton
+
+            -- Botón de sincronización manual (solo líder)
+        local syncButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+        syncButton:SetSize(40, 40)
+        syncButton:SetPoint("BOTTOM", frame, "BOTTOM", 0, 12)
+        -- syncButton:SetTexture("Interface\\Icons\\eps_bg3_blink")
+        local syncIcon = syncButton:CreateTexture(nil, "ARTWORK")
+        syncIcon:SetTexture("Interface\\Icons\\eps_bg3_blink")
+        syncIcon:SetPoint("CENTER")
+        syncIcon:SetSize(30, 30)
+        
+        syncButton:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            GameTooltip:SetText("Sincronizar")
+            GameTooltip:AddLine("Sincroniza el orden de turnos con el resto de miembros del grupo de banda", 1, 1, 1)
+            GameTooltip:Show()
+        end)
+        syncButton:SetScript("OnLeave", function()
+            GameTooltip:Hide()
+        end)
+        syncButton:SetScript("OnClick", function()
+            if addon:CanEditTurnOrderFrame() then
+                addon:BroadcastTurnOrderManualSync()
+            end
+        end)
+        syncButton:Show()
+        self.turnOrderSyncButton = syncButton
+        if self.turnOrderSyncButton then
+            self.turnOrderSyncButton:SetShown((not self.turnOrderMinimized) and self:CanEditTurnOrderFrame())
+        end
 
     self.turnOrderRows = {}
 

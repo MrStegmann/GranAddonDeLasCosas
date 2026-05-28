@@ -75,7 +75,26 @@ function addon:CreateMinimapButton()
         end
 
         if mouseButton == "RightButton" then
-            print("|cffffff00" .. addonName .. "|r arrastra con click izquierdo para mover el boton.")
+            local menu = {
+                {
+                    text = "Restaurar posición de barra rápida",
+                    func = function()
+                        if GranAddonDeLasCosasDB then
+                            GranAddonDeLasCosasDB.quickActionsFramePos = nil
+                        end
+                        if addon.quickActionsFrame and addon.quickActionsFrame.ClearAllPoints then
+                            addon.quickActionsFrame:ClearAllPoints()
+                            addon.quickActionsFrame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -200, 180)
+                        end
+                        print("|cffffff00Posición de la barra rápida restaurada.|r")
+                    end,
+                },
+                {
+                    text = "Cancelar",
+                    func = function() end,
+                },
+            }
+            EasyMenu(menu, CreateFrame("Frame", "GACMinimapButtonMenuFrame", UIParent, "UIDropDownMenuTemplate"), button, 0, 0, "MENU", 2)
         end
     end)
 

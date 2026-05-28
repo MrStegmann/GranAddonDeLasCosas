@@ -502,6 +502,9 @@ function addon:CreateLevelOverlayFrame()
 				"Interface\\TargetingFrame\\UI-TargetingFrame-Elite",
 				"GACPlayerCategoryRareEliteOverlay"
 			)
+			if self.playerCategoryOverlays.rareElite and self.playerCategoryOverlays.rareElite.container then
+				self.playerCategoryOverlays.rareElite.container:SetFrameLevel((playerParent:GetFrameLevel() or 1) + 1)
+			end
 		end
 
 		if not self.playerCategoryOverlays.rare then
@@ -511,7 +514,18 @@ function addon:CreateLevelOverlayFrame()
 				"Interface\\TargetingFrame\\UI-TargetingFrame-Rare",
 				"GACPlayerCategoryRareOverlay"
 			)
+			if self.playerCategoryOverlays.rare and self.playerCategoryOverlays.rare.container then
+				self.playerCategoryOverlays.rare.container:SetFrameLevel((playerParent:GetFrameLevel() or 1) + 1)
+			end
 		end
+
+		-- Eleva la corona de líder si existe
+		if _G.PlayerFrameGroupIndicator and _G.PlayerFrameGroupIndicator.Raise then
+			_G.PlayerFrameGroupIndicator:Raise()
+		end
+
+		self:RefreshPlayerLevelOverlay()
+		self:UpdatePlayerCategoryOverlay()
 	end
 
 	if not self.levelOverlayTexts.target then
@@ -530,6 +544,9 @@ function addon:CreateLevelOverlayFrame()
 			if self.targetCategoryOverlays.rareElite then
 				self.targetCategoryOverlays.rareElite:ClearAllPoints()
 				self.targetCategoryOverlays.rareElite:SetPoint("TOPLEFT", targetParent, "TOPLEFT", -25, 0)
+				if self.targetCategoryOverlays.rareElite.container then
+					self.targetCategoryOverlays.rareElite.container:SetFrameLevel((targetParent:GetFrameLevel() or 1) + 1)
+				end
 			end
 		end
 
@@ -540,11 +557,23 @@ function addon:CreateLevelOverlayFrame()
 				"Interface\\TargetingFrame\\UI-TargetingFrame-Rare",
 				"GACTargetCategoryRareOverlay",
 				true
-			)			if self.targetCategoryOverlays.rare then
+			)
+			if self.targetCategoryOverlays.rare then
 				self.targetCategoryOverlays.rare:ClearAllPoints()
 				self.targetCategoryOverlays.rare:SetPoint("TOPLEFT", targetParent, "TOPLEFT", -25, 0)
+				if self.targetCategoryOverlays.rare.container then
+					self.targetCategoryOverlays.rare.container:SetFrameLevel((targetParent:GetFrameLevel() or 1) + 1)
+				end
 			end
 		end
+
+		-- Eleva la corona de líder si existe
+		if _G.TargetFrameGroupIndicator and _G.TargetFrameGroupIndicator.Raise then
+			_G.TargetFrameGroupIndicator:Raise()
+		end
+
+		self:RefreshTargetLevelOverlay()
+		self:UpdateTargetCategoryOverlay()
 	end
 
 	self:InstallLevelOverlayProgressHooks()

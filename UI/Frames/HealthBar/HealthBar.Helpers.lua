@@ -345,8 +345,12 @@ function hb.createCategoryOverlayTexture(parentFrame, relativeFrame, texturePath
 
 	local container = CreateFrame("Frame", nil, parentFrame)
 	container:SetAllPoints(relativeFrame)
-	container:SetFrameStrata("HIGH")
-	container:SetFrameLevel((parentFrame:GetFrameLevel() or 1) + 10)
+	-- Usar el mismo strata que el parentFrame, o uno más bajo si es posible
+	local parentStrata = parentFrame:GetFrameStrata() or "MEDIUM"
+	container:SetFrameStrata(parentStrata)
+	-- Poner el FrameLevel igual o menor al del parentFrame para que quede detrás de los iconos originales
+	local parentLevel = parentFrame:GetFrameLevel() or 1
+	container:SetFrameLevel(math.max(1, parentLevel - 1))
 
 	local overlay = container:CreateTexture(globalName, "OVERLAY")
 	overlay:SetSize(256, 128)
