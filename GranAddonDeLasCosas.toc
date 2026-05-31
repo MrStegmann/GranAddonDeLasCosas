@@ -5,28 +5,6 @@
 ## Version: 1.1.1
 ## SavedVariables: GranAddonDeLasCosasDB
 ## SavedVariablesPerCharacter: GranAddonDeLasCosasCharDB
+## Dependencies: WLV_Extends
 
-Core/Init.lua
-Data/AttributesAndTalents.lua
-Data/LevelsTable.lua
-Core/TRP3Bridge.lua
-Core/Events.lua
-Core/Commands.lua
-Core/RollCommunication.lua
-Core/TooltipSync.lua
-UI/Frames/MainFrame/MainFrame.xml
-UI/Frames/MainFrame/MainFrame.Shared.lua
-UI/Frames/MainFrame/MainFrame.Build.lua
-UI/Frames/MainFrame/MainFrame.AttributesLogic.lua
-UI/Frames/HealthBar/HealthBar.Helpers.lua
-UI/Frames/HealthBar/HealthBar.Actions.lua
-UI/Frames/HealthBar/HealthBar.Events.lua
-UI/Frames/HealthBar/HealthBar.Render.lua
-UI/Frames/Minimap/MinimapButton.lua
-UI/Frames/ExperienceConfig/ExperienceConfigFrame.lua
-UI/Frames/QuickActions/QuickActions.Shared.lua
-UI/Frames/QuickActions/QuickActions.Actions.lua
-UI/Frames/QuickActions/QuickActions.Menus.lua
-UI/Frames/QuickActions/QuickActions.Events.lua
-UI/Frames/QuickActions/QuickActions.Render.lua
-UI/Frames/TurnOrder/TurnOrderFrame.lua
+GranAddonDeLasCosas.xml
