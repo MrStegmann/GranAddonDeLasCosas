@@ -95,8 +95,8 @@ function addon:CHAT_MSG_ADDON(prefix, message, _, sender)
         return
     end
 
-    if self.HandleTurnOrderAddonMessage then
-        self:HandleTurnOrderAddonMessage(message, sender)
+    if self.HandleTurnOrderAddonMessage and self:HandleTurnOrderAddonMessage(message, sender) then
+        return
     end
 
     local playerName = UnitName("player")

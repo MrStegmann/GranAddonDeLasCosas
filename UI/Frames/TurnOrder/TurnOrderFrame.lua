@@ -515,6 +515,9 @@ end
 
 function addon:HandleTurnOrderAddonMessage(message, sender)
     local tag, rest = strsplit("\t", message, 2)
+    if tag ~= TURN_ORDER_MARKER_SYNC_TAG or tag ~= TURN_ORDER_SORT_SYNC_TAG or tag ~= TURN_ORDER_RESET_SYNC_TAG or tag ~= TURN_ORDER_MANUAL_SYNC_TAG then
+        return false
+    end
     local playerName = UnitName("player")
     local senderName = sender and Ambiguate(sender, "none") or nil
     if senderName and playerName and senderName == playerName then
@@ -526,7 +529,6 @@ function addon:HandleTurnOrderAddonMessage(message, sender)
     if not isSenderRaidLeader(sender) then
         return true
     end
-
     if tag == TURN_ORDER_MARKER_SYNC_TAG then
         local sequenceText, markerText, entryKey = strsplit("\t", rest or "")
         local sequence = tonumber(sequenceText)
@@ -819,35 +821,34 @@ function addon:CreateTurnOrderFrame()
     end)
     self.turnOrderSortButton = sortButton
 
-            -- Botón de sincronización manual (solo líder)
-        local syncButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-        syncButton:SetSize(40, 40)
-        syncButton:SetPoint("BOTTOM", frame, "BOTTOM", 0, 12)
-        -- syncButton:SetTexture("Interface\\Icons\\eps_bg3_blink")
-        local syncIcon = syncButton:CreateTexture(nil, "ARTWORK")
-        syncIcon:SetTexture("Interface\\Icons\\eps_bg3_blink")
-        syncIcon:SetPoint("CENTER")
-        syncIcon:SetSize(30, 30)
-        
-        syncButton:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_TOP")
-            GameTooltip:SetText("Sincronizar")
-            GameTooltip:AddLine("Sincroniza el orden de turnos con el resto de miembros del grupo de banda", 1, 1, 1)
-            GameTooltip:Show()
-        end)
-        syncButton:SetScript("OnLeave", function()
-            GameTooltip:Hide()
-        end)
-        syncButton:SetScript("OnClick", function()
-            if addon:CanEditTurnOrderFrame() then
-                addon:BroadcastTurnOrderManualSync()
-            end
-        end)
-        syncButton:Show()
-        self.turnOrderSyncButton = syncButton
-        if self.turnOrderSyncButton then
-            self.turnOrderSyncButton:SetShown((not self.turnOrderMinimized) and self:CanEditTurnOrderFrame())
+    -- Botón de sincronización manual (solo líder)
+    local syncButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    syncButton:SetSize(40, 40)
+    syncButton:SetPoint("BOTTOM", frame, "BOTTOM", 0, 12)
+    local syncIcon = syncButton:CreateTexture(nil, "ARTWORK")
+    syncIcon:SetTexture("Interface\\Icons\\eps_bg3_blink")
+    syncIcon:SetPoint("CENTER")
+    syncIcon:SetSize(30, 30)
+    
+    syncButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Sincronizar")
+        GameTooltip:AddLine("Sincroniza el orden de turnos con el resto de miembros del grupo de banda", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    syncButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+    syncButton:SetScript("OnClick", function()
+        if addon:CanEditTurnOrderFrame() then
+            addon:BroadcastTurnOrderManualSync()
         end
+    end)
+    syncButton:Show()
+    self.turnOrderSyncButton = syncButton
+    if self.turnOrderSyncButton then
+        self.turnOrderSyncButton:SetShown((not self.turnOrderMinimized) and self:CanEditTurnOrderFrame())
+    end
 
     self.turnOrderRows = {}
 
