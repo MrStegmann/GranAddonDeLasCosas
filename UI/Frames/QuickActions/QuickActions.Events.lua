@@ -117,4 +117,3 @@ function addon:CHAT_MSG_SYSTEM(message)
         return
     end
 end
-

@@ -62,25 +62,12 @@ function addon:ColorizeSystemRollMessage(message)
     return message
 end
 
-function addon:InstallRollMessageFilter()
-    if self.rollMessageFilterInstalled then
-        return
-    end
-
-    self.rollMessageFilterInstalled = true
-
-    ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", function(_, _, message, ...)
-        return false, addon:ColorizeSystemRollMessage(message), ...
-    end)
-end
-
 function addon:RegisterRollCommunication()
     if type(C_ChatInfo) ~= "table" then
         return
     end
 
     C_ChatInfo.RegisterAddonMessagePrefix(self.rollMessagePrefix)
-    self:InstallRollMessageFilter()
 
     if self.eventFrame then
         self.eventFrame:RegisterEvent("CHAT_MSG_ADDON")
@@ -96,7 +83,6 @@ function addon:BroadcastRollMessage(message)
     if not channel then
         return
     end
-
     C_ChatInfo.SendAddonMessage(self.rollMessagePrefix, message, channel)
 end
 
@@ -109,8 +95,8 @@ function addon:CHAT_MSG_ADDON(prefix, message, _, sender)
         return
     end
 
-    if self.HandleTurnOrderAddonMessage and self:HandleTurnOrderAddonMessage(message, sender) then
-        return
+    if self.HandleTurnOrderAddonMessage then
+        self:HandleTurnOrderAddonMessage(message, sender)
     end
 
     local playerName = UnitName("player")
@@ -119,5 +105,5 @@ function addon:CHAT_MSG_ADDON(prefix, message, _, sender)
         return
     end
 
-    print("|cff40c7ff[GAC]|r " .. message)
+    print(message)
 end
