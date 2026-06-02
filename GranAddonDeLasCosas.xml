@@ -1,5 +1,9 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="index.lua"/>
+    <Include file="src\Communication\Communication.xml"/>
+    <Include file="src\Utils\Utils.xml"/>
+    <Include file="src\Data\Data.xml"/>
+    <Include file="src\Frames\MainMenu\MainMenu.xml"/>
     <Include file="src\Frames\QuickButtonsMenu\QuickButtonsMenu.xml"/>
 </Ui>
