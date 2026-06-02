@@ -69,41 +69,82 @@ end
 -- Etiqueta para sincronización manual
 local TURN_ORDER_MANUAL_SYNC_TAG = "TURN_MANUAL_SYNC"
 -- Serializa la lista de turnos para sincronización
-local function serializeTurnOrderList(list)
-    local parts = {}
-    for _, entry in ipairs(list or {}) do
-        local marker = entry.marker or ""
-        local key = entry.key or ""
-        table.insert(parts, table.concat({entry.name, entry.roll, marker, key}, ":"))
+local function serializeTurnOrderEntry(entry)
+    local marker = entry.marker or ""
+    local key = entry.key or ""
+    return table.concat({tostring(entry.name or ""), tostring(entry.roll or ""), tostring(marker), tostring(key)}, ":")
+end
+
+local function deserializeTurnOrderEntry(entryStr, sequence)
+    local name, roll, marker, key = strsplit(":", entryStr or "")
+    if type(name) ~= "string" or name == "" then
+        return nil
     end
-    return table.concat(parts, ",")
+
+    local numericRoll = tonumber(roll)
+    if not numericRoll then
+        return nil
+    end
+
+    return {
+        name = name,
+        roll = numericRoll,
+        marker = tonumber(marker) or nil,
+        key = key ~= "" and key or nil,
+        sequence = sequence,
+    }
 end
 
 -- Deserializa la lista de turnos recibida
 local function deserializeTurnOrderList(serialized)
     local list = {}
     for entryStr in string.gmatch(serialized or "", "[^,]+") do
-        local name, roll, marker, key = strsplit(":", entryStr)
-        table.insert(list, {
-            name = name,
-            roll = tonumber(roll),
-            marker = tonumber(marker) or nil,
-            key = key ~= "" and key or nil,
-        })
-    end
-    -- Reasignar secuencia
-    for i, entry in ipairs(list) do
-        entry.sequence = i
+        local entry = deserializeTurnOrderEntry(entryStr, #list + 1)
+        if entry then
+            table.insert(list, entry)
+        end
     end
     return list
 end
+
+local function applyTurnOrderManualSync(addonInstance, newList)
+    if type(newList) ~= "table" or #newList == 0 then
+        return
+    end
+
+    addonInstance:ActivateTurnOrderForCurrentRaid()
+
+    local storage = addonInstance:GetTurnOrderStorage()
+    if storage and addonInstance.activeTurnOrderGroupKey then
+        storage.byGroup[addonInstance.activeTurnOrderGroupKey] = newList
+        addonInstance.initiativeRollHistory = newList
+        addonInstance:RefreshTurnOrderFrame()
+    end
+end
+
 function addon:BroadcastTurnOrderManualSync()
     if type(C_ChatInfo) ~= "table" then return end
     if not IsInRaid() then return end
     if not self.initiativeRollHistory or #self.initiativeRollHistory == 0 then return end
-    local serialized = serializeTurnOrderList(self.initiativeRollHistory)
     local channel = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and "INSTANCE_CHAT" or "RAID"
-    C_ChatInfo.SendAddonMessage(self.rollMessagePrefix, TURN_ORDER_MANUAL_SYNC_TAG .. "\t" .. serialized, channel)
+    self.turnOrderManualSyncSequence = (self.turnOrderManualSyncSequence or 0) + 1
+    local syncId = tostring(time()) .. "-" .. tostring(self.turnOrderManualSyncSequence)
+    local totalEntries = #self.initiativeRollHistory
+
+    C_ChatInfo.SendAddonMessage(self.rollMessagePrefix, TURN_ORDER_MANUAL_SYNC_TAG .. "\tBEGIN\t" .. syncId .. "\t" .. totalEntries, channel)
+
+    for index, entry in ipairs(self.initiativeRollHistory) do
+        local payload = TURN_ORDER_MANUAL_SYNC_TAG
+            .. "\tENTRY\t"
+            .. syncId
+            .. "\t"
+            .. index
+            .. "\t"
+            .. serializeTurnOrderEntry(entry)
+        C_ChatInfo.SendAddonMessage(self.rollMessagePrefix, payload, channel)
+    end
+
+    C_ChatInfo.SendAddonMessage(self.rollMessagePrefix, TURN_ORDER_MANUAL_SYNC_TAG .. "\tEND\t" .. syncId, channel)
 end
 
 local function buildMarkerInlineTexture(markerIndex)
@@ -294,9 +335,9 @@ function addon:SetTurnOrderEntryMarker(sequence, markerIndex, fromSyncMessage, e
     matchedEntry.marker = markerIndex
     self:RefreshTurnOrderFrame()
 
-    -- if not fromSyncMessage then
-    --     self:BroadcastTurnOrderMarkerSync(matchedEntry.sequence or sequence, markerIndex, matchedEntry.key or matchedEntry.name)
-    -- end
+    if not fromSyncMessage then
+        self:BroadcastTurnOrderMarkerSync(matchedEntry.sequence or sequence, markerIndex, matchedEntry.key or matchedEntry.name)
+    end
 end
 
 function addon:OpenTurnOrderMarkerMenu(entry, anchorFrame)
@@ -467,6 +508,10 @@ function addon:SetTurnOrderMinimized(isMinimized)
         self.turnOrderSortButton:SetShown(showContent and canEdit)
     end
 
+    if self.turnOrderSyncButton then
+        self.turnOrderSyncButton:SetShown(showContent and canEdit)
+    end
+
     for _, row in ipairs(self.turnOrderRows or {}) do
         row:SetShown(showContent)
     end
@@ -515,7 +560,10 @@ end
 
 function addon:HandleTurnOrderAddonMessage(message, sender)
     local tag, rest = strsplit("\t", message, 2)
-    if tag ~= TURN_ORDER_MARKER_SYNC_TAG or tag ~= TURN_ORDER_SORT_SYNC_TAG or tag ~= TURN_ORDER_RESET_SYNC_TAG or tag ~= TURN_ORDER_MANUAL_SYNC_TAG then
+    if tag ~= TURN_ORDER_MARKER_SYNC_TAG
+        and tag ~= TURN_ORDER_SORT_SYNC_TAG
+        and tag ~= TURN_ORDER_RESET_SYNC_TAG
+        and tag ~= TURN_ORDER_MANUAL_SYNC_TAG then
         return false
     end
     local playerName = UnitName("player")
@@ -541,15 +589,45 @@ function addon:HandleTurnOrderAddonMessage(message, sender)
     elseif tag == TURN_ORDER_RESET_SYNC_TAG then
         self:ResetTurnOrderList(true)
     elseif tag == TURN_ORDER_MANUAL_SYNC_TAG then
-        -- Recibido orden manual: deserializar y aplicar
-        local newList = deserializeTurnOrderList(rest)
-        if #newList > 0 then
-            local storage = self:GetTurnOrderStorage()
-            if storage and self.activeTurnOrderGroupKey then
-                storage.byGroup[self.activeTurnOrderGroupKey] = newList
-                self.initiativeRollHistory = newList
-                self:RefreshTurnOrderFrame()
+        local action, syncId, value, entryPayload = strsplit("\t", rest or "", 4)
+        if action == "BEGIN" and syncId and syncId ~= "" then
+            self.pendingTurnOrderManualSync = {
+                sender = senderName,
+                syncId = syncId,
+                expectedCount = tonumber(value) or 0,
+                entries = {},
+            }
+        elseif action == "ENTRY" and syncId and syncId ~= "" then
+            local pending = self.pendingTurnOrderManualSync
+            local entryIndex = tonumber(value)
+            if pending
+                and pending.sender == senderName
+                and pending.syncId == syncId
+                and entryIndex then
+                pending.entries[entryIndex] = entryPayload
             end
+        elseif action == "END" and syncId and syncId ~= "" then
+            local pending = self.pendingTurnOrderManualSync
+            if pending
+                and pending.sender == senderName
+                and pending.syncId == syncId then
+                local newList = {}
+                local expectedCount = pending.expectedCount or 0
+                for index = 1, expectedCount do
+                    local entry = deserializeTurnOrderEntry(pending.entries[index], index)
+                    if not entry then
+                        self.pendingTurnOrderManualSync = nil
+                        return true
+                    end
+                    table.insert(newList, entry)
+                end
+
+                self.pendingTurnOrderManualSync = nil
+                applyTurnOrderManualSync(self, newList)
+            end
+        else
+            -- Compatibilidad con el formato antiguo de lista completa en un solo mensaje.
+            applyTurnOrderManualSync(self, deserializeTurnOrderList(rest))
         end
     end
     return true
@@ -705,6 +783,10 @@ function addon:UpdateTurnOrderFrameVisibility()
 
         if self.turnOrderSortButton then
             self.turnOrderSortButton:SetEnabled(self:CanEditTurnOrderFrame())
+        end
+
+        if self.turnOrderSyncButton then
+            self.turnOrderSyncButton:SetEnabled(self:CanEditTurnOrderFrame())
         end
     else
         self.turnOrderFrame:Hide()
