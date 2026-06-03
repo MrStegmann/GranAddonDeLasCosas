@@ -132,7 +132,8 @@ end
 -- Crea un input numerico con comportamiento comun de Enter/Escape.
 local function createNumericInput(parent, width, height, value, onCommit)
     local input = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
-    input:SetSize(width or 44, height or 20)
+    local res = WLVX:resolveDimensions(width or 32, height or 32, parent)
+    input:SetSize(res.x, res.y)
     input:SetAutoFocus(false)
     input:SetNumeric(true)
     input:SetMaxLetters(6)
@@ -247,8 +248,7 @@ end
 -- Crea el ScrollFrame que contiene las tarjetas de atributos.
 local function createAttributesScroll(parent, charSheetId)
     local panel = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-    panel:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -92)
-    panel:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 42)
+    panel:SetAllPoints(parent)
     applyPanelBackdrop(panel, 0.65)
 
     local scrollFrame = CreateFrame("ScrollFrame", charSheetId .. "_ScrollFrame", panel, "UIPanelScrollFrameTemplate")
@@ -304,7 +304,8 @@ local function buildAttributeCard(parent, group, yOffset, cardWidth)
     local characterData = ensureCharacterData()
     local cardHeight = 48 + (#(group.talents or {}) * 22)
     local card = CreateFrame("Frame", nil, parent)
-    card:SetSize(cardWidth, cardHeight)
+    local res = WLVX:resolveDimensions(cardWidth or 32, cardHeight, parent)
+    card:SetSize(res.x, cardHeight)
     card:SetPoint("TOPLEFT", parent, "TOPLEFT", 8, yOffset)
     styleAttributeCard(card)
 
@@ -342,7 +343,7 @@ end
 
 -- Construye todas las tarjetas de atributos usando la estructura de AttributesAndTalents.lua.
 local function buildAttributeCards(parent)
-    local cardWidth = 390
+    local cardWidth = 365
     local cardSpacing = 14
     local currentY = -12
 
@@ -351,14 +352,13 @@ local function buildAttributeCards(parent)
         currentY = currentY - cardHeight - cardSpacing
     end
 
-    parent:SetSize(cardWidth + 18, math.max(math.abs(currentY) + 20, 1))
+    parent:SetSize(cardWidth, math.max(math.abs(currentY) + 20, 1))
 end
 
 -- Construye la fila de acciones de la ficha con botones nativos de WoW.
 local function buildActions(parent, charSheetId)
     local actions = CreateFrame("Frame", charSheetId .. "_Actions", parent)
-    actions:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, 4)
-    actions:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 4)
+    actions:SetAllPoints(parent)
     actions:SetHeight(32)
 
     local saveButton = CreateFrame("Button", nil, actions, "UIPanelButtonTemplate")
@@ -384,15 +384,19 @@ function GAC:buildCharSheetContent(parentId, charSheetId, parentFrame)
     }
 
     local sheetContent = WLVX:AddColumn(parentFrame, parentId .. charSheetId, "100%", "100%", function(content)
-        WLVX:SetMargin(content, 5, 15)
+        WLVX:SetMargin(content, 2, 5) -- Márgenes reducidos para dar más espacio al contenido real
         WLVX:SetGap(content, 6)
 
         buildHeader(content, charSheetId)
 
-        local scrollChild = createAttributesScroll(content, charSheetId)
-        buildAttributeCards(scrollChild)
+        WLVX:AddRow(content, charSheetId .. "_ScrollRow", "100%", 450, function(row)
+            local scrollChild = createAttributesScroll(row, charSheetId)
+            buildAttributeCards(scrollChild)
+        end)
 
-        buildActions(content, charSheetId)
+        WLVX:AddRow(content, charSheetId .. "_ActionsRow", "100%", 32, function(row)
+            buildActions(row, charSheetId)
+        end)
     end)
 
     self.contentFrames = self.contentFrames or {}

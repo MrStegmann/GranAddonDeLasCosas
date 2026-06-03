@@ -1,0 +1,16 @@
+{
+  "Lua.diagnostics.globals": [
+    "UIDropDownMenu_Initialize",
+    "UIDropDownMenu_SetText",
+    "UIDropDownMenu_SetWidth",
+    "UIParent",
+    "UIDropDownMenu_AddButton",
+    "UIDropDownMenu_CreateInfo",
+    "Minimap",
+    "GameTooltip",
+    "StatusTrackingBarManager",
+    "MainMenuBar",
+    "LE_PARTY_CATEGORY_INSTANCE",
+    "RANDOM_ROLL_RESULT"
+  ]
+}
