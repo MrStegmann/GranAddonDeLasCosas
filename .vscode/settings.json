@@ -12,7 +12,8 @@
     "MainMenuBar",
     "LE_PARTY_CATEGORY_INSTANCE",
     "RANDOM_ROLL_RESULT",
-    "SlashCmdList"
+    "SlashCmdList",
+    "UIDropDownMenu_SetSelectedValue"
   ],
   "Lua.runtime.version": "Lua 5.1",
   "Lua.runtime.builtin": {
