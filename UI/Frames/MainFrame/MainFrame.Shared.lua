@@ -119,6 +119,7 @@ local function buildLevelDropdown(frame, category)
     if not frame or not frame.MainExperienceLevelDropdown then
         return
     end
+    print("DEBUG: buildLevelDropdown llamado para categoría:", category)
 
     UIDropDownMenu_Initialize(frame.MainExperienceLevelDropdown, function(_, level)
         if level ~= 1 then
@@ -126,11 +127,14 @@ local function buildLevelDropdown(frame, category)
         end
 
         local maxLevel = addon:GetMaxLevelForCategory(category)
+        print("DEBUG: Shared Level Dropdown Init. MaxLevel encontrado:", maxLevel)
+
         for levelNumber = 1, maxLevel do
             local info = UIDropDownMenu_CreateInfo()
             info.text = tostring(levelNumber)
             info.value = levelNumber
             info.func = function()
+                print("DEBUG: Shared Level seleccionado:", levelNumber)
                 addon:SetExperienceLevel(levelNumber)
                 addon:RefreshMainExperiencePanel()
                 if addon.UpdateQuickExperienceBar then

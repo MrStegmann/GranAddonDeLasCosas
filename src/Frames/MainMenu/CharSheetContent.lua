@@ -46,7 +46,7 @@ function GAC:CreateCharSheetContent(parent)
     catLabel:SetPoint("TOPLEFT", 15, -10)
     catLabel:SetText("CATEGORÍA")
 
-    local catDropDown = CreateFrame("Frame", nil, header, "UIDropDownMenuTemplate")
+    local catDropDown = CreateFrame("Frame", "GACCharSheetCategoryDropDown", header, "UIDropDownMenuTemplate")
     catDropDown:SetPoint("TOPLEFT", catLabel, "BOTTOMLEFT", -15, 0)
     UIDropDownMenu_SetWidth(catDropDown, 120)
 
@@ -55,21 +55,30 @@ function GAC:CreateCharSheetContent(parent)
     lvlLabel:SetPoint("LEFT", catLabel, "RIGHT", 100, 0)
     lvlLabel:SetText("NIVEL")
 
-    local lvlDropDown = CreateFrame("Frame", nil, header, "UIDropDownMenuTemplate")
+    local lvlDropDown = CreateFrame("Frame", "GACCharSheetLevelDropDown", header, "UIDropDownMenuTemplate")
     lvlDropDown:SetPoint("TOPLEFT", lvlLabel, "BOTTOMLEFT", -15, 0)
     UIDropDownMenu_SetWidth(lvlDropDown, 60)
+    print("DEBUG: lvlDropDown creado en CharSheetContent")
 
     -- Inicializadores de los dropdowns (Referencia: MainFrame.Shared.lua)
     local function CategoryDropDown_Initialize(self, level)
+        level = level or 1
         if level ~= 1 then return end
 
         local snapshot = GAC:GetExperienceProgressSnapshot()
+        if not snapshot then 
+            print("DEBUG: CategoryDropDown_Initialize - No hay snapshot")
+            return 
+        end
+
         local categories = GAC.levelCategories or {}
+        print("DEBUG: Inicializando Categorías. Cantidad:", #categories)
         for _, catName in ipairs(categories) do
             local info = UIDropDownMenu_CreateInfo()
             info.text = catName
             info.value = catName
             info.func = function()
+                print("DEBUG: Categoría seleccionada:", catName)
                 GAC:SetExperienceCategory(catName)
                 if frame.Update then frame:Update() end
             end
@@ -79,15 +88,25 @@ function GAC:CreateCharSheetContent(parent)
     end
 
     local function LevelDropDown_Initialize(self, level)
+        level = level or 1
+        print("DEBUG: LevelDropDown_Initialize invocado. Level:", level)
         if level ~= 1 then return end
 
         local snapshot = GAC:GetExperienceProgressSnapshot()
+        if not snapshot then 
+            print("DEBUG: LevelDropDown_Initialize - No hay snapshot")
+            return 
+        end
+
         local maxLevel = GAC:GetMaxLevelForCategory(snapshot.category) or 1
+        print("DEBUG: Generando niveles para categoría:", snapshot.category, "MaxLevel:", maxLevel)
+
         for i = 1, maxLevel do
             local info = UIDropDownMenu_CreateInfo()
             info.text = tostring(i)
             info.value = i
             info.func = function()
+                print("DEBUG: Nivel seleccionado:", i)
                 GAC:SetExperienceLevel(i)
                 if frame.Update then frame:Update() end
             end
@@ -118,6 +137,11 @@ function GAC:CreateCharSheetContent(parent)
         end
 
         local snapshot = GAC:GetExperienceProgressSnapshot()
+        if not snapshot then 
+            print("DEBUG: UpdateSheet - No hay snapshot")
+            return 
+        end
+
         local charData = GAC.characterData or {}
         charData.attributes = charData.attributes or {}
         charData.talents = charData.talents or {}
