@@ -2,5 +2,6 @@
 https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="CharSheetContent.lua"/>
 	<Include file="index.lua"/>
+	<Include file="MinimapButton.lua"/>
 
 </Ui>

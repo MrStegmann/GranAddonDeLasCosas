@@ -4,11 +4,6 @@ local addonName, GAC = ...
 GAC.quickActions = GAC.quickActions or {}
 local qa = GAC.quickActions
 
-qa.formatXPBarText = function(current, max)
-    local percentage = (max > 0) and (current / max * 100) or 0
-    return string.format("EXP %d / %d (%.1f%%)", current, max, percentage)
-end
-
 qa.setupTooltip = function(button, title, ...)
     local lines = {...}
     button:SetScript("OnEnter", function(self)
@@ -39,42 +34,6 @@ function GAC:GetQuickModifierValue()
     if text == "" then return 0, false end
     local val = tonumber(text)
     return val or 0, true
-end
-
-function GAC:UpdateQuickExperienceBar()
-    local frame = self.quickActionsFrame
-    if not frame or not frame.experienceBar then return end
-
-    local bar = frame.experienceBar
-    local snapshot = self:GetExperienceProgressSnapshot()
-    local currentXP = snapshot.currentExperience or 0
-    local maxXP = snapshot.requiredExperience or 0
-
-    bar.currentXP = currentXP
-    bar.maxXP = maxXP
-
-    local effectiveMaxXP = (maxXP <= 0) and 1 or maxXP
-    local percentage = (maxXP > 0) and (currentXP / maxXP) or 0
-
-    bar:SetMinMaxValues(0, effectiveMaxXP)
-    bar:SetValue(math.min(currentXP, effectiveMaxXP))
-
-    local fillR = 0.12 + (0.18 * percentage)
-    local fillG = 0.26 + (0.40 * percentage)
-    local fillB = 0.52 + (0.46 * percentage)
-    bar:SetStatusBarColor(fillR, fillG, fillB)
-
-    if bar.spark then
-        local barWidth = bar:GetWidth() - 4
-        local xOffset = (barWidth * percentage) - (barWidth / 2)
-        bar.spark:ClearAllPoints()
-        bar.spark:SetPoint("CENTER", bar, "CENTER", xOffset, 0)
-        bar.spark:SetShown(maxXP > 0 and percentage > 0 and percentage < 1)
-    end
-
-    if bar.valueText then
-        bar.valueText:SetText(qa.formatXPBarText(currentXP, maxXP))
-    end
 end
 
 function GAC:UpdateTargetInspectButtonVisibility()
@@ -342,50 +301,6 @@ function GAC:CreateQuickActionsFrame()
     end)
     qa.setupTooltip(customRollBtn, "Tirada Personalizada", "Lanza la cantidad y caras de dados indicadas.")
 
-    -- Experience Bar
-    local expBar = CreateFrame("StatusBar", "GACExperienceBar", UIParent)
-    expBar:SetFrameStrata("LOW")
-    expBar:SetHeight(10)
-    expBar:SetStatusBarTexture("Interface\\TARGETINGFRAME\\UI-StatusBar")
-    expBar:SetStatusBarColor(0.12, 0.26, 0.52)
-    expBar:EnableMouse(true)
-
-    local expBG = expBar:CreateTexture(nil, "BACKGROUND")
-    expBG:SetAllPoints()
-    expBG:SetColorTexture(0.01, 0.03, 0.07, 0.72)
-
-    local expSpark = expBar:CreateTexture(nil, "ARTWORK")
-    expSpark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
-    expSpark:SetSize(10, 12)
-    expSpark:SetBlendMode("ADD")
-    expBar.spark = expSpark
-
-    local expText = expBar:CreateFontString(nil, "OVERLAY", "GameFontNormalTiny")
-    expText:SetPoint("CENTER")
-    expText:Hide()
-    expBar.valueText = expText
-
-    expBar:SetScript("OnEnter", function(s) s.valueText:Show() end)
-    expBar:SetScript("OnLeave", function(s) s.valueText:Hide() end)
-
-    local function anchorExpBar()
-        if MainMenuBarArtFrame then
-            expBar:SetSize(MainMenuBarArtFrame:GetWidth() or 1024, 10)
-            expBar:SetPoint("BOTTOM", MainMenuBarArtFrame, "TOP", 0, -16)
-        elseif StatusTrackingBarManager then
-            expBar:SetAllPoints(StatusTrackingBarManager)
-        else
-            expBar:SetSize(512, 10)
-            expBar:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 2)
-        end
-    end
-    anchorExpBar()
-
-    -- Hooks para redimensionado
-    if MainMenuBarArtFrame then
-        MainMenuBarArtFrame:HookScript("OnSizeChanged", anchorExpBar)
-    end
-
     -- Inspect Button (encima del frame)
     local inspectBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     inspectBtn:SetSize(29, 29)
@@ -402,7 +317,6 @@ function GAC:CreateQuickActionsFrame()
 
     -- Asignaciones al objeto GAC
     frame.modifierInput = modInput
-    frame.experienceBar = expBar
     self.quickActionsFrame = frame
     self.turnOrderExpandQuickButton = expandTurnButton
     self.targetInspectQuickButton = inspectBtn
@@ -410,7 +324,6 @@ function GAC:CreateQuickActionsFrame()
     frame:SetHeight(lifeButton:GetHeight() + diceButton:GetHeight() + buttonRowSpacing + 4)
     
     self:UpdateTargetInspectButtonVisibility()
-    self:UpdateQuickExperienceBar()
 
     -- Registro de eventos para visibilidad
     local eventFrame = CreateFrame("Frame")
