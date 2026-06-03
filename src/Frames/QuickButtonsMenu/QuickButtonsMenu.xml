@@ -2,6 +2,6 @@
 https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="Events.lua"/>
 	<Include file="ChatCapture.lua"/>
-	<Include file="Submenus.lua"/>
+	<Include file="ContextMenus.lua"/>
 	<Include file="index.lua"/>
 </Ui>

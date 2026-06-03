@@ -22,6 +22,7 @@ function GAC:StartTalentRoll(attributeName, talentName)
 
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
     self.rollType = "talent"
+    self.lastTalentRolled = { attributeName = attributeName, talentName = talentName }
     RandomRoll(1, 20)
 end
 
@@ -45,6 +46,7 @@ function GAC:StartAttributeRoll(attributeName)
 
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
     self.rollType = "attribute"
+    self.lastAttributeRolled = { attributeName = attributeName }
     RandomRoll(1, 20)
 end
 
@@ -84,5 +86,6 @@ function GAC:StartAttackRoll(dice, talentKey, talentLabel)
 
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
     self.rollType = "attack"
+    self.lastAttackRolled = { dice = dice, talentKey = talentKey, talentLabel = talentLabel }
     RandomRoll(1, dice)
 end

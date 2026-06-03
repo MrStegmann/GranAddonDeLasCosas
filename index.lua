@@ -7,11 +7,6 @@ GAC.characterData = {}
 GAC.contentFrames = {}
 
 
-print("Cargando ", GAC.name, " versión ", GAC.version)
-if WLV_Extends  then
-    print("WLV Extension cargado con la versión ", WLV_Extends.GetVersion())
-end
-
 
 local eventFrame = CreateFrame("Frame")
 GAC.eventFrame = eventFrame
