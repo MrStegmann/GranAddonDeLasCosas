@@ -52,3 +52,284 @@ GAC.levelsTable = {
         [10] = { maxHealth = 368, expToLevel = nil, attPoints = 20, skillPoints = 20, heroicPoints = 8, maxPositiveTraits = 5 },
     },
 }
+
+local function clamp(numberValue, minValue, maxValue)
+    local value = tonumber(numberValue) or minValue
+    if value < minValue then
+        return minValue
+    end
+
+    if value > maxValue then
+        return maxValue
+    end
+
+    return value
+end
+
+function GAC:GetMaxLevelForCategory(category)
+    local categoryLevels = self.levelsTable and self.levelsTable[category]
+    if not categoryLevels then
+        return 1
+    end
+
+    local maxLevel = 1
+    for level in pairs(categoryLevels) do
+        if level > maxLevel then
+            maxLevel = level
+        end
+    end
+
+    return maxLevel
+end
+
+function GAC:GetLevelEntry(category, level)
+    local categoryLevels = self.levelsTable and self.levelsTable[category]
+    if not categoryLevels then
+        return nil
+    end
+
+    return categoryLevels[level]
+end
+
+function GAC:GetRequiredExperience(category, level)
+    local entry = self:GetLevelEntry(category, level)
+    if not entry then
+        return nil
+    end
+
+    return entry.expToLevel
+end
+
+function GAC:GetNextExperienceCategory(category)
+    local categories = self.levelCategories or {}
+    local categoryIndex = nil
+
+    for index, categoryName in ipairs(categories) do
+        if categoryName == category then
+            categoryIndex = index
+            break
+        end
+    end
+
+    if not categoryIndex then
+        return nil
+    end
+
+    return categories[categoryIndex + 1]
+end
+
+function GAC:NormalizeExperienceProgressData()
+    if not self.characterData then
+        return
+    end
+
+    self.characterData.progress = self.characterData.progress or {}
+
+    local progress = self.characterData.progress
+    local category = progress.category
+
+    if not self.levelsTable[category] then
+        category = "Normal"
+    end
+
+    local maxLevel = self:GetMaxLevelForCategory(category)
+    local level = clamp(progress.level or 1, 1, maxLevel)
+    local requiredExp = self:GetRequiredExperience(category, level)
+    local currentExperience = math.max(0, math.floor(tonumber(progress.currentExperience) or 0))
+
+    if requiredExp and requiredExp > 0 and currentExperience > requiredExp then
+        currentExperience = requiredExp
+    end
+
+    progress.category = category
+    progress.level = level
+    progress.currentExperience = currentExperience
+end
+
+function GAC:GetExperienceProgressSnapshot()
+    self:NormalizeExperienceProgressData()
+
+    local progress = self.characterData and self.characterData.progress or {}
+    local category = progress.category or "Normal"
+    local level = progress.level or 1
+    local currentExperience = progress.currentExperience or 0
+    local requiredExperience = self:GetRequiredExperience(category, level)
+
+    return {
+        category = category,
+        level = level,
+        currentExperience = currentExperience,
+        requiredExperience = requiredExperience,
+    }
+end
+
+function GAC:SetExperienceCategory(category)
+    if not self.characterData then
+        return
+    end
+
+    if not self.levelsTable[category] then
+        return
+    end
+
+    self.characterData.progress = self.characterData.progress or {}
+
+    local maxLevel = self:GetMaxLevelForCategory(category)
+    local currentLevel = tonumber(self.characterData.progress.level) or 1
+
+    self.characterData.progress.category = category
+    self.characterData.progress.level = clamp(currentLevel, 1, maxLevel)
+    self.characterData.progress.currentExperience = 0
+
+    self:NormalizeExperienceProgressData()
+end
+
+function GAC:SetExperienceLevel(level)
+    if not self.characterData then
+        return
+    end
+
+    self.characterData.progress = self.characterData.progress or {}
+
+    local category = self.characterData.progress.category or "Normal"
+    if not self.levelsTable[category] then
+        category = "Normal"
+    end
+
+    local maxLevel = self:GetMaxLevelForCategory(category)
+    self.characterData.progress.level = clamp(level, 1, maxLevel)
+    self.characterData.progress.currentExperience = 0
+
+    self:NormalizeExperienceProgressData()
+end
+
+function GAC:SetCurrentExperience(experienceValue)
+    if not self.characterData then
+        return
+    end
+
+    self.characterData.progress = self.characterData.progress or {}
+
+    local snapshot = self:GetExperienceProgressSnapshot()
+    local value = math.max(0, math.floor(tonumber(experienceValue) or 0))
+
+    if snapshot.requiredExperience and snapshot.requiredExperience > 0 then
+        value = math.min(value, snapshot.requiredExperience)
+    end
+
+    self.characterData.progress.currentExperience = value
+    self:NormalizeExperienceProgressData()
+end
+
+-- Función para imprimir el mensaje informativo de subida de nivel en el chat
+function GAC:PrintLevelUpMessage(oldLevel, newLevel, category)
+    if not self.characterData then return end
+
+    -- Obtener datos de perfil TRP3 para el nombre y color
+    local name = self.GetActiveTRP3ProfileName and self:GetActiveTRP3ProfileName() or UnitName("player")
+    local nameColor = self.GetActiveTRP3ProfileColor and self:GetActiveTRP3ProfileColor() or "ffffff"
+    
+    -- Formatear color hex para WoW (de RRGGBB a AARRGGBB)
+    if #nameColor == 6 then nameColor = "ff" .. nameColor end
+    local playerDisplayName = string.format("|c%s%s|r", nameColor, name)
+
+    local newEntry = self:GetLevelEntry(category, newLevel)
+    if not newEntry then return end
+
+    local prevEntry = self:GetLevelEntry(category, oldLevel)
+
+    -- Calcular la diferencia de puntos con respecto al nivel anterior
+    local attDelta = (newEntry.attPoints or 0) - (prevEntry and prevEntry.attPoints or 0)
+    local skillDelta = (newEntry.skillPoints or 0) - (prevEntry and prevEntry.skillPoints or 0)
+    local heroicDelta = (newEntry.heroicPoints or 0) - (prevEntry and prevEntry.heroicPoints or 0)
+    local traitsDelta = (newEntry.maxPositiveTraits or 0) - (prevEntry and prevEntry.maxPositiveTraits or 0)
+
+    local msg = string.format("¡%s ha alcanzado el nivel |cff00ff00%d|r en la categoría |cffffff00%s|r!\n", playerDisplayName, newLevel, category)
+    msg = msg .. string.format("  Vida máxima: |cffff5555%d|r\n", newEntry.maxHealth or 0)
+    
+    if attDelta > 0 then msg = msg .. string.format("  Puntos de atributo nuevos: |cff55ff55%d|r\n", attDelta) end
+    if skillDelta > 0 then msg = msg .. string.format("  Ranuras de hechizo/habilidad ganadas: |cff55ffff%d|r\n", skillDelta) end
+    if heroicDelta > 0 then msg = msg .. string.format("  Ranura de heroicas ganadas: |cffffaa00%d|r\n", heroicDelta) end
+    if traitsDelta > 0 then msg = msg .. string.format("  Puntos de rasgos positivos máximos ganados: |cffaaaaff%d|r", traitsDelta) end
+
+    print(msg)
+end
+
+function GAC:AddExperience(experienceAmount)
+    if not self.characterData then
+        return
+    end
+
+    local amount = math.floor(tonumber(experienceAmount) or 0)
+    if amount <= 0 then
+        return
+    end
+
+    self.characterData.progress = self.characterData.progress or {}
+    self:NormalizeExperienceProgressData()
+
+    local progress = self.characterData.progress
+    local category = progress.category or "Normal"
+    local level = tonumber(progress.level) or 1
+    local currentExperience = tonumber(progress.currentExperience) or 0
+    local maxLevel = self:GetMaxLevelForCategory(category)
+    local oldLevel = level -- Guardar nivel actual antes de procesar el incremento
+
+    if level >= maxLevel then
+        local requiredAtCap = self:GetRequiredExperience(category, level)
+        if requiredAtCap and requiredAtCap > 0 then
+            progress.currentExperience = math.min(currentExperience + amount, requiredAtCap)
+        else
+            progress.currentExperience = currentExperience
+        end
+
+        self:NormalizeExperienceProgressData()
+        return
+    end
+
+    local remaining = amount
+
+    while remaining > 0 do
+        local requiredExperience = self:GetRequiredExperience(category, level)
+        if not requiredExperience or requiredExperience <= 0 then
+            -- Max level in this category.
+            currentExperience = 0
+            remaining = 0
+            break
+        end
+
+        local missingToLevel = requiredExperience - currentExperience
+        if remaining < missingToLevel then
+            currentExperience = currentExperience + remaining
+            remaining = 0
+            break
+        end
+
+        remaining = remaining - missingToLevel
+        
+        if level >= maxLevel then
+            local nextCategory = self:GetNextExperienceCategory(category)
+            if nextCategory then
+                category = nextCategory
+                level = 1
+                currentExperience = 0
+                maxLevel = self:GetMaxLevelForCategory(category)
+                self:PrintLevelUpMessage(oldLevel, level, category)
+                oldLevel = level
+            else
+                currentExperience = requiredExperience
+                remaining = 0
+                break
+            end
+        else
+            level = level + 1
+            currentExperience = 0
+            self:PrintLevelUpMessage(oldLevel, level, category)
+            oldLevel = level
+        end
+    end
+
+    progress.level = level
+    progress.currentExperience = currentExperience
+    self:NormalizeExperienceProgressData()
+end

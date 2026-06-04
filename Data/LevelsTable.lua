@@ -355,18 +355,27 @@ function addon:AddExperience(experienceAmount)
         end
 
         remaining = remaining - missingToLevel
+        
         if level >= maxLevel then
-            currentExperience = requiredExperience
-            remaining = 0
-            break
+            local nextCategory = self:GetNextExperienceCategory(category)
+            if nextCategory then
+                category = nextCategory
+                level = 1
+                currentExperience = 0
+                maxLevel = self:GetMaxLevelForCategory(category)
+                self:PrintLevelUpMessage(oldLevel, level, category)
+                oldLevel = level
+            else
+                currentExperience = requiredExperience
+                remaining = 0
+                break
+            end
+        else
+            level = level + 1
+            currentExperience = 0
+            self:PrintLevelUpMessage(oldLevel, level, category)
+            oldLevel = level
         end
-
-        level = level + 1
-        currentExperience = 0
-
-        -- Lanzar el mensaje informativo cada vez que sube un nivel
-        self:PrintLevelUpMessage(oldLevel, level, category)
-        oldLevel = level
     end
 
     progress.level = level

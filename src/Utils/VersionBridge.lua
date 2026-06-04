@@ -61,3 +61,13 @@ function GAC:NormalizeTalentNameThroughtVersions(talentName)
     }
     return normalizationMap[talentName] or talentName
 end
+
+function GAC:NormalizeCategoryLevelThroughtVersions(category)
+    local normalizationMap = {
+         ["Novato"] = "noob",
+         ["Normal"] = "normal",
+         ["Élite"] = "elite",
+         ["Jefe"] = "boss",
+    }
+    return normalizationMap[category] or category
+end

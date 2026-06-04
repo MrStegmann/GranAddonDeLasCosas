@@ -6,8 +6,6 @@ GAC.version = "1.0.0"
 GAC.characterData = {}
 GAC.contentFrames = {}
 
-
-
 local eventFrame = CreateFrame("Frame")
 GAC.eventFrame = eventFrame
 

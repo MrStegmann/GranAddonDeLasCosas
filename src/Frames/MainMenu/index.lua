@@ -5,6 +5,7 @@ function GAC:CreateMainMenuFrame()
 
     -- Marco principal
     local frame = CreateFrame("Frame", "GACMainMenuFrame", UIParent, "BackdropTemplate")
+    frame:Hide() -- Initialize hidden so the first ToggleMainMenu() call will show it
     frame:SetSize(750, 550)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
@@ -35,6 +36,12 @@ function GAC:CreateMainMenuFrame()
     title:SetText("GRAN ADDON DE LAS COSAS")
     title:SetTextColor(0.25, 0.78, 0.94)
 
+    -- Línea divisoria (Estilo TRP3)
+    local line = frame:CreateTexture(nil, "ARTWORK")
+    line:SetSize(frame:GetWidth() - 24, 1)
+    line:SetPoint("TOP", 0, -45)
+    line:SetColorTexture(1, 1, 1, 0.1)
+
     -- Barra lateral de navegación
     local sidebar = CreateFrame("Frame", nil, frame, "BackdropTemplate")
     sidebar:SetSize(180, 0)
@@ -47,11 +54,11 @@ function GAC:CreateMainMenuFrame()
         insets = { left = 2, right = 2, top = 2, bottom = 2 },
     })
     sidebar:SetBackdropColor(0, 0, 0, 0.4)
-    sidebar:SetBackdropBorderColor(1, 1, 1, 0.1)
+    sidebar:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.15)
 
     -- Contenedor principal de pestañas
     local contentArea = CreateFrame("Frame", nil, frame)
-    contentArea:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 15, 0)
+    contentArea:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 10, 0)
     contentArea:SetPoint("BOTTOMRIGHT", -12, 12)
     frame.contentArea = contentArea
 
@@ -60,31 +67,53 @@ function GAC:CreateMainMenuFrame()
 
     local function SelectTab(tabID)
         for id, data in pairs(tabs) do
-            if id == tabID then
-                data.button:SetBackdropColor(0.25, 0.78, 0.94, 0.3)
+            local isSelected = (id == tabID)
+            data.button.indicator:SetShown(isSelected)
+            if isSelected then
+                data.button:SetBackdropColor(1, 1, 1, 0.08)
+                data.button.text:SetTextColor(0.25, 0.78, 0.94)
                 data.content:Show()
                 if data.content.Update then data.content:Update() end
             else
                 data.button:SetBackdropColor(0, 0, 0, 0)
+                data.button.text:SetTextColor(1, 1, 1)
                 data.content:Hide()
             end
         end
     end
 
     local function AddTab(id, label, createFunc)
+        local btnWidth = sidebar:GetWidth() - 4
         local btn = CreateFrame("Button", nil, sidebar, "BackdropTemplate")
-        btn:SetSize(170, 32)
-        btn:SetPoint("TOP", 0, -10 - (tabCount * 36))
+        btn:SetSize(btnWidth, 36)
+        btn:SetPoint("TOPLEFT", 2, -10 - (tabCount * 38))
         btn:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
         btn:SetBackdropColor(0, 0, 0, 0)
 
+        -- Indicador lateral (TRP3 Style)
+        local indicator = btn:CreateTexture(nil, "OVERLAY")
+        indicator:SetSize(3, 22)
+        indicator:SetPoint("LEFT", 2, 0)
+        indicator:SetColorTexture(0.25, 0.78, 0.94, 1)
+        indicator:Hide()
+        btn.indicator = indicator
+
         local text = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        text:SetPoint("LEFT", 12, 0)
+        text:SetPoint("LEFT", 15, 0)
         text:SetText(label:upper())
+        btn.text = text
 
         btn:SetScript("OnClick", function() SelectTab(id) end)
-        btn:SetScript("OnEnter", function(s) s:SetBackdropColor(1, 1, 1, 0.05) end)
-        btn:SetScript("OnLeave", function(s) end)
+        btn:SetScript("OnEnter", function(s) 
+            s:SetBackdropColor(1, 1, 1, 0.05)
+            s.text:SetTextColor(0.25, 0.78, 0.94)
+        end)
+        btn:SetScript("OnLeave", function(s)
+            if not tabs[id].content:IsShown() then
+                s:SetBackdropColor(0, 0, 0, 0)
+                s.text:SetTextColor(1, 1, 1)
+            end
+        end)
 
         local content = createFunc(contentArea)
         content:Hide()
@@ -95,6 +124,7 @@ function GAC:CreateMainMenuFrame()
 
     -- Inserción de la primera pestaña solicitada
     AddTab("CharSheet", "Ficha de Personaje", function(p) return GAC:CreateCharSheetContent(p) end)
+    AddTab("ExpConfig", "Configuración de Exp", function(p) return GAC:CreateExperienceConfigurator(p) end)
 
     self.mainMenuFrame = frame
     SelectTab("CharSheet")

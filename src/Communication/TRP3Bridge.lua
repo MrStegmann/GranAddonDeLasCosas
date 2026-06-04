@@ -167,6 +167,24 @@ local function getFromTRP3RegisterAPI(api, extractor)
     return extractor(profileData)
 end
 
+local function getProfileRaceFromData(profileData)
+    if type(profileData) ~= "table" then return nil end
+    local characteristics = profileData.characteristics
+    if type(characteristics) == "table" then
+        return firstTrimmed(characteristics.RA, characteristics.ra, characteristics.race)
+    end
+    return nil
+end
+
+local function getProfileClassFromData(profileData)
+    if type(profileData) ~= "table" then return nil end
+    local characteristics = profileData.characteristics
+    if type(characteristics) == "table" then
+        return firstTrimmed(characteristics.CL, characteristics.cl, characteristics.class)
+    end
+    return nil
+end
+
 local function getActiveTRP3ProfileValue(extractor)
     if type(TRP3_API) ~= "table" then
         return nil
@@ -191,6 +209,14 @@ end
 
 function GAC:GetActiveTRP3ProfileColor()
     return getActiveTRP3ProfileValue(getProfileColorFromData)
+end
+
+function GAC:GetActiveTRP3ProfileRace()
+    return getActiveTRP3ProfileValue(getProfileRaceFromData) or UnitRace("player")
+end
+
+function GAC:GetActiveTRP3ProfileClass()
+    return getActiveTRP3ProfileValue(getProfileClassFromData) or UnitClass("player")
 end
 
 function GAC:GetRollDisplayName()

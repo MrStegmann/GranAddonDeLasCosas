@@ -17,6 +17,26 @@ qa.setupTooltip = function(button, title, ...)
     button:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
+qa.createQuickButton = function(parent)
+    local btn = CreateFrame("Button", nil, parent, "BackdropTemplate")
+    btn:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true, tileSize = 16, edgeSize = 10,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 },
+    })
+    btn:SetBackdropColor(0, 0, 0, 0.6)
+    btn:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.5)
+
+    btn:HookScript("OnEnter", function(self)
+        self:SetBackdropColor(0.25, 0.78, 0.94, 0.3)
+    end)
+    btn:HookScript("OnLeave", function(self)
+        self:SetBackdropColor(0, 0, 0, 0.6)
+    end)
+    return btn
+end
+
 local function injectModifier(pendingTable)
     if not pendingTable then return end
     local mod, has = GAC:GetQuickModifierValue()
@@ -105,7 +125,7 @@ function GAC:CreateQuickActionsFrame()
     local buttonX, buttonSpacing, buttonRowSpacing = 8, 1, 1
 
     -- 1. Dados (Talentos)
-    local diceButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    local diceButton = qa.createQuickButton(frame)
     diceButton:SetSize(33, 27)
     diceButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", buttonX, 0)
     local diceIcon = diceButton:CreateTexture(nil, "ARTWORK")
@@ -132,7 +152,7 @@ function GAC:CreateQuickActionsFrame()
     )
 
     -- 2. Atributos
-    local attrButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    local attrButton = qa.createQuickButton(frame)
     attrButton:SetSize(33, 27)
     attrButton:SetPoint("LEFT", diceButton, "RIGHT", buttonSpacing, 0)
     local attrIcon = attrButton:CreateTexture(nil, "ARTWORK")
@@ -159,7 +179,7 @@ function GAC:CreateQuickActionsFrame()
     )
 
     -- 3. Vida
-    local lifeButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    local lifeButton = qa.createQuickButton(frame)
     lifeButton:SetSize(33, 27)
     lifeButton:SetPoint("BOTTOMLEFT", diceButton, "TOPLEFT", 0, buttonRowSpacing)
     local lifeIcon = lifeButton:CreateTexture(nil, "ARTWORK")
@@ -176,7 +196,7 @@ function GAC:CreateQuickActionsFrame()
     )
 
     -- 4. Escudo
-    local shieldButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    local shieldButton = qa.createQuickButton(frame)
     shieldButton:SetSize(33, 27)
     shieldButton:SetPoint("LEFT", lifeButton, "RIGHT", buttonSpacing, 0)
     local shieldIcon = shieldButton:CreateTexture(nil, "ARTWORK")
@@ -193,7 +213,7 @@ function GAC:CreateQuickActionsFrame()
     )
 
     -- 5. Iniciativa
-    local swordButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    local swordButton = qa.createQuickButton(frame)
     swordButton:SetSize(33, 27)
     swordButton:SetPoint("LEFT", attrButton, "RIGHT", buttonSpacing, 0)
     local swordIcon = swordButton:CreateTexture(nil, "ARTWORK")
@@ -211,7 +231,7 @@ function GAC:CreateQuickActionsFrame()
     qa.setupTooltip(swordButton, "Iniciativa (d100)", "Click para tirar Iniciativa")
 
     -- 6. Ataque
-    local attackButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    local attackButton = qa.createQuickButton(frame)
     attackButton:SetSize(33, 27)
     attackButton:SetPoint("LEFT", swordButton, "RIGHT", buttonSpacing, 0)
     local attackIcon = attackButton:CreateTexture(nil, "ARTWORK")
@@ -238,7 +258,7 @@ function GAC:CreateQuickActionsFrame()
     )
 
     -- 7. Expandir Turnos
-    local expandTurnButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    local expandTurnButton = qa.createQuickButton(frame)
     expandTurnButton:SetSize(33, 27)
     expandTurnButton:SetPoint("LEFT", shieldButton, "RIGHT", buttonSpacing, 0)
     local expandIcon = expandTurnButton:CreateTexture(nil, "ARTWORK")
@@ -289,7 +309,7 @@ function GAC:CreateQuickActionsFrame()
     faceInput:SetNumeric(true)
     faceInput:SetText("20")
 
-    local customRollBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    local customRollBtn = qa.createQuickButton(frame)
     customRollBtn:SetSize(33, 27)
     customRollBtn:SetPoint("LEFT", faceInput, "RIGHT", 1, 0)
     local customIcon = customRollBtn:CreateTexture(nil, "ARTWORK")
@@ -302,7 +322,7 @@ function GAC:CreateQuickActionsFrame()
     qa.setupTooltip(customRollBtn, "Tirada Personalizada", "Lanza la cantidad y caras de dados indicadas.")
 
     -- Inspect Button (encima del frame)
-    local inspectBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    local inspectBtn = qa.createQuickButton(frame)
     inspectBtn:SetSize(29, 29)
     inspectBtn:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -8, -1)
     local inspectIcon = inspectBtn:CreateTexture(nil, "ARTWORK")
