@@ -3,7 +3,8 @@ local addonName, GAC = ...
 GAC.name = addonName
 GAC.version = "1.0.0"
 
-GAC.characterData = {}
+GAC.characterData = nil
+GAC.db = nil
 GAC.contentFrames = {}
 
 local eventFrame = CreateFrame("Frame")
@@ -21,4 +22,22 @@ eventFrame:SetScript("OnUpdate", function(_, elapsed)
     end
 end)
 
+eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
+
+function GAC:ADDON_LOADED(loadedAddonName)
+    if loadedAddonName == self.name then
+        GranAddonDeLasCosasDB = GranAddonDeLasCosasDB or {}
+        GranAddonDeLasCosasCharDB = GranAddonDeLasCosasCharDB or {}
+
+        self.db = GranAddonDeLasCosasDB
+        self.characterData = GranAddonDeLasCosasCharDB
+        self.characterData.progress = self.characterData.progress or {}
+
+        if self.InitializeAttributeSystem then self:InitializeAttributeSystem() end
+        if self.CreateQuickActionsFrame then self:CreateQuickActionsFrame() end
+        if self.CreateMinimapButton then self:CreateMinimapButton() end
+
+        self.eventFrame:UnregisterEvent("ADDON_LOADED")
+    end
+end

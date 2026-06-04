@@ -65,6 +65,7 @@ function GAC:CreateExperienceConfigurator(parent)
             expBar:SetValue(1)
             expText:SetText("Nivel Máximo Alcanzado")
         end
+        GAC:UpdateGameExpBar()
     end
 
     expInput:SetScript("OnEnterPressed", function(self)

@@ -135,7 +135,4 @@ function GAC:InitializeAttributeSystem()
     end
     print("[GAC]: Atributos y talentos cargados correctamente.")
 end
-
-C_Timer.After(1, function()
-    GAC:InitializeAttributeSystem()
-end)
+

@@ -129,7 +129,7 @@ function GAC:NormalizeExperienceProgressData()
     local category = progress.category
 
     if not self.levelsTable[category] then
-        category = "Normal"
+        category = "normal"
     end
 
     local maxLevel = self:GetMaxLevelForCategory(category)
@@ -150,11 +150,11 @@ function GAC:GetExperienceProgressSnapshot()
     self:NormalizeExperienceProgressData()
 
     local progress = self.characterData and self.characterData.progress or {}
-    local category = progress.category or "Normal"
+    local category = progress.category or "normal"
     local level = progress.level or 1
+
     local currentExperience = progress.currentExperience or 0
     local requiredExperience = self:GetRequiredExperience(category, level)
-
     return {
         category = category,
         level = level,
@@ -191,9 +191,9 @@ function GAC:SetExperienceLevel(level)
 
     self.characterData.progress = self.characterData.progress or {}
 
-    local category = self.characterData.progress.category or "Normal"
+    local category = self.characterData.progress.category or "normal"
     if not self.levelsTable[category] then
-        category = "Normal"
+        category = "normal"
     end
 
     local maxLevel = self:GetMaxLevelForCategory(category)
@@ -269,7 +269,7 @@ function GAC:AddExperience(experienceAmount)
     self:NormalizeExperienceProgressData()
 
     local progress = self.characterData.progress
-    local category = progress.category or "Normal"
+    local category = progress.category or "normal"
     local level = tonumber(progress.level) or 1
     local currentExperience = tonumber(progress.currentExperience) or 0
     local maxLevel = self:GetMaxLevelForCategory(category)

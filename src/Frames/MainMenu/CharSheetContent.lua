@@ -224,6 +224,7 @@ function GAC:CreateCharSheetContent(parent)
         GAC:SetExperienceCategory(currentCat)
         GAC:SetExperienceLevel(currentLvl)
         GAC:SetCurrentExperience(0)
+        GAC:UpdateGameExpBar()
         if frame.Update then frame:Update() end
         print("|cFF40C7EBGAC:|r Progresión guardada correctamente.")
     end)

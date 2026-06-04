@@ -351,7 +351,4 @@ function GAC:CreateQuickActionsFrame()
     eventFrame:SetScript("OnEvent", function() GAC:UpdateTargetInspectButtonVisibility() end)
 end
 
--- Inicialización
-C_Timer.After(1, function()
-    GAC:CreateQuickActionsFrame()
-end)
+

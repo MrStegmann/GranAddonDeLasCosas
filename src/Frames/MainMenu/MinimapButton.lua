@@ -61,7 +61,4 @@ function GAC:CreateMinimapButton()
     UpdatePosition()
     self.minimapButton = button
 end
-
-C_Timer.After(1, function()
-    GAC:CreateMinimapButton()
-end)
+
