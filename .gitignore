@@ -1,2 +1,4 @@
 /README.md
-/talents_n_attributes.yml
+**/*.yml
+.vscode/
+.stfolder/
