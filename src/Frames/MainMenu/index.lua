@@ -7,7 +7,14 @@ function GAC:CreateMainMenuFrame()
     local frame = CreateFrame("Frame", "GACMainMenuFrame", UIParent, "BackdropTemplate")
     frame:Hide() -- Initialize hidden so the first ToggleMainMenu() call will show it
     frame:SetSize(750, 550)
-    frame:SetPoint("CENTER")
+    -- Posicionamiento persistente
+    self.characterData.ui.mainMenu = self.characterData.ui.mainMenu or {}
+    local pos = self.characterData.ui.mainMenu
+    if not pos.anchor then
+        pos.anchor, pos.relativeAnchor, pos.x, pos.y = "CENTER", "CENTER", 0, 0
+    end
+    
+    frame:SetPoint(pos.anchor, UIParent, pos.relativeAnchor, pos.x, pos.y)
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
@@ -24,7 +31,15 @@ function GAC:CreateMainMenuFrame()
     frame:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.8)
 
     frame:SetScript("OnDragStart", frame.StartMoving)
-    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    frame:SetScript("OnDragStop", function(s)
+        s:StopMovingOrSizing()
+        local a, _, ra, ox, oy = s:GetPoint(1)
+        ra = ra or a -- Si relativePoint es nulo, suele ser igual que el anchor point
+        pos.anchor = a
+        pos.relativeAnchor = ra
+        pos.x = math.floor(ox + 0.5)
+        pos.y = math.floor(oy + 0.5)
+    end)
 
     -- Botón cerrar
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")

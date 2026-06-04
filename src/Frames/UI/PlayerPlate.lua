@@ -97,9 +97,11 @@ function GAC:InitializePlayerPlate()
                 local maxHealth = baseHealth + constitution
                 if maxHealth < 1 then maxHealth = 1 end
                 
-                -- Por ahora, mostramos la vida llena
+                local currentHealth = GAC.characterData and GAC.characterData.currentHealth
+                if currentHealth == nil then currentHealth = maxHealth end
+                
                 statusbar:SetMinMaxValues(0, maxHealth)
-                statusbar:SetValue(maxHealth)
+                statusbar:SetValue(currentHealth)
             end
         end)
     end
@@ -119,8 +121,11 @@ function GAC:InitializePlayerPlate()
                 local maxHealth = baseHealth + constitution
                 if maxHealth < 1 then maxHealth = 1 end
                 
+                local currentHealth = GAC.characterData and GAC.characterData.currentHealth
+                if currentHealth == nil then currentHealth = maxHealth end
+                
                 if textStatusBar.TextString then
-                    textStatusBar.TextString:SetText(maxHealth .. " / " .. maxHealth)
+                    textStatusBar.TextString:SetText(currentHealth .. " / " .. maxHealth)
                 end
             end
         end)

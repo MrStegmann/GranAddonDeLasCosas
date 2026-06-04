@@ -115,6 +115,7 @@ function GAC:CreateQuickActionsFrame()
         s:StopMovingOrSizing()
         local a, _, ra, ox, oy = s:GetPoint(1)
         if not GAC.characterData.ui.quickFrame then GAC.characterData.ui.quickFrame = {} end
+        ra = ra or a
         GAC.characterData.ui.quickFrame.anchor = a
         GAC.characterData.ui.quickFrame.relativeAnchor = ra
         GAC.characterData.ui.quickFrame.x = math.floor(ox + 0.5)

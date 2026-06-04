@@ -33,6 +33,7 @@ function GAC:ADDON_LOADED(loadedAddonName)
         self.db = GranAddonDeLasCosasDB
         self.characterData = GranAddonDeLasCosasCharDB
         self.characterData.progress = self.characterData.progress or {}
+        self.characterData.ui = self.characterData.ui or {}
 
         if self.InitializeAttributeSystem then self:InitializeAttributeSystem() end
         if self.CreateQuickActionsFrame then self:CreateQuickActionsFrame() end

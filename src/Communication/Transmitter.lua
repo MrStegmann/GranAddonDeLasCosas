@@ -30,8 +30,24 @@ function GAC:SendPlayerData(requesterName)
     local maxHealth = baseHealth + constitution
     if maxHealth < 1 then maxHealth = 1 end
     
-    -- Creamos el paquete serializado. Formato: RES:nivel:categoria:vidaMaxima
-    local payload = string.format("RES:%s:%s:%s", tostring(currentLevel), tostring(category), tostring(maxHealth))
+    local currentHealth = self.characterData and self.characterData.currentHealth
+    if currentHealth == nil then currentHealth = maxHealth end
+    
+    -- Creamos el paquete serializado. Formato: RES:nivel:categoria:vidaMaxima:vidaActual
+    local payload = string.format("RES:%s:%s:%s:%s", tostring(currentLevel), tostring(category), tostring(maxHealth), tostring(currentHealth))
     
     C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "WHISPER", requesterName)
+end
+
+function GAC:BroadcastPlayerData()
+    if not self.requestersCache then return end
+    local now = GetTime()
+    for requester, timestamp in pairs(self.requestersCache) do
+        -- Mantener la suscripción viva durante 5 minutos (300 segundos)
+        if now - timestamp < 300 then
+            self:SendPlayerData(requester)
+        else
+            self.requestersCache[requester] = nil
+        end
+    end
 end

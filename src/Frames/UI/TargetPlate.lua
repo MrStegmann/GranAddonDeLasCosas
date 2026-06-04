@@ -22,10 +22,14 @@ function GAC:UpdateTargetPlate()
         local attributes = self.characterData and self.characterData.attributes or {}
         local maxHealth = baseHealth + (attributes["constitution"] or 0)
         
+        local currentHealth = self.characterData and self.characterData.currentHealth
+        if currentHealth == nil then currentHealth = maxHealth end
+        
         targetData = {
             level = currentLevel,
             category = category,
-            maxHealth = math.max(1, maxHealth)
+            maxHealth = math.max(1, maxHealth),
+            currentHealth = currentHealth
         }
     elseif isPlayer and self.targetDataCache and self.targetDataCache[shortName] then
         targetData = self.targetDataCache[shortName]
@@ -43,11 +47,12 @@ function GAC:UpdateTargetPlate()
         
         -- 2. Vida
         if TargetFrameHealthBar then
-            TargetFrameHealthBar:SetMinMaxValues(0, targetData.maxHealth)
-            -- Como no manejamos daño aún, mostramos la barra llena
-            TargetFrameHealthBar:SetValue(targetData.maxHealth)
+            local maxHealth = targetData.maxHealth
+            local currentHealth = targetData.currentHealth or maxHealth
+            TargetFrameHealthBar:SetMinMaxValues(0, maxHealth)
+            TargetFrameHealthBar:SetValue(currentHealth)
             if TargetFrameHealthBar.TextString then
-                TargetFrameHealthBar.TextString:SetText(targetData.maxHealth .. " / " .. targetData.maxHealth)
+                TargetFrameHealthBar.TextString:SetText(currentHealth .. " / " .. maxHealth)
             end
         end
 

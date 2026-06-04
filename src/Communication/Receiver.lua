@@ -14,18 +14,21 @@ function GAC:InitializeReceiver()
             if text == "REQ" then
                 -- Alguien solicita nuestros datos
                 if GAC.SendPlayerData then
+                    GAC.requestersCache = GAC.requestersCache or {}
+                    GAC.requestersCache[shortSender] = GetTime()
                     GAC:SendPlayerData(shortSender)
                 end
             elseif string.sub(text, 1, 4) == "RES:" then
                 -- Recibimos datos de alguien
                 local payload = string.sub(text, 5) -- Quita "RES:"
-                local level, category, maxHealth = strsplit(":", payload)
+                local level, category, maxHealth, currentHealth = strsplit(":", payload)
                 
                 if level and category and maxHealth then
                     GAC.targetDataCache[shortSender] = {
                         level = tonumber(level) or 1,
                         category = category,
                         maxHealth = tonumber(maxHealth) or 10,
+                        currentHealth = tonumber(currentHealth) or tonumber(maxHealth) or 10,
                         timestamp = GetTime()
                     }
                     
