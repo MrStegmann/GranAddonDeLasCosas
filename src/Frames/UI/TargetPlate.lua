@@ -25,11 +25,14 @@ function GAC:UpdateTargetPlate()
         local currentHealth = self.characterData and self.characterData.currentHealth
         if currentHealth == nil then currentHealth = maxHealth end
         
+        local currentShield = self.characterData and self.characterData.currentShield or 0
+        
         targetData = {
             level = currentLevel,
             category = category,
             maxHealth = math.max(1, maxHealth),
-            currentHealth = currentHealth
+            currentHealth = currentHealth,
+            currentShield = currentShield
         }
     elseif isPlayer and self.targetDataCache and self.targetDataCache[shortName] then
         targetData = self.targetDataCache[shortName]
@@ -45,14 +48,74 @@ function GAC:UpdateTargetPlate()
             levelText:SetDrawLayer("OVERLAY", 7)
         end
         
-        -- 2. Vida
+        -- 2. Vida y Escudo
         if TargetFrameHealthBar then
             local maxHealth = targetData.maxHealth
             local currentHealth = targetData.currentHealth or maxHealth
+            local currentShield = targetData.currentShield or 0
+            
             TargetFrameHealthBar:SetMinMaxValues(0, maxHealth)
             TargetFrameHealthBar:SetValue(currentHealth)
+            
+            -- Dibujar el escudo
+            if not TargetFrameHealthBar.GAC_ShieldBar then
+                TargetFrameHealthBar.GAC_ShieldBar = TargetFrameHealthBar:CreateTexture(nil, "BORDER")
+                TargetFrameHealthBar.GAC_ShieldBar:SetTexture("Interface\\RaidFrame\\Shield-Fill")
+                
+                TargetFrameHealthBar.GAC_OverShieldGlow = TargetFrameHealthBar:CreateTexture(nil, "ARTWORK")
+                TargetFrameHealthBar.GAC_OverShieldGlow:SetTexture("Interface\\RaidFrame\\Shield-Overshield")
+                TargetFrameHealthBar.GAC_OverShieldGlow:SetBlendMode("ADD")
+                TargetFrameHealthBar.GAC_OverShieldGlow:SetSize(16, TargetFrameHealthBar:GetHeight() or 12)
+            end
+            
+            if currentShield > 0 then
+                local barWidth = TargetFrameHealthBar:GetWidth()
+                if barWidth == 0 then barWidth = 119 end
+                
+                local healthPercent = currentHealth / maxHealth
+                local shieldPercent = currentShield / maxHealth
+                
+                local healthWidth = healthPercent * barWidth
+                local shieldWidth = shieldPercent * barWidth
+                
+                TargetFrameHealthBar.GAC_ShieldBar:Show()
+                TargetFrameHealthBar.GAC_ShieldBar:ClearAllPoints()
+                TargetFrameHealthBar.GAC_ShieldBar:SetPoint("TOPLEFT", TargetFrameHealthBar, "TOPLEFT", healthWidth, 0)
+                TargetFrameHealthBar.GAC_ShieldBar:SetPoint("BOTTOMLEFT", TargetFrameHealthBar, "BOTTOMLEFT", healthWidth, 0)
+                
+                if (healthWidth + shieldWidth) > barWidth then
+                    local remainingSpace = barWidth - healthWidth
+                    if remainingSpace <= 0 then
+                        TargetFrameHealthBar.GAC_ShieldBar:Hide()
+                    else
+                        TargetFrameHealthBar.GAC_ShieldBar:SetWidth(remainingSpace)
+                        TargetFrameHealthBar.GAC_ShieldBar:Show()
+                    end
+                    TargetFrameHealthBar.GAC_OverShieldGlow:Show()
+                    TargetFrameHealthBar.GAC_OverShieldGlow:ClearAllPoints()
+                    TargetFrameHealthBar.GAC_OverShieldGlow:SetPoint("RIGHT", TargetFrameHealthBar, "RIGHT", 4, 0)
+                else
+                    if shieldWidth > 0 then
+                        TargetFrameHealthBar.GAC_ShieldBar:SetWidth(shieldWidth)
+                        TargetFrameHealthBar.GAC_ShieldBar:Show()
+                    else
+                        TargetFrameHealthBar.GAC_ShieldBar:Hide()
+                    end
+                    TargetFrameHealthBar.GAC_OverShieldGlow:Hide()
+                end
+            else
+                if TargetFrameHealthBar.GAC_ShieldBar then
+                    TargetFrameHealthBar.GAC_ShieldBar:Hide()
+                    TargetFrameHealthBar.GAC_OverShieldGlow:Hide()
+                end
+            end
+            
             if TargetFrameHealthBar.TextString then
-                TargetFrameHealthBar.TextString:SetText(currentHealth .. " / " .. maxHealth)
+                if currentShield > 0 then
+                    TargetFrameHealthBar.TextString:SetText(currentHealth .. " (" .. currentShield .. ") / " .. maxHealth)
+                else
+                    TargetFrameHealthBar.TextString:SetText(currentHealth .. " / " .. maxHealth)
+                end
             end
         end
 
@@ -104,8 +167,10 @@ function GAC:UpdateTargetPlate()
             levelText:SetVertexColor(1, 0.82, 0)
         end
         
-        if TargetFrameTexture then
-            TargetFrameTexture:SetAlpha(1)
+        -- Limpiamos el escudo visual si no es jugador o no tiene addon
+        if TargetFrameHealthBar and TargetFrameHealthBar.GAC_ShieldBar then
+            TargetFrameHealthBar.GAC_ShieldBar:Hide()
+            TargetFrameHealthBar.GAC_OverShieldGlow:Hide()
         end
         
         local parentForOverlay = TargetFrameTextureFrame or TargetFrame

@@ -50,7 +50,7 @@ function GAC:UpdateGameExpBar()
             expBar.StatusBar:SetValue(currentExp)
             
             if expBar.OverlayFrame and expBar.OverlayFrame.Text then
-                expBar.OverlayFrame.Text:SetText(string.format("%d / %d (%d%%%%)", currentExp, maxExp, percent))
+                expBar.OverlayFrame.Text:SetText(string.format("%d / %d (%d%%)", currentExp, maxExp, percent))
             end
         end
     end

@@ -17,7 +17,7 @@ function GAC:CreateMinimapButton()
     button:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
 
     local icon = button:CreateTexture(nil, "BACKGROUND")
-    icon:SetTexture("Interface\\Icons\\INV_Misc_Dice_01")
+    icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
     icon:SetSize(20, 20)
     icon:SetPoint("CENTER")
 
@@ -61,4 +61,4 @@ function GAC:CreateMinimapButton()
     UpdatePosition()
     self.minimapButton = button
 end
-
+

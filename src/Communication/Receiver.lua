@@ -21,7 +21,7 @@ function GAC:InitializeReceiver()
             elseif string.sub(text, 1, 4) == "RES:" then
                 -- Recibimos datos de alguien
                 local payload = string.sub(text, 5) -- Quita "RES:"
-                local level, category, maxHealth, currentHealth = strsplit(":", payload)
+                local level, category, maxHealth, currentHealth, currentShield = strsplit(":", payload)
                 
                 if level and category and maxHealth then
                     GAC.targetDataCache[shortSender] = {
@@ -29,6 +29,7 @@ function GAC:InitializeReceiver()
                         category = category,
                         maxHealth = tonumber(maxHealth) or 10,
                         currentHealth = tonumber(currentHealth) or tonumber(maxHealth) or 10,
+                        currentShield = tonumber(currentShield) or 0,
                         timestamp = GetTime()
                     }
                     
@@ -38,6 +39,19 @@ function GAC:InitializeReceiver()
                         if GAC.UpdateTargetPlate then
                             GAC:UpdateTargetPlate()
                         end
+                    end
+                end
+            elseif string.sub(text, 1, 5) == "ROLL:" then
+                local rollMessage = string.sub(text, 6)
+                if shortSender ~= UnitName("player") then
+                    GAC.recentRolls = GAC.recentRolls or {}
+                    local rollKey = shortSender .. ":" .. rollMessage
+                    local now = GetTime()
+                    
+                    -- Si no lo hemos recibido en el último segundo (evita duplicados si llega por PARTY y por WHISPER)
+                    if not GAC.recentRolls[rollKey] or (now - GAC.recentRolls[rollKey]) > 1 then
+                        GAC.recentRolls[rollKey] = now
+                        print(rollMessage)
                     end
                 end
             end

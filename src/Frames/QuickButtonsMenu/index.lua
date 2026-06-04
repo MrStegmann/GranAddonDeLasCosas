@@ -37,14 +37,7 @@ qa.createQuickButton = function(parent)
     return btn
 end
 
-local function injectModifier(pendingTable)
-    if not pendingTable then return end
-    local mod, has = GAC:GetQuickModifierValue()
-    if has then
-        pendingTable.hasModifier = true
-        pendingTable.modifierValue = mod
-    end
-end
+
 
 function GAC:GetQuickModifierValue()
     if not self.quickActionsFrame or not self.quickActionsFrame.modifierInput then
@@ -69,17 +62,6 @@ local function ensureQuickFramePosition()
     if pos.anchor == nil then
         pos.anchor, pos.relativeAnchor, pos.x, pos.y = "CENTER", "CENTER", -260, -120
     end
-end
-
-function GAC:StartCustomDiceRoll(quantity, faces)
-    local q = tonumber(quantity) or 1
-    local f = tonumber(faces) or 20
-    local mod, has = self:GetQuickModifierValue()
-    
-    -- Dado que no hay un evento de "custom", usamos un mensaje simple o extendemos el sistema
-    -- Por ahora disparamos el RandomRoll de WoW
-    RandomRoll(1, f)
-    -- Aquí se podría añadir lógica de captura similar a las otras si fuera necesario
 end
 
 function GAC:CreateQuickActionsFrame()
@@ -138,7 +120,6 @@ function GAC:CreateQuickActionsFrame()
         if btn == "RightButton" then
             if GAC.lastTalentRolled then
                 GAC:StartTalentRoll(GAC.lastTalentRolled.attributeName, GAC.lastTalentRolled.talentName)
-                injectModifier(GAC.pendingTalentRoll)
             else
                 print("No has lanzado ningún dado de talento.")
             end
@@ -165,7 +146,6 @@ function GAC:CreateQuickActionsFrame()
         if btn == "RightButton" then
             if GAC.lastAttributeRolled then
                 GAC:StartAttributeRoll(GAC.lastAttributeRolled.attributeName)
-                injectModifier(GAC.pendingAttributeRoll)
             else
                 print("No has lanzado ningún dado de atributo.")
             end
@@ -244,7 +224,6 @@ function GAC:CreateQuickActionsFrame()
         if btn == "RightButton" then
             if GAC.lastAttackRolled then
                 GAC:StartAttackRoll(GAC.lastAttackRolled.dice, GAC.lastAttackRolled.talentKey, GAC.lastAttackRolled.talentLabel)
-                injectModifier(GAC.pendingAttackRoll)
             else
                 print("No has lanzado ningún dado de ataque.")
             end

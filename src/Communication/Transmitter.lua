@@ -33,8 +33,10 @@ function GAC:SendPlayerData(requesterName)
     local currentHealth = self.characterData and self.characterData.currentHealth
     if currentHealth == nil then currentHealth = maxHealth end
     
-    -- Creamos el paquete serializado. Formato: RES:nivel:categoria:vidaMaxima:vidaActual
-    local payload = string.format("RES:%s:%s:%s:%s", tostring(currentLevel), tostring(category), tostring(maxHealth), tostring(currentHealth))
+    local currentShield = self.characterData and self.characterData.currentShield or 0
+    
+    -- Creamos el paquete serializado. Formato: RES:nivel:categoria:vidaMaxima:vidaActual:escudoActual
+    local payload = string.format("RES:%s:%s:%s:%s:%s", tostring(currentLevel), tostring(category), tostring(maxHealth), tostring(currentHealth), tostring(currentShield))
     
     C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "WHISPER", requesterName)
 end
@@ -48,6 +50,32 @@ function GAC:BroadcastPlayerData()
             self:SendPlayerData(requester)
         else
             self.requestersCache[requester] = nil
+        end
+    end
+end
+
+function GAC:BroadcastRollMessage(message)
+    if not message or message == "" then return end
+    local payload = "ROLL:" .. message
+    
+    -- Mandar a grupo/banda
+    if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "INSTANCE_CHAT")
+    elseif IsInRaid() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "RAID")
+    elseif IsInGroup() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "PARTY")
+    end
+    
+    -- Mandarlo también por susurro a todos los que nos tienen seleccionados (suscritos a nuestra vida)
+    if self.requestersCache then
+        local now = GetTime()
+        for requester, timestamp in pairs(self.requestersCache) do
+            if now - timestamp < 300 then
+                C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "WHISPER", requester)
+            else
+                self.requestersCache[requester] = nil
+            end
         end
     end
 end

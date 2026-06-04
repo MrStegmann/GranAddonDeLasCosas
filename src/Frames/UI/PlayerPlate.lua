@@ -100,8 +100,63 @@ function GAC:InitializePlayerPlate()
                 local currentHealth = GAC.characterData and GAC.characterData.currentHealth
                 if currentHealth == nil then currentHealth = maxHealth end
                 
+                local currentShield = GAC.characterData and GAC.characterData.currentShield or 0
+                
                 statusbar:SetMinMaxValues(0, maxHealth)
                 statusbar:SetValue(currentHealth)
+
+                -- Lógica visual del escudo
+                if not statusbar.GAC_ShieldBar then
+                    statusbar.GAC_ShieldBar = statusbar:CreateTexture(nil, "BORDER")
+                    statusbar.GAC_ShieldBar:SetTexture("Interface\\RaidFrame\\Shield-Fill")
+                    
+                    statusbar.GAC_OverShieldGlow = statusbar:CreateTexture(nil, "ARTWORK")
+                    statusbar.GAC_OverShieldGlow:SetTexture("Interface\\RaidFrame\\Shield-Overshield")
+                    statusbar.GAC_OverShieldGlow:SetBlendMode("ADD")
+                    statusbar.GAC_OverShieldGlow:SetSize(16, statusbar:GetHeight() or 12)
+                end
+
+                if currentShield > 0 then
+                    local barWidth = statusbar:GetWidth()
+                    if barWidth == 0 then barWidth = 119 end
+                    
+                    local healthPercent = currentHealth / maxHealth
+                    local shieldPercent = currentShield / maxHealth
+                    
+                    local healthWidth = healthPercent * barWidth
+                    local shieldWidth = shieldPercent * barWidth
+                    
+                    statusbar.GAC_ShieldBar:Show()
+                    statusbar.GAC_ShieldBar:ClearAllPoints()
+                    statusbar.GAC_ShieldBar:SetPoint("TOPLEFT", statusbar, "TOPLEFT", healthWidth, 0)
+                    statusbar.GAC_ShieldBar:SetPoint("BOTTOMLEFT", statusbar, "BOTTOMLEFT", healthWidth, 0)
+                    
+                    if (healthWidth + shieldWidth) > barWidth then
+                        local remainingSpace = barWidth - healthWidth
+                        if remainingSpace <= 0 then
+                            statusbar.GAC_ShieldBar:Hide()
+                        else
+                            statusbar.GAC_ShieldBar:SetWidth(remainingSpace)
+                            statusbar.GAC_ShieldBar:Show()
+                        end
+                        statusbar.GAC_OverShieldGlow:Show()
+                        statusbar.GAC_OverShieldGlow:ClearAllPoints()
+                        statusbar.GAC_OverShieldGlow:SetPoint("RIGHT", statusbar, "RIGHT", 4, 0)
+                    else
+                        if shieldWidth > 0 then
+                            statusbar.GAC_ShieldBar:SetWidth(shieldWidth)
+                            statusbar.GAC_ShieldBar:Show()
+                        else
+                            statusbar.GAC_ShieldBar:Hide()
+                        end
+                        statusbar.GAC_OverShieldGlow:Hide()
+                    end
+                else
+                    if statusbar.GAC_ShieldBar then
+                        statusbar.GAC_ShieldBar:Hide()
+                        statusbar.GAC_OverShieldGlow:Hide()
+                    end
+                end
             end
         end)
     end
@@ -124,8 +179,14 @@ function GAC:InitializePlayerPlate()
                 local currentHealth = GAC.characterData and GAC.characterData.currentHealth
                 if currentHealth == nil then currentHealth = maxHealth end
                 
+                local currentShield = GAC.characterData and GAC.characterData.currentShield or 0
+                
                 if textStatusBar.TextString then
-                    textStatusBar.TextString:SetText(currentHealth .. " / " .. maxHealth)
+                    if currentShield > 0 then
+                        textStatusBar.TextString:SetText(currentHealth .. " (" .. currentShield .. ") / " .. maxHealth)
+                    else
+                        textStatusBar.TextString:SetText(currentHealth .. " / " .. maxHealth)
+                    end
                 end
             end
         end)

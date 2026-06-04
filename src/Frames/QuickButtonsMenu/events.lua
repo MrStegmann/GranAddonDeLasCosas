@@ -11,6 +11,8 @@ function GAC:StartTalentRoll(attributeName, talentName)
     local attributeValue = self.characterData.attributes and self.characterData.attributes[attributeName] and tonumber(self.characterData.attributes[attributeName]) or 0
     local talentValue = self.characterData.talents and self.characterData.talents[talentName] and tonumber(self.characterData.talents[talentName]) or 0
 
+    local mod, hasMod = self:GetQuickModifierValue()
+
     self.pendingTalentRoll = {
         attributeName = attributeName,
         talentName = talentName,
@@ -18,6 +20,8 @@ function GAC:StartTalentRoll(attributeName, talentName)
         talentValue = talentValue,
         min = 1,
         max = 20,
+        hasModifier = hasMod,
+        modifierValue = mod,
     }
 
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
@@ -28,9 +32,31 @@ end
 
 
 function GAC:StartCustomDiceRoll(quantity, faces)
+    if not GAC:CanTriggerRoll() then return end
+    
     local q = tonumber(quantity) or 1
     local f = tonumber(faces) or 20
-    RandomRoll(1, f)
+    
+    -- Limitamos a 10 dados para evitar spam o desconexiones por rate-limit
+    if q > 10 then q = 10 end
+    if q < 1 then q = 1 end
+    
+    local mod, hasMod = self:GetQuickModifierValue()
+    
+    self.pendingCustomRoll = {
+        quantity = q,
+        faces = f,
+        rolls = {},
+        hasModifier = hasMod,
+        modifierValue = mod,
+    }
+    
+    self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
+    self.rollType = "custom"
+    
+    for i = 1, q do
+        RandomRoll(1, f)
+    end
 end
 
 function GAC:ModifyPlayerLife(amount)
@@ -76,6 +102,31 @@ function GAC:ModifyPlayerLife(amount)
     end
 end
 
+function GAC:ModifyPlayerShield(amount)
+    if type(amount) ~= "number" or amount == 0 then return end
+    if not self.characterData then return end
+    
+    if self.characterData.currentShield == nil then
+        self.characterData.currentShield = 0
+    end
+    
+    self.characterData.currentShield = self.characterData.currentShield + amount
+    if self.characterData.currentShield < 0 then
+        self.characterData.currentShield = 0
+    end
+    
+    if PlayerFrameHealthBar then
+        UnitFrameHealthBar_Update(PlayerFrameHealthBar, "player")
+        if TextStatusBar_UpdateTextString then
+            TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
+        end
+    end
+    
+    if self.BroadcastPlayerData then
+        self:BroadcastPlayerData()
+    end
+end
+
 function GAC:StartAttributeRoll(attributeName)
     if not self.characterData then
         return
@@ -86,11 +137,15 @@ function GAC:StartAttributeRoll(attributeName)
 
     local attributeValue = self.characterData.attributes and self.characterData.attributes[attributeName] and tonumber(self.characterData.attributes[attributeName]) or 0
 
+    local mod, hasMod = self:GetQuickModifierValue()
+
     self.pendingAttributeRoll = {
         attributeName = attributeName,
         attributeValue = attributeValue,
         min = 1,
         max = 20,
+        hasModifier = hasMod,
+        modifierValue = mod,
     }
 
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
@@ -104,9 +159,13 @@ function GAC:StartInitiativeRoll()
         return
     end
 
+    local mod, hasMod = self:GetQuickModifierValue()
+
     self.pendingInitiativeRoll = {
         min = 1,
         max = 100,
+        hasModifier = hasMod,
+        modifierValue = mod,
     }
 
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
@@ -126,11 +185,15 @@ function GAC:StartAttackRoll(dice, talentKey, talentLabel)
 
     local talentValue = self.characterData.talents and self.characterData.talents[talentKey] and tonumber(self.characterData.talents[talentKey]) or 0
 
+    local mod, hasMod = self:GetQuickModifierValue()
+
     self.pendingAttackRoll = {
         talentName = talentLabel,
         talentValue = talentValue,
         min = 1,
         max = dice,
+        hasModifier = hasMod,
+        modifierValue = mod,
     }
 
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
