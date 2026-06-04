@@ -37,6 +37,10 @@ function GAC:ADDON_LOADED(loadedAddonName)
         if self.InitializeAttributeSystem then self:InitializeAttributeSystem() end
         if self.CreateQuickActionsFrame then self:CreateQuickActionsFrame() end
         if self.CreateMinimapButton then self:CreateMinimapButton() end
+        if self.InitializePlayerPlate then self:InitializePlayerPlate() end
+        if self.InitializeTargetPlate then self:InitializeTargetPlate() end
+        if self.InitializeTransmitter then self:InitializeTransmitter() end
+        if self.InitializeReceiver then self:InitializeReceiver() end
 
         self.eventFrame:UnregisterEvent("ADDON_LOADED")
     end

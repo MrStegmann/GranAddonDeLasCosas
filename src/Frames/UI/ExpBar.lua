@@ -16,6 +16,10 @@ function GAC:UpdateGameExpBar()
     if maxExp <= 0 then maxExp = 1 end
     local percent = math.floor((currentExp / maxExp) * 100)
 
+    if self.UpdatePlayerPlate then
+        self:UpdatePlayerPlate()
+    end
+
     local bars = StatusTrackingBarManager.bars
     if bars and #bars > 0 then
         local expBar = bars[1] -- En las interfaces modernas, la primera barra es la de experiencia
