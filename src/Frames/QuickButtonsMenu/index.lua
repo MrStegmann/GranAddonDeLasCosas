@@ -179,10 +179,10 @@ function GAC:CreateQuickActionsFrame()
     )
     expandTurnButton:Hide()
 
-    -- Inspect Button
+    -- Inspect Button (encima del frame)
     local inspectBtn = qa.createQuickButton(frame)
-    inspectBtn:SetSize(25, 25)
-    inspectBtn:SetPoint("LEFT", expandTurnButton, "RIGHT", buttonSpacing, 0)
+    inspectBtn:SetSize(20, 20)
+    inspectBtn:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -8, -1)
     local inspectIcon = inspectBtn:CreateTexture(nil, "ARTWORK")
     inspectIcon:SetTexture("Interface\\Icons\\INV_Misc_Spyglass_03")
     inspectIcon:SetPoint("TOPLEFT", 2, -2)
@@ -251,7 +251,7 @@ function GAC:CreateQuickActionsFrame()
             EasyMenu(GAC:CreateTalentsOptions(), GAC.quickActionsMenuFrame, frame, 0, 0, "MENU", 2)
         end
     end)
-    qa.setupTooltip(diceButton, "Dado (d20)", 
+    qa.setupTooltip(diceButton, "Talentos (d20)", 
         "Click para abrir menu de tiradas por talento",
         {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
     )

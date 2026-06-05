@@ -12,6 +12,14 @@ function GAC:StartTalentRoll(attributeName, talentName)
     local talentValue = self.characterData.talents and self.characterData.talents[talentName] and tonumber(self.characterData.talents[talentName]) or 0
 
     local mod, hasMod = self:GetQuickModifierValue()
+    
+    local worgenModValue = 0
+    if GAC.GetModificators then
+        local wMod = GAC:GetModificators()
+        if wMod and wMod[talentName] then
+            worgenModValue = tonumber(wMod[talentName]) or 0
+        end
+    end
 
     self.pendingTalentRoll = {
         attributeName = attributeName,
@@ -22,6 +30,7 @@ function GAC:StartTalentRoll(attributeName, talentName)
         max = 20,
         hasModifier = hasMod,
         modifierValue = mod,
+        worgenModifier = worgenModValue,
     }
 
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()

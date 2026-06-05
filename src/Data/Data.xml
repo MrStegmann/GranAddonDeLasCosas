@@ -2,4 +2,5 @@
 https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="AttributesAndTalents.lua"/>
 	<Include file="LevelTable.lua"/>
+	<Include file="WorgenTable.lua" />
 </Ui>

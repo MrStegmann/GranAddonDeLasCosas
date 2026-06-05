@@ -30,6 +30,12 @@ function GAC:CHAT_MSG_SYSTEM(message)
                     modStr = " + Mod (" .. modVal .. ")"
                 end
             end
+            
+            local worgenModStr = ""
+            if self.pendingTalentRoll.worgenModifier and self.pendingTalentRoll.worgenModifier ~= 0 then
+                total = total + self.pendingTalentRoll.worgenModifier
+                worgenModStr = " + Huargen (" .. self.pendingTalentRoll.worgenModifier .. ")"
+            end
    
             local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
                 or (self.GetRollDisplayName and self:GetRollDisplayName())
@@ -40,6 +46,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 .. self.pendingTalentRoll.attributeName .. " (" .. self.pendingTalentRoll.attributeValue .. ") + "
                 .. self.pendingTalentRoll.talentName .. " (" .. self.pendingTalentRoll.talentValue .. ")"
                 .. modStr
+                .. worgenModStr
                 .. " = " .. total
 
             self.pendingTalentRoll = nil

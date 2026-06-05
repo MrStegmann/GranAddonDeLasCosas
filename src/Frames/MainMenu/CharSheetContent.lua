@@ -92,6 +92,9 @@ function GAC:CreateCharSheetContent(parent)
     local tab3 = CreateFrame("Frame", nil, contentArea)
     tab3:SetAllPoints()
     tab3:Hide()
+    local tab4 = CreateFrame("Frame", nil, contentArea)
+    tab4:SetAllPoints()
+    tab4:Hide()
 
     -- Botones de Pestañas
     local btnHistoria = CreateSubTabButton(frame, "Historia", 100)
@@ -102,19 +105,25 @@ function GAC:CreateCharSheetContent(parent)
     
     local btnAtributos = CreateSubTabButton(frame, "Atributos y Talentos", 150)
     btnAtributos:SetPoint("LEFT", btnProgresion, "RIGHT", 5, 0)
+    
+    local btnOtros = CreateSubTabButton(frame, "Otros", 80)
+    btnOtros:SetPoint("LEFT", btnAtributos, "RIGHT", 5, 0)
 
     local function SelectSubTab(id)
         btnHistoria.selected = (id == 1); btnHistoria:GetScript("OnLeave")(btnHistoria)
         btnProgresion.selected = (id == 2); btnProgresion:GetScript("OnLeave")(btnProgresion)
         btnAtributos.selected = (id == 3); btnAtributos:GetScript("OnLeave")(btnAtributos)
+        btnOtros.selected = (id == 4); btnOtros:GetScript("OnLeave")(btnOtros)
         
         tab1:SetShown(id == 1)
         tab2:SetShown(id == 2)
         tab3:SetShown(id == 3)
+        tab4:SetShown(id == 4)
     end
     btnHistoria:SetScript("OnClick", function() SelectSubTab(1) end)
     btnProgresion:SetScript("OnClick", function() SelectSubTab(2) end)
     btnAtributos:SetScript("OnClick", function() SelectSubTab(3) end)
+    btnOtros:SetScript("OnClick", function() SelectSubTab(4) end)
 
     -------------------------------------------------
     -- TAB 1: HISTORIA
@@ -429,6 +438,36 @@ function GAC:CreateCharSheetContent(parent)
     tab3:SetScript("OnShow", function()
         InitCards()
         RefreshStats()
+    end)
+
+    -------------------------------------------------
+    -- TAB 4: OTROS
+    -------------------------------------------------
+    local otrosBg = CreateFrame("Frame", nil, tab4, "BackdropTemplate")
+    otrosBg:SetAllPoints()
+    otrosBg:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12,
+    })
+    otrosBg:SetBackdropColor(0, 0, 0, 0.3)
+    otrosBg:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
+
+    local worgenCurseCheckbox = CreateFrame("CheckButton", nil, otrosBg, "UICheckButtonTemplate")
+    worgenCurseCheckbox:SetPoint("TOPLEFT", 15, -15)
+    
+    local worgenCurseLabel = otrosBg:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    worgenCurseLabel:SetPoint("LEFT", worgenCurseCheckbox, "RIGHT", 5, 0)
+    worgenCurseLabel:SetText("Maldición Huargen")
+
+    worgenCurseCheckbox:SetScript("OnClick", function(self)
+        if not GAC.characterData then return end
+        GAC.characterData.isWorgenCurse = self:GetChecked()
+    end)
+
+    tab4:SetScript("OnShow", function()
+        if GAC.characterData then
+            worgenCurseCheckbox:SetChecked(GAC.characterData.isWorgenCurse or false)
+        end
     end)
 
     -- Inicializar Tab 1
