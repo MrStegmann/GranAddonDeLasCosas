@@ -43,8 +43,8 @@ function GAC:CHAT_MSG_SYSTEM(message)
             local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue) or tostring(rollValue)
             finalMessage = displayName .. " tira "
                 .. " 1D20 (" .. formattedRoll .. ") + "
-                .. self.pendingTalentRoll.attributeName .. " (" .. self.pendingTalentRoll.attributeValue .. ") + "
-                .. self.pendingTalentRoll.talentName .. " (" .. self.pendingTalentRoll.talentValue .. ")"
+                .. GAC:_(self.pendingTalentRoll.attributeName) .. " (" .. self.pendingTalentRoll.attributeValue .. ") + "
+                .. GAC:_(self.pendingTalentRoll.talentName) .. " (" .. self.pendingTalentRoll.talentValue .. ")"
                 .. modStr
                 .. worgenModStr
                 .. " = " .. total
@@ -75,7 +75,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
 
             finalMessage = displayName .. " tira "
                 .. " 1D20 (" .. formattedRoll .. ") + "
-                .. self.pendingAttributeRoll.attributeName .. " (" .. self.pendingAttributeRoll.attributeValue .. ")"
+                .. GAC:_(self.pendingAttributeRoll.attributeName) .. " (" .. self.pendingAttributeRoll.attributeValue .. ")"
                 .. modStr
                 .. " = " .. total
 
@@ -143,7 +143,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
 
             finalMessage = displayName .. " tira "
                 .. " 1D" .. self.pendingAttackRoll.max .. " (" .. formattedRoll .. ") + "
-                .. self.pendingAttackRoll.talentName .. " (" .. self.pendingAttackRoll.talentValue .. ")"
+                .. GAC:_(self.pendingAttackRoll.talentName) .. " (" .. self.pendingAttackRoll.talentValue .. ")"
                 .. modStr
                 .. " = " .. total
 

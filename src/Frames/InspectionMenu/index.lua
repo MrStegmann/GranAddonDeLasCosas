@@ -174,7 +174,7 @@ function GAC:CreateInspectionMenuContent(parent)
     lvlValue:SetText("-")
 
     local function UpdateProgressionInfo(cat, lvl)
-        catValue:SetText(cat:gsub("^%l", string.upper))
+        catValue:SetText(GAC:_(cat))
         lvlValue:SetText(tostring(lvl))
         
         if not GAC.levelsTable or not GAC.levelsTable[cat] then return end
@@ -249,7 +249,7 @@ function GAC:CreateInspectionMenuContent(parent)
         headerBg:SetPoint("TOPRIGHT", -3, -3)
         headerBg:SetHeight(30)
 
-        local attRow, nameLabel = CreateStatLabel(headerBg, group.name, group.name, false)
+        local attRow, nameLabel = CreateStatLabel(headerBg, GAC:_(group.name), group.name, false)
         attRow:SetPoint("CENTER")
         nameLabel:SetFontObject("GameFontNormalLarge")
         nameLabel:SetTextColor(0.25, 0.78, 0.94)
@@ -262,7 +262,7 @@ function GAC:CreateInspectionMenuContent(parent)
 
         local currentY = -40
         for _, talent in ipairs(group.talents) do
-            local talRow = CreateStatLabel(card, talent, talent, true)
+            local talRow = CreateStatLabel(card, GAC:_(talent), talent, true)
             talRow:SetPoint("TOP", 0, currentY)
             currentY = currentY - 26
         end
@@ -385,7 +385,7 @@ function GAC:CreateInspectionMenuContent(parent)
         local p = GAC.inspectedPlayer
         
         nameText:SetText(Ambiguate(p.name, "none"))
-        infoText:SetText(string.format("Nivel %d (%s) - %s - %s", p.level, p.category:gsub("^%l", string.upper), p.race, p.class))
+        infoText:SetText(string.format("Nivel %d (%s) - %s - %s", p.level, GAC:_(p.category), p.race, p.class))
         
         if portrait then
             if UnitName("target") == p.name then

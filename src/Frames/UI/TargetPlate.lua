@@ -153,7 +153,7 @@ function GAC:UpdateTargetPlate()
         elseif category == "jefe" or category == "boss" then
             overlay:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
             overlay:SetTexCoord(0, 1, 0, 1)
-            overlay:SetVertexColor(1, 0.2, 0.2)
+            overlay:SetVertexColor(1, 0.7, 0.7) -- Teñido de rojo
         else
             overlay:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
             overlay:SetTexCoord(0, 1, 0, 1)
@@ -200,6 +200,18 @@ function GAC:InitializeTargetPlate()
         end
         
         GAC:UpdateTargetPlate()
+    end)
+
+    local elapsed = 0
+    f:SetScript("OnUpdate", function(self, dt)
+        if not UnitExists("target") then return end
+        elapsed = elapsed + dt
+        if elapsed >= 0.5 then
+            elapsed = 0
+            if GAC.UpdateTargetPlate then
+                GAC:UpdateTargetPlate()
+            end
+        end
     end)
     
     -- Hooks nativos para evitar que WoW sobrescriba nuestra UI

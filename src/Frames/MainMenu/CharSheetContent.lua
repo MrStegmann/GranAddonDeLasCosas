@@ -233,9 +233,33 @@ function GAC:CreateCharSheetContent(parent)
         GAC:SetExperienceCategory(currentCat)
         GAC:SetExperienceLevel(currentLvl)
         GAC:SetCurrentExperience(0)
+        
+        if GAC.characterData then
+            local levelEntry = GAC.GetLevelEntry and GAC:GetLevelEntry(currentCat, currentLvl)
+            local baseHealth = 10
+            if levelEntry and levelEntry.maxHealth then
+                baseHealth = levelEntry.maxHealth
+            elseif GAC.levelsTable and GAC.levelsTable[currentCat] and GAC.levelsTable[currentCat][currentLvl] then
+                baseHealth = GAC.levelsTable[currentCat][currentLvl].maxHealth or 10
+            end
+            
+            local constitution = (GAC.characterData.attributes and GAC.characterData.attributes["constitution"]) or 0
+            local maxHealth = baseHealth + constitution
+            if maxHealth < 1 then maxHealth = 1 end
+            
+            GAC.characterData.currentHealth = maxHealth
+            
+            if PlayerFrameHealthBar then
+                UnitFrameHealthBar_Update(PlayerFrameHealthBar, "player")
+                if TextStatusBar_UpdateTextString then
+                    TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
+                end
+            end
+        end
+
         GAC:UpdateGameExpBar()
         if frame.Update then frame:Update() end
-        print("|cFF40C7EBGAC:|r Progresión guardada correctamente.")
+        print("|cFF40C7EBGAC:|r Progresión guardada correctamente. Salud restablecida al máximo.")
     end)
 
     local function UpdateProgressionInfo()
@@ -255,7 +279,7 @@ function GAC:CreateCharSheetContent(parent)
         local categories = GAC.levelCategories or {"noob", "normal", "elite", "boss"}
         for _, cat in ipairs(categories) do
             local info = UIDropDownMenu_CreateInfo()
-            info.text = cat:gsub("^%l", string.upper)
+            info.text = GAC:_(cat)
             info.func = function() 
                 if currentCat ~= cat then saveProgBtn:Show() end
                 currentCat = cat
@@ -267,7 +291,7 @@ function GAC:CreateCharSheetContent(parent)
             UIDropDownMenu_AddButton(info)
         end
     end)
-    UIDropDownMenu_SetText(catDrop, currentCat:gsub("^%l", string.upper))
+    UIDropDownMenu_SetText(catDrop, GAC:_(currentCat))
 
     UIDropDownMenu_Initialize(lvlDrop, function(self, level, menuList)
         if not GAC.levelsTable or not GAC.levelsTable[currentCat] then return end
@@ -378,7 +402,7 @@ function GAC:CreateCharSheetContent(parent)
         headerBg:SetPoint("TOPRIGHT", -3, -3)
         headerBg:SetHeight(30)
 
-        local attRow, nameLabel = CreateStatInput(headerBg, group.name, group.name, false)
+        local attRow, nameLabel = CreateStatInput(headerBg, GAC:_(group.name), group.name, false)
         attRow:SetPoint("CENTER")
         nameLabel:SetFontObject("GameFontNormalLarge")
         nameLabel:SetTextColor(0.25, 0.78, 0.94)
@@ -391,7 +415,7 @@ function GAC:CreateCharSheetContent(parent)
 
         local currentY = -40
         for _, talent in ipairs(group.talents) do
-            local talRow = CreateStatInput(card, talent, talent, true)
+            local talRow = CreateStatInput(card, GAC:_(talent), talent, true)
             talRow:SetPoint("TOP", 0, currentY)
             currentY = currentY - 26
         end

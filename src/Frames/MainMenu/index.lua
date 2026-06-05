@@ -139,7 +139,7 @@ function GAC:CreateMainMenuFrame()
 
     -- Inserción de la primera pestaña solicitada
     AddTab("CharSheet", "Ficha de Personaje", function(p) return GAC:CreateCharSheetContent(p) end)
-    AddTab("ExpConfig", "Configuración de Exp", function(p) return GAC:CreateExperienceConfigurator(p) end)
+    AddTab("ExpConfig", "Conf. Experiencia", function(p) return GAC:CreateExperienceConfigurator(p) end)
 
     self.mainMenuFrame = frame
     SelectTab("CharSheet")

@@ -13,14 +13,14 @@ function GAC:CreateTalentsOptions()
     local options = {}
     for _, group in ipairs(GAC.attributeGroups) do
         local groupOptions = {
-            text = group.name,
+            text = GAC:_(group.name),
             hasArrow = true,
             notCheckable = true,
             menuList = {},
         }
         for _, talent in ipairs(group.talents) do
             table.insert(groupOptions.menuList, {
-                text = talent,
+                text = GAC:_(talent),
                 notCheckable = true,
                 func = function() 
                     GAC:StartTalentRoll(group.name, talent)
@@ -38,7 +38,7 @@ function GAC:CreateAttributesOptions()
     local options = {}
     for _, group in ipairs(GAC.attributeGroups) do
         local groupOptions = {
-            text = group.name,
+            text = GAC:_(group.name),
             notCheckable = true,
             func = function() 
                 GAC:StartAttributeRoll(group.name) 
