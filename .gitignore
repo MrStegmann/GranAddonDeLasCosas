@@ -1,4 +1,3 @@
-/README.md
 **/*.yml
-.vscode/
-.stfolder/
+.vscode
+.stfolder
