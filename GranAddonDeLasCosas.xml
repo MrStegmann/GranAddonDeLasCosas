@@ -7,4 +7,5 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
     <Include file="src\Frames\MainMenu\MainMenu.xml"/>
     <Include file="src\Frames\QuickButtonsMenu\QuickButtonsMenu.xml"/>
     <Include file="src\Frames\UI\UI.xml"/>
+    <Include file="src\Frames\InitiativeOrders\InitiativeOrders.xml"/>
 </Ui>

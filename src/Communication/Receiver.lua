@@ -54,6 +54,40 @@ function GAC:InitializeReceiver()
                         print(rollMessage)
                     end
                 end
+            elseif string.sub(text, 1, 5) == "INIT:" then
+                local initPayload = string.sub(text, 6)
+                if shortSender ~= UnitName("player") then
+                    if string.sub(initPayload, 1, 4) == "ADD:" then
+                        local data = string.sub(initPayload, 5)
+                        local initName, initTotal = strsplit(":", data)
+                        if initName and initTotal and GAC.AddInitiativeRoll then
+                            GAC:AddInitiativeRoll(initName, initTotal)
+                        end
+                    elseif string.sub(initPayload, 1, 7) == "ACTION:" then
+                        local action = string.sub(initPayload, 8)
+                        if action == "CLEAR" and GAC.ClearInitiativeOrder then
+                            GAC:ClearInitiativeOrder()
+                        elseif action == "SORT" and GAC.SortInitiativeOrder then
+                            GAC:SortInitiativeOrder()
+                        end
+                    elseif string.sub(initPayload, 1, 5) == "MOVE:" then
+                        local data = string.sub(initPayload, 6)
+                        local fromStr, toStr = strsplit(":", data)
+                        local fromIdx = tonumber(fromStr)
+                        local toIdx = tonumber(toStr)
+                        if fromIdx and toIdx and GAC.MoveInitiativeIndex then
+                            GAC:MoveInitiativeIndex(fromIdx, toIdx)
+                        end
+                    elseif string.sub(initPayload, 1, 5) == "ICON:" then
+                        local data = string.sub(initPayload, 6)
+                        local idxStr, iconStr = strsplit(":", data)
+                        local idx = tonumber(idxStr)
+                        local iconID = tonumber(iconStr)
+                        if idx and iconID and GAC.SetInitiativeIcon then
+                            GAC:SetInitiativeIcon(idx, iconID)
+                        end
+                    end
+                end
             end
         end
     end)

@@ -79,3 +79,55 @@ function GAC:BroadcastRollMessage(message)
         end
     end
 end
+
+function GAC:BroadcastInitiativeAdd(playerName, total)
+    if not playerName or not total then return end
+    local payload = "INIT:ADD:" .. tostring(playerName) .. ":" .. tostring(total)
+    
+    if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "INSTANCE_CHAT")
+    elseif IsInRaid() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "RAID")
+    elseif IsInGroup() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "PARTY")
+    end
+end
+
+function GAC:BroadcastInitiativeAction(action)
+    if not action then return end
+    local payload = "INIT:ACTION:" .. tostring(action)
+    
+    if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "INSTANCE_CHAT")
+    elseif IsInRaid() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "RAID")
+    elseif IsInGroup() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "PARTY")
+    end
+end
+
+function GAC:BroadcastInitiativeMove(fromIndex, toIndex)
+    if not fromIndex or not toIndex then return end
+    local payload = "INIT:MOVE:" .. tostring(fromIndex) .. ":" .. tostring(toIndex)
+    
+    if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "INSTANCE_CHAT")
+    elseif IsInRaid() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "RAID")
+    elseif IsInGroup() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "PARTY")
+    end
+end
+
+function GAC:BroadcastInitiativeIcon(index, iconID)
+    if not index or not iconID then return end
+    local payload = "INIT:ICON:" .. tostring(index) .. ":" .. tostring(iconID)
+    
+    if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "INSTANCE_CHAT")
+    elseif IsInRaid() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "RAID")
+    elseif IsInGroup() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "PARTY")
+    end
+end

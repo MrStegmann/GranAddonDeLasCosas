@@ -105,6 +105,13 @@ function GAC:CHAT_MSG_SYSTEM(message)
             self.pendingInitiativeRoll = nil
             self.rollType = nil
             
+            if GAC.AddInitiativeRoll then
+                local shortName = Ambiguate(UnitName("player"), "none")
+                GAC:AddInitiativeRoll(shortName, total)
+                if GAC.BroadcastInitiativeAdd then
+                    GAC:BroadcastInitiativeAdd(shortName, total)
+                end
+            end
         end
 
     elseif self.rollType == "attack" then
