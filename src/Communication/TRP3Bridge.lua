@@ -233,3 +233,46 @@ function GAC:GetRollDisplayNameWithColor()
 
     return "|cff" .. color .. name .. "|r"
 end
+
+local function getTargetTRP3ProfileValue(extractor)
+    if type(TRP3_API) ~= "table" then
+        return nil
+    end
+
+    local api = TRP3_API.register
+    if type(api) ~= "table" then
+        return nil
+    end
+
+    local unitStr = "target"
+    local unitID = safeCall(api.getUnitID, unitStr) or unitStr
+
+    local directUnit = safeCall(api.getUnit, unitID) or safeCall(api.getUnitData, unitID)
+    local directValue = extractor(directUnit)
+    if directValue then
+        return directValue
+    end
+
+    local profileID = safeCall(api.getUnitIDCurrentProfile, unitID)
+        or safeCall(api.getUnitCurrentProfile, unitID)
+        or safeCall(api.getUnitProfileID, unitID)
+
+    if not profileID then
+        return nil
+    end
+
+    local profileData = safeCall(api.getProfile, profileID)
+    return extractor(profileData)
+end
+
+function GAC:GetTargetTRP3ProfileName()
+    return getTargetTRP3ProfileValue(getProfileNameFromData) or UnitName("target")
+end
+
+function GAC:GetTargetTRP3ProfileRace()
+    return getTargetTRP3ProfileValue(getProfileRaceFromData) or UnitRace("target")
+end
+
+function GAC:GetTargetTRP3ProfileClass()
+    return getTargetTRP3ProfileValue(getProfileClassFromData) or UnitClass("target")
+end

@@ -39,6 +39,9 @@ function GAC:InitializeReceiver()
                         if GAC.UpdateTargetPlate then
                             GAC:UpdateTargetPlate()
                         end
+                        if GAC.UpdateTargetInspectButtonVisibility then
+                            GAC:UpdateTargetInspectButtonVisibility()
+                        end
                     end
                 end
             elseif string.sub(text, 1, 5) == "ROLL:" then
@@ -86,6 +89,57 @@ function GAC:InitializeReceiver()
                         if idx and iconID and GAC.SetInitiativeIcon then
                             GAC:SetInitiativeIcon(idx, iconID)
                         end
+                    end
+                end
+            elseif text == "INSPECT:REQ" then
+                if GAC.SendInspectionData then
+                    GAC:SendInspectionData(shortSender)
+                end
+            elseif string.sub(text, 1, 10) == "INSP:INFO:" then
+                local data = string.sub(text, 11)
+                local level, category, race, class, maxHealth, currentShield, currentExp, maxExp = strsplit(":", data)
+                GAC.inspectedPlayer = {
+                    name = sender,
+                    level = tonumber(level) or 1,
+                    category = category or "normal",
+                    race = race or "Desconocida",
+                    class = class or "Desconocida",
+                    maxHealth = tonumber(maxHealth) or 10,
+                    currentShield = tonumber(currentShield) or 0,
+                    currentExp = tonumber(currentExp) or 0,
+                    maxExp = tonumber(maxExp) or 0,
+                    attributes = {},
+                    talents = {}
+                }
+            elseif string.sub(text, 1, 8) == "ADD_EXP:" then
+                local amount = tonumber(string.sub(text, 9))
+                if amount and GAC.AddExperience then
+                    GAC:AddExperience(amount)
+                    GAC:UpdateGameExpBar()
+                    print("|cff00ccff[GAC]|r Has recibido " .. amount .. " de experiencia de " .. shortSender .. ".")
+                end
+            elseif string.sub(text, 1, 9) == "INSP:ATT:" then
+                local data = string.sub(text, 10)
+                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == sender then
+                    for pair in string.gmatch(data, "([^;]+)") do
+                        local k, v = strsplit("=", pair)
+                        if k and v then
+                            GAC.inspectedPlayer.attributes[k] = tonumber(v) or 0
+                        end
+                    end
+                end
+            elseif string.sub(text, 1, 9) == "INSP:TAL:" then
+                local data = string.sub(text, 10)
+                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == sender then
+                    for pair in string.gmatch(data, "([^;]+)") do
+                        local k, v = strsplit("=", pair)
+                        if k and v then
+                            GAC.inspectedPlayer.talents[k] = tonumber(v) or 0
+                        end
+                    end
+                    -- TAL is the last packet, open the menu!
+                    if GAC.OpenInspectionMenu then
+                        GAC:OpenInspectionMenu()
                     end
                 end
             end

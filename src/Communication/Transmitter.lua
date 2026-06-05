@@ -131,3 +131,64 @@ function GAC:BroadcastInitiativeIcon(index, iconID)
         C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "PARTY")
     end
 end
+
+function GAC:RequestInspection(targetName)
+    if not targetName or targetName == "" then return end
+    C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSPECT:REQ", "WHISPER", targetName)
+end
+
+function GAC:SendInspectionData(requesterName)
+    if not requesterName or requesterName == "" then return end
+    if not self.characterData then return end
+    
+    -- 1. INFO PACKET: INSP:INFO:Nivel:Categoria:Raza:Clase:SaludMax:EscudoMax
+    local progress = self.characterData.progress or {}
+    local currentLevel = progress.level or 1
+    local category = progress.category or "normal"
+    local race = self:GetActiveTRP3ProfileRace() or "Desconocida"
+    local class = self:GetActiveTRP3ProfileClass() or "Desconocida"
+    
+    local levelEntry = self:GetLevelEntry(category, currentLevel)
+    local baseHealth = levelEntry and levelEntry.maxHealth or 10
+    local attributes = self.characterData.attributes or {}
+    local constitution = attributes["constitution"] or 0
+    local maxHealth = baseHealth + constitution
+    if maxHealth < 1 then maxHealth = 1 end
+    
+    local currentHealth = self.characterData.currentHealth or maxHealth
+    local currentShield = self.characterData.currentShield or 0
+    local currentExp = progress.currentExperience or 0
+    local maxExp = levelEntry and levelEntry.expToLevel or 0
+    
+    local infoPayload = string.format("INSP:INFO:%s:%s:%s:%s:%s:%s:%s:%s", tostring(currentLevel), tostring(category), tostring(race), tostring(class), tostring(maxHealth), tostring(currentShield), tostring(currentExp), tostring(maxExp))
+    C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, infoPayload, "WHISPER", requesterName)
+    
+    -- 2. ATT PACKET: INSP:ATT:key=val;key=val;
+    local attStr = ""
+    for k, v in pairs(attributes) do
+        attStr = attStr .. tostring(k) .. "=" .. tostring(v) .. ";"
+    end
+    if attStr ~= "" then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSP:ATT:" .. attStr, "WHISPER", requesterName)
+    end
+    
+    -- 3. TAL PACKET: INSP:TAL:key=val;key=val;
+    local talents = self.characterData.talents or {}
+    local talStr = ""
+    for k, v in pairs(talents) do
+        talStr = talStr .. tostring(k) .. "=" .. tostring(v) .. ";"
+    end
+    if talStr ~= "" then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSP:TAL:" .. talStr, "WHISPER", requesterName)
+    else
+        -- If no talents, we just send empty TAL so the receiver knows the inspection transmission is done
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSP:TAL:", "WHISPER", requesterName)
+    end
+
+end
+
+function GAC:SendExperienceToTarget(targetName, amount)
+    if not targetName or targetName == "" then return end
+    C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "ADD_EXP:" .. tostring(amount), "WHISPER", targetName)
+end
+

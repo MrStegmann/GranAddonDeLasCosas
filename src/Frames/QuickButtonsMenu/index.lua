@@ -51,7 +51,16 @@ end
 
 function GAC:UpdateTargetInspectButtonVisibility()
     if not self.targetInspectQuickButton then return end
-    local canShow = UnitExists("target") and UnitIsPlayer("target") and not UnitIsUnit("target", "player")
+    
+    local canShow = false
+    local currentTarget = UnitName("target")
+    if currentTarget and UnitExists("target") and UnitIsPlayer("target") and not UnitIsUnit("target", "player") then
+        local targetClean = Ambiguate(currentTarget, "none")
+        if self.targetDataCache and self.targetDataCache[targetClean] then
+            canShow = true
+        end
+    end
+    -- qa.setupTooltip(self.targetInspectQuickButton, "Inspeccionar a " .. currentTarget, "Muestra la ficha de personaje del objetivo actual")
     self.targetInspectQuickButton:SetShown(canShow)
 end
 
@@ -310,9 +319,33 @@ function GAC:CreateQuickActionsFrame()
     inspectIcon:SetSize(16, 16)
     inspectIcon:SetPoint("CENTER")
     inspectBtn:SetScript("OnClick", function()
-        if GAC.OpenTargetAttributesFromUnit then GAC:OpenTargetAttributesFromUnit("target") end
+        local tName, tRealm = UnitName("target")
+        if tName then
+            local fullName = tName
+            if tRealm and tRealm ~= "" then
+                fullName = tName .. "-" .. tRealm
+            end
+            if GAC.RequestInspection then
+                GAC:RequestInspection(fullName)
+            end
+            if GAC.OpenInspectionMenu then
+                GAC.inspectedPlayer = {
+                    name = "Cargando...",
+                    level = 0,
+                    category = "normal",
+                    race = "-",
+                    class = "-",
+                    maxHealth = 0,
+                    currentShield = 0,
+                    attributes = {},
+                    talents = {}
+                }
+                GAC:OpenInspectionMenu()
+            end
+        end
     end)
-    qa.setupTooltip(inspectBtn, "Inspeccionar objetivo", "Muestra atributos y talentos del objetivo si usa este addon.")
+
+    qa.setupTooltip(inspectBtn, "Inspeccionar objetivo", "Muestra la ficha de personaje del objetivo actual")
     inspectBtn:Hide()
 
     -- Asignaciones al objeto GAC
