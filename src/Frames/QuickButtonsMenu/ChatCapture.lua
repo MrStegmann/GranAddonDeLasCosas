@@ -143,7 +143,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
 
             finalMessage = displayName .. " tira "
                 .. " 1D" .. self.pendingAttackRoll.max .. " (" .. formattedRoll .. ") + "
-                .. GAC:_(self.pendingAttackRoll.talentName) .. " (" .. self.pendingAttackRoll.talentValue .. ")"
+                .. self.pendingAttackRoll.talentName .. " (" .. self.pendingAttackRoll.talentValue .. ")"
                 .. modStr
                 .. " = " .. total
 
@@ -193,7 +193,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
 
     if finalMessage then
         print(finalMessage)
-        if self.BroadcastRollMessage then self:BroadcastRollMessage(finalMessage) end
+        if self.BroadcastRollMessage and isInGroup() and isInRaid() then self:BroadcastRollMessage(finalMessage) end
     end
 end
 

@@ -13,7 +13,17 @@
     "LE_PARTY_CATEGORY_INSTANCE",
     "RANDOM_ROLL_RESULT",
     "SlashCmdList",
-    "UIDropDownMenu_SetSelectedValue"
+    "UIDropDownMenu_SetSelectedValue",
+    "SetRaidTargetIconTexture",
+    "ToggleDropDownMenu",
+    "CloseDropDownMenus",
+    "UnitFrameHealthBar_Update",
+    "RAID_CLASS_COLORS",
+    "PlayerFrame_UpdateLevel",
+    "PlayerFrame",
+    "PlayerFrame_Update",
+    "PlayerLevelText",
+    "TargetFrame"
   ],
   "Lua.runtime.version": "Lua 5.1",
   "Lua.runtime.builtin": {
