@@ -28,11 +28,16 @@ qa.createQuickButton = function(parent)
     btn:SetBackdropColor(0, 0, 0, 0.6)
     btn:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.5)
 
+    local highlight = btn:CreateTexture(nil, "HIGHLIGHT")
+    highlight:SetColorTexture(1, 1, 1, 0.2)
+    highlight:SetPoint("TOPLEFT", 2, -2)
+    highlight:SetPoint("BOTTOMRIGHT", -2, 2)
+
     btn:HookScript("OnEnter", function(self)
-        self:SetBackdropColor(0.25, 0.78, 0.94, 0.3)
+        self:SetBackdropBorderColor(0.25, 0.78, 0.94, 1)
     end)
     btn:HookScript("OnLeave", function(self)
-        self:SetBackdropColor(0, 0, 0, 0.6)
+        self:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.5)
     end)
     return btn
 end
@@ -113,69 +118,21 @@ function GAC:CreateQuickActionsFrame()
         GAC.characterData.ui.quickFrame.y = math.floor(oy + 0.5)
     end)
 
+    frame:SetSize(320, 65)
+
     -- Botones
-    local buttonX, buttonSpacing, buttonRowSpacing = 8, 1, 1
+    local buttonX, buttonSpacing, buttonRowSpacing = 10, 0, 0
 
-    -- 1. Dados (Talentos)
-    local diceButton = qa.createQuickButton(frame)
-    diceButton:SetSize(33, 27)
-    diceButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", buttonX, 0)
-    local diceIcon = diceButton:CreateTexture(nil, "ARTWORK")
-    diceIcon:SetTexture("Interface\\Icons\\INV_Misc_Dice_01")
-    diceIcon:SetSize(15, 15)
-    diceIcon:SetPoint("CENTER")
-    diceButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    diceButton:SetScript("OnClick", function(_, btn)
-        if btn == "RightButton" then
-            if GAC.lastTalentRolled then
-                GAC:StartTalentRoll(GAC.lastTalentRolled.attributeName, GAC.lastTalentRolled.talentName)
-            else
-                print("No has lanzado ningún dado de talento.")
-            end
-        else
-            if not GAC.quickActionsMenuFrame then GAC.quickActionsMenuFrame = CreateFrame("Frame", "GACQuickActionsMenuFrame", UIParent, "UIDropDownMenuTemplate") end
-            EasyMenu(GAC:CreateTalentsOptions(), GAC.quickActionsMenuFrame, frame, 0, 0, "MENU", 2)
-        end
-    end)
-    qa.setupTooltip(diceButton, "Dado (d20)", 
-        "Click para abrir menu de tiradas por talento",
-        {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
-    )
-
-    -- 2. Atributos
-    local attrButton = qa.createQuickButton(frame)
-    attrButton:SetSize(33, 27)
-    attrButton:SetPoint("LEFT", diceButton, "RIGHT", buttonSpacing, 0)
-    local attrIcon = attrButton:CreateTexture(nil, "ARTWORK")
-    attrIcon:SetTexture("Interface\\Icons\\INV_Misc_Book_11")
-    attrIcon:SetSize(15, 15)
-    attrIcon:SetPoint("CENTER")
-    attrButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    attrButton:SetScript("OnClick", function(_, btn)
-        if btn == "RightButton" then
-            if GAC.lastAttributeRolled then
-                GAC:StartAttributeRoll(GAC.lastAttributeRolled.attributeName)
-            else
-                print("No has lanzado ningún dado de atributo.")
-            end
-        else
-            if not GAC.attributeActionsMenuFrame then GAC.attributeActionsMenuFrame = CreateFrame("Frame", "GACAttributeActionsMenuFrame", UIParent, "UIDropDownMenuTemplate") end
-            EasyMenu(GAC:CreateAttributesOptions(), GAC.attributeActionsMenuFrame, frame, 0, 0, "MENU", 2)
-        end
-    end)
-    qa.setupTooltip(attrButton, "Atributos (d20)", 
-        "Click para abrir menu de tiradas por atributo",
-        {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
-    )
-
+    -- ================= ROW 1 (Utilities) =================
     -- 3. Vida
     local lifeButton = qa.createQuickButton(frame)
-    lifeButton:SetSize(33, 27)
-    lifeButton:SetPoint("BOTTOMLEFT", diceButton, "TOPLEFT", 0, buttonRowSpacing)
+    lifeButton:SetSize(25, 25)
+    lifeButton:SetPoint("TOPLEFT", frame, "TOPLEFT", buttonX, -8)
     local lifeIcon = lifeButton:CreateTexture(nil, "ARTWORK")
     lifeIcon:SetTexture("Interface\\Icons\\Spell_Holy_Renew")
-    lifeIcon:SetSize(15, 15)
-    lifeIcon:SetPoint("CENTER")
+    lifeIcon:SetPoint("TOPLEFT", 2, -2)
+    lifeIcon:SetPoint("BOTTOMRIGHT", -2, 2)
+    lifeIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     lifeButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     lifeButton:SetScript("OnClick", function(_, b)
         if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(b == "RightButton" and -1 or 1) end
@@ -187,12 +144,13 @@ function GAC:CreateQuickActionsFrame()
 
     -- 4. Escudo
     local shieldButton = qa.createQuickButton(frame)
-    shieldButton:SetSize(33, 27)
+    shieldButton:SetSize(25, 25)
     shieldButton:SetPoint("LEFT", lifeButton, "RIGHT", buttonSpacing, 0)
     local shieldIcon = shieldButton:CreateTexture(nil, "ARTWORK")
     shieldIcon:SetTexture("Interface\\Icons\\Spell_Holy_PowerWordShield")
-    shieldIcon:SetSize(15, 15)
-    shieldIcon:SetPoint("CENTER")
+    shieldIcon:SetPoint("TOPLEFT", 2, -2)
+    shieldIcon:SetPoint("BOTTOMRIGHT", -2, 2)
+    shieldIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     shieldButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     shieldButton:SetScript("OnClick", function(_, b)
         if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(b == "RightButton" and -1 or 1) end
@@ -202,58 +160,15 @@ function GAC:CreateQuickActionsFrame()
         {"Clic derecho: Quita 1 punto de escudo.", 1, 0.7, 0.7}
     )
 
-    -- 5. Iniciativa
-    local swordButton = qa.createQuickButton(frame)
-    swordButton:SetSize(33, 27)
-    swordButton:SetPoint("LEFT", attrButton, "RIGHT", buttonSpacing, 0)
-    local swordIcon = swordButton:CreateTexture(nil, "ARTWORK")
-    swordIcon:SetTexture("Interface\\Icons\\Ability_Rogue_Sprint")
-    swordIcon:SetSize(15, 15)
-    swordIcon:SetPoint("CENTER")
-    swordButton:SetScript("OnClick", function()
-        GAC:StartInitiativeRoll()
-        local mod, has = GAC:GetQuickModifierValue()
-        if has and GAC.pendingInitiativeRoll then
-            GAC.pendingInitiativeRoll.hasModifier = true
-            GAC.pendingInitiativeRoll.modifierValue = mod
-        end
-    end)
-    qa.setupTooltip(swordButton, "Iniciativa (d100)", "Click para tirar Iniciativa")
-
-    -- 6. Ataque
-    local attackButton = qa.createQuickButton(frame)
-    attackButton:SetSize(33, 27)
-    attackButton:SetPoint("LEFT", swordButton, "RIGHT", buttonSpacing, 0)
-    local attackIcon = attackButton:CreateTexture(nil, "ARTWORK")
-    attackIcon:SetTexture("Interface\\Icons\\Ability_MeleeDamage")
-    attackIcon:SetSize(15, 15)
-    attackIcon:SetPoint("CENTER")
-    attackButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    attackButton:SetScript("OnClick", function(_, btn)
-        if btn == "RightButton" then
-            if GAC.lastAttackRolled then
-                GAC:StartAttackRoll(GAC.lastAttackRolled.dice, GAC.lastAttackRolled.talentKey, GAC.lastAttackRolled.talentLabel)
-            else
-                print("No has lanzado ningún dado de ataque.")
-            end
-        else
-            if not GAC.attackActionsMenuFrame then GAC.attackActionsMenuFrame = CreateFrame("Frame", "GACAttackActionsMenuFrame", UIParent, "UIDropDownMenuTemplate") end
-            EasyMenu(GAC:CreateAttackOptions(), GAC.attackActionsMenuFrame, frame, 0, 0, "MENU", 2)
-        end
-    end)
-    qa.setupTooltip(attackButton, "Ataque", 
-        "Click para abrir menu de tirada de ataque",
-        {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
-    )
-
     -- 7. Expandir Turnos
     local expandTurnButton = qa.createQuickButton(frame)
-    expandTurnButton:SetSize(33, 27)
+    expandTurnButton:SetSize(25, 25)
     expandTurnButton:SetPoint("LEFT", shieldButton, "RIGHT", buttonSpacing, 0)
     local expandIcon = expandTurnButton:CreateTexture(nil, "ARTWORK")
     expandIcon:SetTexture("Interface\\Icons\\INV_Misc_Map_01")
-    expandIcon:SetSize(15, 15)
-    expandIcon:SetPoint("CENTER")
+    expandIcon:SetPoint("TOPLEFT", 2, -2)
+    expandIcon:SetPoint("BOTTOMRIGHT", -2, 2)
+    expandIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     expandTurnButton:SetScript("OnClick", function()
         if GAC.SetTurnOrderMinimized then GAC:SetTurnOrderMinimized(false) end
         if GAC.UpdateTurnOrderFrameVisibility then GAC:UpdateTurnOrderFrameVisibility() end
@@ -264,60 +179,15 @@ function GAC:CreateQuickActionsFrame()
     )
     expandTurnButton:Hide()
 
-    -- Modificador UI
-    local modLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    modLabel:SetText("Mod")
-    modLabel:SetPoint("LEFT", attackButton, "RIGHT", 4, 0)
-
-    local modInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
-    modInput:SetSize(26, 18)
-    modInput:SetPoint("LEFT", modLabel, "RIGHT", 10, 0)
-    modInput:SetAutoFocus(false)
-    modInput:SetMaxLetters(5)
-
-    -- Custom Dice UI
-    local dadoLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    dadoLabel:SetText("Dado")
-    dadoLabel:SetPoint("LEFT", modInput, "RIGHT", 12, 0)
-
-    local qtyInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
-    qtyInput:SetSize(22, 18)
-    qtyInput:SetPoint("LEFT", dadoLabel, "RIGHT", 8, 0)
-    qtyInput:SetAutoFocus(false)
-    qtyInput:SetNumeric(true)
-    qtyInput:SetText("1")
-
-    local sep = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    sep:SetText("d")
-    sep:SetPoint("LEFT", qtyInput, "RIGHT", 5, 0)
-
-    local faceInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
-    faceInput:SetSize(28, 18)
-    faceInput:SetPoint("LEFT", sep, "RIGHT", 2, 0)
-    faceInput:SetAutoFocus(false)
-    faceInput:SetNumeric(true)
-    faceInput:SetText("20")
-
-    local customRollBtn = qa.createQuickButton(frame)
-    customRollBtn:SetSize(33, 27)
-    customRollBtn:SetPoint("LEFT", faceInput, "RIGHT", 1, 0)
-    local customIcon = customRollBtn:CreateTexture(nil, "ARTWORK")
-    customIcon:SetTexture("Interface\\Icons\\INV_Misc_Dice_02")
-    customIcon:SetSize(15, 15)
-    customIcon:SetPoint("CENTER")
-    customRollBtn:SetScript("OnClick", function()
-        GAC:StartCustomDiceRoll(qtyInput:GetText(), faceInput:GetText())
-    end)
-    qa.setupTooltip(customRollBtn, "Tirada Personalizada", "Lanza la cantidad y caras de dados indicadas.")
-
-    -- Inspect Button (encima del frame)
+    -- Inspect Button
     local inspectBtn = qa.createQuickButton(frame)
-    inspectBtn:SetSize(29, 29)
-    inspectBtn:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -8, -1)
+    inspectBtn:SetSize(25, 25)
+    inspectBtn:SetPoint("LEFT", expandTurnButton, "RIGHT", buttonSpacing, 0)
     local inspectIcon = inspectBtn:CreateTexture(nil, "ARTWORK")
     inspectIcon:SetTexture("Interface\\Icons\\INV_Misc_Spyglass_03")
-    inspectIcon:SetSize(16, 16)
-    inspectIcon:SetPoint("CENTER")
+    inspectIcon:SetPoint("TOPLEFT", 2, -2)
+    inspectIcon:SetPoint("BOTTOMRIGHT", -2, 2)
+    inspectIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     inspectBtn:SetScript("OnClick", function()
         local tName, tRealm = UnitName("target")
         if tName then
@@ -344,17 +214,162 @@ function GAC:CreateQuickActionsFrame()
             end
         end
     end)
-
     qa.setupTooltip(inspectBtn, "Inspeccionar objetivo", "Muestra la ficha de personaje del objetivo actual")
     inspectBtn:Hide()
+
+    -- Modificador UI
+    local modLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    modLabel:SetText("Mod")
+    modLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 160, -13)
+
+    local modInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+    modInput:SetSize(26, 18)
+    modInput:SetPoint("LEFT", modLabel, "RIGHT", 10, 0)
+    modInput:SetAutoFocus(false)
+    modInput:SetMaxLetters(5)
+
+    -- ================= ROW 2 (Actions) =================
+    -- 1. Dados (Talentos)
+    local diceButton = qa.createQuickButton(frame)
+    diceButton:SetSize(25, 25)
+    diceButton:SetPoint("TOPLEFT", frame, "TOPLEFT", buttonX, -35)
+    local diceIcon = diceButton:CreateTexture(nil, "ARTWORK")
+    diceIcon:SetTexture("Interface\\Icons\\INV_Misc_Dice_01")
+    diceIcon:SetPoint("TOPLEFT", 2, -2)
+    diceIcon:SetPoint("BOTTOMRIGHT", -2, 2)
+    diceIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    diceButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    diceButton:SetScript("OnClick", function(_, btn)
+        if btn == "RightButton" then
+            if GAC.lastTalentRolled then
+                GAC:StartTalentRoll(GAC.lastTalentRolled.attributeName, GAC.lastTalentRolled.talentName)
+            else
+                print("No has lanzado ningún dado de talento.")
+            end
+        else
+            if not GAC.quickActionsMenuFrame then GAC.quickActionsMenuFrame = CreateFrame("Frame", "GACQuickActionsMenuFrame", UIParent, "UIDropDownMenuTemplate") end
+            EasyMenu(GAC:CreateTalentsOptions(), GAC.quickActionsMenuFrame, frame, 0, 0, "MENU", 2)
+        end
+    end)
+    qa.setupTooltip(diceButton, "Dado (d20)", 
+        "Click para abrir menu de tiradas por talento",
+        {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
+    )
+
+    -- 2. Atributos
+    local attrButton = qa.createQuickButton(frame)
+    attrButton:SetSize(25, 25)
+    attrButton:SetPoint("LEFT", diceButton, "RIGHT", buttonSpacing, 0)
+    local attrIcon = attrButton:CreateTexture(nil, "ARTWORK")
+    attrIcon:SetTexture("Interface\\Icons\\INV_Misc_Book_11")
+    attrIcon:SetPoint("TOPLEFT", 2, -2)
+    attrIcon:SetPoint("BOTTOMRIGHT", -2, 2)
+    attrIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    attrButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    attrButton:SetScript("OnClick", function(_, btn)
+        if btn == "RightButton" then
+            if GAC.lastAttributeRolled then
+                GAC:StartAttributeRoll(GAC.lastAttributeRolled.attributeName)
+            else
+                print("No has lanzado ningún dado de atributo.")
+            end
+        else
+            if not GAC.attributeActionsMenuFrame then GAC.attributeActionsMenuFrame = CreateFrame("Frame", "GACAttributeActionsMenuFrame", UIParent, "UIDropDownMenuTemplate") end
+            EasyMenu(GAC:CreateAttributesOptions(), GAC.attributeActionsMenuFrame, frame, 0, 0, "MENU", 2)
+        end
+    end)
+    qa.setupTooltip(attrButton, "Atributos (d20)", 
+        "Click para abrir menu de tiradas por atributo",
+        {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
+    )
+
+    -- 5. Iniciativa
+    local swordButton = qa.createQuickButton(frame)
+    swordButton:SetSize(25, 25)
+    swordButton:SetPoint("LEFT", attrButton, "RIGHT", buttonSpacing, 0)
+    local swordIcon = swordButton:CreateTexture(nil, "ARTWORK")
+    swordIcon:SetTexture("Interface\\Icons\\Ability_Rogue_Sprint")
+    swordIcon:SetPoint("TOPLEFT", 2, -2)
+    swordIcon:SetPoint("BOTTOMRIGHT", -2, 2)
+    swordIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    swordButton:SetScript("OnClick", function()
+        GAC:StartInitiativeRoll()
+        local mod, has = GAC:GetQuickModifierValue()
+        if has and GAC.pendingInitiativeRoll then
+            GAC.pendingInitiativeRoll.hasModifier = true
+            GAC.pendingInitiativeRoll.modifierValue = mod
+        end
+    end)
+    qa.setupTooltip(swordButton, "Iniciativa (d100)", "Click para tirar Iniciativa")
+
+    -- 6. Ataque
+    local attackButton = qa.createQuickButton(frame)
+    attackButton:SetSize(25, 25)
+    attackButton:SetPoint("LEFT", swordButton, "RIGHT", buttonSpacing, 0)
+    local attackIcon = attackButton:CreateTexture(nil, "ARTWORK")
+    attackIcon:SetTexture("Interface\\Icons\\Ability_MeleeDamage")
+    attackIcon:SetPoint("TOPLEFT", 2, -2)
+    attackIcon:SetPoint("BOTTOMRIGHT", -2, 2)
+    attackIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    attackButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    attackButton:SetScript("OnClick", function(_, btn)
+        if btn == "RightButton" then
+            if GAC.lastAttackRolled then
+                GAC:StartAttackRoll(GAC.lastAttackRolled.dice, GAC.lastAttackRolled.talentKey, GAC.lastAttackRolled.talentLabel)
+            else
+                print("No has lanzado ningún dado de ataque.")
+            end
+        else
+            if not GAC.attackActionsMenuFrame then GAC.attackActionsMenuFrame = CreateFrame("Frame", "GACAttackActionsMenuFrame", UIParent, "UIDropDownMenuTemplate") end
+            EasyMenu(GAC:CreateAttackOptions(), GAC.attackActionsMenuFrame, frame, 0, 0, "MENU", 2)
+        end
+    end)
+    qa.setupTooltip(attackButton, "Ataque", 
+        "Click para abrir menu de tirada de ataque",
+        {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
+    )
+
+    -- Custom Dice UI
+    local dadoLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    dadoLabel:SetText("Dado")
+    dadoLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 160, -41)
+
+    local qtyInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+    qtyInput:SetSize(22, 18)
+    qtyInput:SetPoint("LEFT", dadoLabel, "RIGHT", 8, 0)
+    qtyInput:SetAutoFocus(false)
+    qtyInput:SetNumeric(true)
+    qtyInput:SetText("1")
+
+    local sep = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    sep:SetText("d")
+    sep:SetPoint("LEFT", qtyInput, "RIGHT", 3, 0)
+
+    local faceInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+    faceInput:SetSize(28, 18)
+    faceInput:SetPoint("LEFT", sep, "RIGHT", 3, 0)
+    faceInput:SetAutoFocus(false)
+    faceInput:SetNumeric(true)
+    faceInput:SetText("20")
+
+    local customRollBtn = qa.createQuickButton(frame)
+    customRollBtn:SetSize(25, 25)
+    customRollBtn:SetPoint("LEFT", faceInput, "RIGHT", 5, 0)
+    local customIcon = customRollBtn:CreateTexture(nil, "ARTWORK")
+    customIcon:SetTexture("Interface\\Icons\\INV_Misc_Dice_02")
+    customIcon:SetPoint("TOPLEFT", 2, -2)
+    customIcon:SetPoint("BOTTOMRIGHT", -2, 2)
+    customIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    customRollBtn:SetScript("OnClick", function()
+        GAC:StartCustomDiceRoll(qtyInput:GetText(), faceInput:GetText())
+    end)
+    qa.setupTooltip(customRollBtn, "Tirada Personalizada", "Lanza la cantidad y caras de dados indicadas.")
 
     -- Asignaciones al objeto GAC
     frame.modifierInput = modInput
     self.quickActionsFrame = frame
     self.turnOrderExpandQuickButton = expandTurnButton
     self.targetInspectQuickButton = inspectBtn
-
-    frame:SetHeight(lifeButton:GetHeight() + diceButton:GetHeight() + buttonRowSpacing + 4)
     
     self:UpdateTargetInspectButtonVisibility()
 
