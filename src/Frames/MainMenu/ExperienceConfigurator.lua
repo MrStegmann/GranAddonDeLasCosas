@@ -7,7 +7,7 @@ function GAC:CreateExperienceConfigurator(parent)
     -- Título
     local header = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     header:SetPoint("TOPLEFT", 15, -15)
-    header:SetText("Configurador de Experiencia")
+    header:SetText("Experiencia")
     header:SetTextColor(1, 1, 1)
 
     local line = frame:CreateTexture(nil, "ARTWORK")
