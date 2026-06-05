@@ -5,6 +5,5 @@
 ## Version: 1.1.1
 ## SavedVariables: GranAddonDeLasCosasDB
 ## SavedVariablesPerCharacter: GranAddonDeLasCosasCharDB
-## Dependencies: WLV_Extends
 
 GranAddonDeLasCosas.xml
