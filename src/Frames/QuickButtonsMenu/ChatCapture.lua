@@ -193,7 +193,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
 
     if finalMessage then
         print(finalMessage)
-        if self.BroadcastRollMessage and (isInGroup() or isInRaid()) then self:BroadcastRollMessage(finalMessage) end
+        if self.BroadcastRollMessage then self:BroadcastRollMessage(finalMessage) end
     end
 end
 
