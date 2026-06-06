@@ -1,10 +1,39 @@
 Features:
-1. Extender QuickActionMenu para añadir opciones de master.
-    - Crear sesión de log de dados.
-        - Guardará con la fecha del momento que se cree todas las tiradas de dados con su emote correspondiente escrito por chat (ya sea con /e o por say entre **)
-        - Solo guardará los logs del grupo actual.
-        - Finalizará en el momento en que el usuario lo indique o cuando el grupo cambie.
-    - 
-2. Añadir opciones de telemetría al QuickActionMenu.
-    - Medir la distancia con tu objetivo actual (3D to hitbox)
-    - Medir la distancia hacia una marca de banda colocada.
+
+- Extender QuickActionMenu para añadir opciones de master.
+  - Crear sesión de log de dados.
+    - Guardará con la fecha del momento que se cree todas las tiradas de dados con su emote correspondiente escrito por chat (ya sea con /e o por say entre \*\*)
+    - Solo guardará los logs del grupo actual.
+    - Finalizará en el momento en que el usuario lo indique o cuando el grupo cambie.
+  -
+- Añadir opciones de telemetría al QuickActionMenu.
+  - Medir la distancia con tu objetivo actual (3D to hitbox)
+  - Medir la distancia hacia una marca de banda colocada.
+
+- Añadir nuevo contenido a MainMenu: Armadura
+  - Esta sección tendrá una visión tipo Inventario. Se mostrará en una primera los slots equipados:
+    - Cabeza, Pecho, Guantes y Piernas.
+  - En una segunda fila tendrá:
+    - Arma principal, arma secundaria.
+    - Según las armas, añadir un botón a QuickActionsButtons una opción de tirada con arma, que lanzará el dado correspondiente al arma que está usando.
+    - Añadir tabla de valores de armas.
+    - Crear lógica para penalizadores de doble empuñadura.
+
+- Añadir selección de Raza.
+  - Al seleccionar la raza, se aplicará de forma automática las ventajas y desventajas por raza.
+  - Añadir lógica de "Características":
+    - Superfuerza:
+      - Aumenta el daño final de todas las armas cuerpo a cuerpo en +2
+    - Audición superior:
+      - Duplica el rango de percepción auditiva.
+      - Tiene ventaja en las tiradas de percepción auditiva.
+      - Los sonidos fuertes cercanos aturden durante algunos turnos (a interpretación del máster)
+    - Visión noctura:
+      - No recibe penalización por Oscuridad.
+      - Esto no se aplica a penalizadores por reducida visibilidad (niebla o humo)
+    - Prestidigitador
+    - Reemplazo de miembros
+    - Gran movilidad
+      - Rango de movimiento duplicado.
+    - Regeneración
+      - Recupera vida al final de su turno
