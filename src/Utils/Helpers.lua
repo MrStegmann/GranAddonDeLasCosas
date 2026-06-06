@@ -68,16 +68,95 @@ function GAC:IsPlayerRoll(rollerName)
     return rollerName:match("^" .. playerName .. "%-") ~= nil
 end
 
-function GAC:FormatRollValue(rollValue)
+
+function GAC:FormatRollValue(rollValue, maxFaces)
+    maxFaces = tonumber(maxFaces) or 20
+    rollValue = tonumber(rollValue)
+
     if rollValue == 1 then
         return "|cffff4040" .. rollValue .. "|r Pifia"
     end
 
-    if rollValue == 20 then
+    local isCritical = false
+    if maxFaces == 20 then
+        local criticalThreshold = 20
+        if self.characterData and self.characterData.positiveTraits and self.characterData.positiveTraits["bully"] then
+            local bullyLvl = self.characterData.positiveTraits["bully"].level or 0
+            if bullyLvl > 0 then
+                criticalThreshold = 20 - bullyLvl
+            end
+        end
+        if rollValue >= criticalThreshold then
+            isCritical = true
+        end
+    else
+        if rollValue == maxFaces then
+            isCritical = true
+        end
+    end
+
+    if isCritical then
         return "|cff40ff40" .. rollValue .. "|r Critico"
     end
 
     return "|cffffffff" .. rollValue .. "|r"
 end
 
+function GAC:GetCharacterRaceString()
+    if not self.characterData or not self.characterData.race1 then
+        return self.GetActiveTRP3ProfileRace and self:GetActiveTRP3ProfileRace() or "Desconocida"
+    end
+    
+    local r1 = self:_(self.characterData.race1) or self.characterData.race1
+    if self.characterData.race2 then
+        local r2 = self:_(self.characterData.race2) or self.characterData.race2
+        return "Mestizo (" .. r1 .. " - " .. r2 .. ")"
+    end
+    
+    return r1
+end
 
+function GAC:UpdateTraitLevel(traitName, newLevel, selectedTalent)
+    if not self.characterData then return end
+    
+    local def = nil
+    for _, t in ipairs(self.PositiveTraits or {}) do
+        if t.name == traitName then def = t; break end
+    end
+    if not def then return end
+
+    self.characterData.positiveTraits = self.characterData.positiveTraits or {}
+    local oldData = self.characterData.positiveTraits[traitName]
+    local oldLevel = oldData and oldData.level or 0
+    local oldTalent = oldData and oldData.selectedTalent
+
+    -- Revert old modifiers
+    if oldLevel > 0 and def.modifiers and def.modifiers[oldLevel] then
+        for k, v in pairs(def.modifiers[oldLevel]) do
+            local key = (k == "_selected") and oldTalent or k
+            if key then
+                self.characterData.talents[key] = (self.characterData.talents[key] or 0) - v
+            end
+        end
+    end
+
+    -- Apply new modifiers
+    if newLevel > 0 and def.modifiers and def.modifiers[newLevel] then
+        for k, v in pairs(def.modifiers[newLevel]) do
+            local key = (k == "_selected") and selectedTalent or k
+            if key then
+                self.characterData.talents[key] = (self.characterData.talents[key] or 0) + v
+            end
+        end
+    end
+
+    -- Save new data
+    if newLevel == 0 then
+        self.characterData.positiveTraits[traitName] = nil
+    else
+        self.characterData.positiveTraits[traitName] = {
+            level = newLevel,
+            selectedTalent = selectedTalent
+        }
+    end
+end

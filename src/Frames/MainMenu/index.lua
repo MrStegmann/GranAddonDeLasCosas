@@ -2,18 +2,24 @@ local addonName, GAC = ...
 
 function GAC:CreateMainMenuFrame()
     if self.mainMenuFrame then return end
-
+    
     -- Marco principal
     local frame = CreateFrame("Frame", "GACMainMenuFrame", UIParent, "BackdropTemplate")
     frame:Hide() -- Initialize hidden so the first ToggleMainMenu() call will show it
     frame:SetSize(750, 550)
     -- Posicionamiento persistente
+    self.characterData.ui = self.characterData.ui or {}
     self.characterData.ui.mainMenu = self.characterData.ui.mainMenu or {}
     local pos = self.characterData.ui.mainMenu
-    if not pos.anchor then
+    if not pos.anchor or type(pos.x) ~= "number" or type(pos.y) ~= "number" then
         pos.anchor, pos.relativeAnchor, pos.x, pos.y = "CENTER", "CENTER", 0, 0
     end
     
+    -- FORCE RESCUE IF OUT OF BOUNDS
+    if pos.x > 2500 or pos.x < -2500 or pos.y > 1500 or pos.y < -1500 then
+        pos.anchor, pos.relativeAnchor, pos.x, pos.y = "CENTER", "CENTER", 0, 0
+    end
+
     frame:SetPoint(pos.anchor, UIParent, pos.relativeAnchor, pos.x, pos.y)
     frame:SetMovable(true)
     frame:EnableMouse(true)
@@ -136,18 +142,35 @@ function GAC:CreateMainMenuFrame()
         tabs[id] = { button = btn, content = content }
         tabCount = tabCount + 1
     end
-
-    -- Inserción de la primera pestaña solicitada
-    AddTab("CharSheet", "Ficha de Personaje", function(p) return GAC:CreateCharSheetContent(p) end)
-    AddTab("ExpConfig", "Conf. Experiencia", function(p) return GAC:CreateExperienceConfigurator(p) end)
+    print()
+    -- Inserción de las pestañas
+    local success1, err1 = pcall(function() AddTab("CharSheet", "Ficha de Personaje", function(p) return GAC:CreateCharSheetContent(p) end) end)
+    if not success1 then print("|cFFFF0000Error in CharSheet:|r", err1) end
+    
+    local success2, err2 = pcall(function() AddTab("ExpConfig", "Conf. Experiencia", function(p) return GAC:CreateExperienceConfigurator(p) end) end)
+    if not success2 then print("|cFFFF0000Error in ExpConfig:|r", err2) end
 
     self.mainMenuFrame = frame
     SelectTab("CharSheet")
+    print("GAC: CreateMainMenuFrame completado")
 end
 
 function GAC:ToggleMainMenu()
+    if not self.characterData.isCreated then
+        if self.ToggleNewCharMenu then
+            self:ToggleNewCharMenu()
+        end
+        return
+    end 
+
     self:CreateMainMenuFrame()
-    if self.mainMenuFrame:IsShown() then self.mainMenuFrame:Hide() else self.mainMenuFrame:Show() end
+    if self.mainMenuFrame:IsShown() then 
+        self.mainMenuFrame:Hide() 
+        print("GAC: Ocultando MainMenu")
+    else 
+        self.mainMenuFrame:Show() 
+        print("GAC: Mostrando MainMenu")
+    end
 end
 
 -- Slash Command para facilitar el acceso

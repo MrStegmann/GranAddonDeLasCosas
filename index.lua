@@ -33,7 +33,14 @@ function GAC:ADDON_LOADED(loadedAddonName)
         self.db = GranAddonDeLasCosasDB
         self.characterData = GranAddonDeLasCosasCharDB
         self.characterData.progress = self.characterData.progress or {}
+        self.characterData.progress.category = self.characterData.progress.category or "normal"
+        self.characterData.progress.level = self.characterData.progress.level or 1
+        self.characterData.progress.currentExperience = self.characterData.progress.currentExperience or 0
         self.characterData.ui = self.characterData.ui or {}
+        
+        if self.characterData.isCreated == nil then
+            self.characterData.isCreated = false
+        end
 
         if self.InitializeAttributeSystem then self:InitializeAttributeSystem() end
         if self.CreateQuickActionsFrame then self:CreateQuickActionsFrame() end

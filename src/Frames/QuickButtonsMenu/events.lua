@@ -11,6 +11,31 @@ function GAC:StartTalentRoll(attributeName, talentName)
     local attributeValue = self.characterData.attributes and self.characterData.attributes[attributeName] and tonumber(self.characterData.attributes[attributeName]) or 0
     local talentValue = self.characterData.talents and self.characterData.talents[talentName] and tonumber(self.characterData.talents[talentName]) or 0
 
+    local traitModSum = 0
+    local traitModStrings = {}
+    if self.characterData.positiveTraits and GAC.PositiveTraits then
+        for traitNameKey, traitData in pairs(self.characterData.positiveTraits) do
+            local lvl = traitData.level or 0
+            if lvl > 0 then
+                local def = nil
+                for _, t in ipairs(GAC.PositiveTraits) do
+                    if t.name == traitNameKey then def = t; break end
+                end
+                if def and def.modifiers and def.modifiers[lvl] then
+                    for k, v in pairs(def.modifiers[lvl]) do
+                        local key = (k == "_selected") and traitData.selectedTalent or k
+                        if key == talentName then
+                            traitModSum = traitModSum + v
+                            table.insert(traitModStrings, " + " .. def.label .. " Nivel " .. lvl .. " (+" .. v .. ")")
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    local baseTalentValue = talentValue - traitModSum
+
     local mod, hasMod = self:GetQuickModifierValue()
     
     local worgenModValue = 0
@@ -25,7 +50,9 @@ function GAC:StartTalentRoll(attributeName, talentName)
         attributeName = attributeName,
         talentName = talentName,
         attributeValue = attributeValue,
-        talentValue = talentValue,
+        talentValue = baseTalentValue,
+        traitModSum = traitModSum,
+        traitModStrings = table.concat(traitModStrings, ""),
         min = 1,
         max = 20,
         hasModifier = hasMod,
@@ -194,11 +221,38 @@ function GAC:StartAttackRoll(dice, talentKey, talentLabel)
 
     local talentValue = self.characterData.talents and self.characterData.talents[talentKey] and tonumber(self.characterData.talents[talentKey]) or 0
 
+    local traitModSum = 0
+    local traitModStrings = {}
+    if self.characterData.positiveTraits and GAC.PositiveTraits then
+        for traitNameKey, traitData in pairs(self.characterData.positiveTraits) do
+            local lvl = traitData.level or 0
+            if lvl > 0 then
+                local def = nil
+                for _, t in ipairs(GAC.PositiveTraits) do
+                    if t.name == traitNameKey then def = t; break end
+                end
+                if def and def.modifiers and def.modifiers[lvl] then
+                    for k, v in pairs(def.modifiers[lvl]) do
+                        local key = (k == "_selected") and traitData.selectedTalent or k
+                        if key == talentKey then
+                            traitModSum = traitModSum + v
+                            table.insert(traitModStrings, " + " .. def.label .. " Nivel " .. lvl .. " (+" .. v .. ")")
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    local baseTalentValue = talentValue - traitModSum
+
     local mod, hasMod = self:GetQuickModifierValue()
 
     self.pendingAttackRoll = {
         talentName = talentLabel,
-        talentValue = talentValue,
+        talentValue = baseTalentValue,
+        traitModSum = traitModSum,
+        traitModStrings = table.concat(traitModStrings, ""),
         min = 1,
         max = dice,
         hasModifier = hasMod,

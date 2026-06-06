@@ -21,7 +21,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
         end
 
         if rollValue and lowValue == self.pendingTalentRoll.min and highValue == self.pendingTalentRoll.max then
-            local total = rollValue + self.pendingTalentRoll.attributeValue + self.pendingTalentRoll.talentValue
+            local total = rollValue + self.pendingTalentRoll.attributeValue + self.pendingTalentRoll.talentValue + (self.pendingTalentRoll.traitModSum or 0)
             local modStr = ""
             if self.pendingTalentRoll.hasModifier then
                 local modVal = tonumber(self.pendingTalentRoll.modifierValue) or 0
@@ -40,11 +40,12 @@ function GAC:CHAT_MSG_SYSTEM(message)
             local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
                 or (self.GetRollDisplayName and self:GetRollDisplayName())
                 or displayAddonName
-            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue) or tostring(rollValue)
+            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue, 20) or tostring(rollValue)
             finalMessage = displayName .. " tira "
                 .. " 1D20 (" .. formattedRoll .. ") + "
                 .. GAC:_(self.pendingTalentRoll.attributeName) .. " (" .. self.pendingTalentRoll.attributeValue .. ") + "
                 .. GAC:_(self.pendingTalentRoll.talentName) .. " (" .. self.pendingTalentRoll.talentValue .. ")"
+                .. (self.pendingTalentRoll.traitModStrings or "")
                 .. modStr
                 .. worgenModStr
                 .. " = " .. total
@@ -71,7 +72,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
             local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
                 or (self.GetRollDisplayName and self:GetRollDisplayName())
                 or displayAddonName
-            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue) or tostring(rollValue)
+            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue, 20) or tostring(rollValue)
 
             finalMessage = displayName .. " tira "
                 .. " 1D20 (" .. formattedRoll .. ") + "
@@ -102,7 +103,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
             local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
                 or (self.GetRollDisplayName and self:GetRollDisplayName())
                 or displayAddonName
-            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue) or tostring(rollValue)
+            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue, 100) or tostring(rollValue)
 
             finalMessage = displayName .. " tira por Iniciativa: "
                 .. " 1D100 (" .. formattedRoll .. ")"
@@ -126,7 +127,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
             return
         end
         if rollValue and lowValue == self.pendingAttackRoll.min and highValue == self.pendingAttackRoll.max then
-            local total = rollValue + self.pendingAttackRoll.talentValue
+            local total = rollValue + self.pendingAttackRoll.talentValue + (self.pendingAttackRoll.traitModSum or 0)
             local modStr = ""
             if self.pendingAttackRoll.hasModifier then
                 local modVal = tonumber(self.pendingAttackRoll.modifierValue) or 0
@@ -139,11 +140,12 @@ function GAC:CHAT_MSG_SYSTEM(message)
             local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
                 or (self.GetRollDisplayName and self:GetRollDisplayName())
                 or displayAddonName
-            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue) or tostring(rollValue)
+            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue, self.pendingAttackRoll.max) or tostring(rollValue)
 
             finalMessage = displayName .. " tira "
                 .. " 1D" .. self.pendingAttackRoll.max .. " (" .. formattedRoll .. ") + "
                 .. self.pendingAttackRoll.talentName .. " (" .. self.pendingAttackRoll.talentValue .. ")"
+                .. (self.pendingAttackRoll.traitModStrings or "")
                 .. modStr
                 .. " = " .. total
 
@@ -170,7 +172,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
             local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
                 or (self.GetRollDisplayName and self:GetRollDisplayName())
                 or displayAddonName
-            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue) or tostring(rollValue)
+            local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue, self.pendingCustomRoll.faces) or tostring(rollValue)
 
             local rollMessage = displayName .. " tira "
                 .. " 1D" .. self.pendingCustomRoll.faces .. " (" .. formattedRoll .. ")"
@@ -193,7 +195,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
 
     if finalMessage then
         print(finalMessage)
-        if self.BroadcastRollMessage and (isInGroup() or isInRaid()) then self:BroadcastRollMessage(finalMessage) end
+        if self.BroadcastRollMessage then self:BroadcastRollMessage(finalMessage) end
     end
 end
 

@@ -3,11 +3,11 @@ local addonName, GAC = ...
 -- Helper for TRP3 style sub-tab buttons
 local function CreateSubTabButton(parent, text, width)
     local btn = CreateFrame("Button", nil, parent, "BackdropTemplate")
-    btn:SetSize(width, 26)
+    btn:SetSize(width, 22)
     btn:SetBackdrop({
         bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 10,
+        tile = true, tileSize = 16, edgeSize = 8,
         insets = { left = 2, right = 2, top = 2, bottom = 2 },
     })
     btn:SetBackdropColor(0, 0, 0, 0.6)
@@ -74,14 +74,14 @@ function GAC:CreateCharSheetContent(parent)
     local infoText = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     infoText:SetPoint("TOPLEFT", nameText, "BOTTOMLEFT", 0, -5)
     
-    local level = GAC.characterData.level
-    local race = GAC:GetActiveTRP3ProfileRace()
+    local level = GAC.characterData.level or (GAC.characterData.progress and GAC.characterData.progress.level) or 1
+    local race = GAC:GetCharacterRaceString()
     local class = GAC:GetActiveTRP3ProfileClass()
     infoText:SetText(string.format("Nivel %d - %s - %s", level, race, class))
 
     -- Contenedor principal de pestañas interiores
     local contentArea = CreateFrame("Frame", nil, frame)
-    contentArea:SetPoint("TOPLEFT", portraitBorder, "BOTTOMLEFT", -5, -40)
+    contentArea:SetPoint("TOPLEFT", portraitBorder, "BOTTOMLEFT", -5, -60) -- Aumentado de -40 a -60 para 2 filas
     contentArea:SetPoint("BOTTOMRIGHT", -15, 15)
 
     local tab1 = CreateFrame("Frame", nil, contentArea)
@@ -95,34 +95,44 @@ function GAC:CreateCharSheetContent(parent)
     local tab4 = CreateFrame("Frame", nil, contentArea)
     tab4:SetAllPoints()
     tab4:Hide()
+    local tab5 = CreateFrame("Frame", nil, contentArea)
+    tab5:SetAllPoints()
+    tab5:Hide()
 
-    -- Botones de Pestañas
-    local btnHistoria = CreateSubTabButton(frame, "Historia", 100)
-    btnHistoria:SetPoint("BOTTOMLEFT", contentArea, "TOPLEFT", 5, 5)
+    -- Botones de Pestañas (Fila 1)
+    local btnHistoria = CreateSubTabButton(frame, "Historia", 90)
+    btnHistoria:SetPoint("BOTTOMLEFT", contentArea, "TOPLEFT", 5, 27)
     
-    local btnProgresion = CreateSubTabButton(frame, "Progresión", 120)
-    btnProgresion:SetPoint("LEFT", btnHistoria, "RIGHT", 5, 0)
+    local btnProgresion = CreateSubTabButton(frame, "Progresión", 110)
+    btnProgresion:SetPoint("LEFT", btnHistoria, "RIGHT", 2, 0)
     
-    local btnAtributos = CreateSubTabButton(frame, "Atributos y Talentos", 150)
-    btnAtributos:SetPoint("LEFT", btnProgresion, "RIGHT", 5, 0)
+    local btnAtributos = CreateSubTabButton(frame, "Atributos y Talentos", 140)
+    btnAtributos:SetPoint("LEFT", btnProgresion, "RIGHT", 2, 0)
+    
+    -- Botones de Pestañas (Fila 2)
+    local btnRasgos = CreateSubTabButton(frame, "Rasgos", 110)
+    btnRasgos:SetPoint("BOTTOMLEFT", contentArea, "TOPLEFT", 5, 3)
     
     local btnOtros = CreateSubTabButton(frame, "Otros", 80)
-    btnOtros:SetPoint("LEFT", btnAtributos, "RIGHT", 5, 0)
+    btnOtros:SetPoint("LEFT", btnRasgos, "RIGHT", 2, 0)
 
     local function SelectSubTab(id)
         btnHistoria.selected = (id == 1); btnHistoria:GetScript("OnLeave")(btnHistoria)
         btnProgresion.selected = (id == 2); btnProgresion:GetScript("OnLeave")(btnProgresion)
         btnAtributos.selected = (id == 3); btnAtributos:GetScript("OnLeave")(btnAtributos)
+        btnRasgos.selected = (id == 5); btnRasgos:GetScript("OnLeave")(btnRasgos)
         btnOtros.selected = (id == 4); btnOtros:GetScript("OnLeave")(btnOtros)
         
         tab1:SetShown(id == 1)
         tab2:SetShown(id == 2)
         tab3:SetShown(id == 3)
         tab4:SetShown(id == 4)
+        tab5:SetShown(id == 5)
     end
     btnHistoria:SetScript("OnClick", function() SelectSubTab(1) end)
     btnProgresion:SetScript("OnClick", function() SelectSubTab(2) end)
     btnAtributos:SetScript("OnClick", function() SelectSubTab(3) end)
+    btnRasgos:SetScript("OnClick", function() SelectSubTab(5) end)
     btnOtros:SetScript("OnClick", function() SelectSubTab(4) end)
 
     -------------------------------------------------
@@ -494,6 +504,197 @@ function GAC:CreateCharSheetContent(parent)
         end
     end)
 
+    -------------------------------------------------
+    -- TAB 5: RASGOS POSITIVOS
+    -------------------------------------------------
+    local traitsScroll = CreateFrame("ScrollFrame", nil, tab5, "UIPanelScrollFrameTemplate")
+    traitsScroll:SetPoint("TOPLEFT", 10, -10)
+    traitsScroll:SetPoint("BOTTOMRIGHT", -30, 10)
+
+    local traitsContainer = CreateFrame("Frame", nil, traitsScroll)
+    traitsContainer:SetSize(400, 10)
+    traitsScroll:SetScrollChild(traitsContainer)
+    traitsScroll:SetScript("OnSizeChanged", function(self, width) traitsContainer:SetWidth(width) end)
+
+    local t5TraitsCreated = false
+    local t5Cards = {}
+    local t5MainCbs = {}
+    local t5LevelCbs = {}
+    local t5Dropdowns = {}
+
+    local function RefreshTab5Traits()
+        if not GAC.characterData or not GAC.characterData.positiveTraits then return end
+        
+        for traitName, mainCb in pairs(t5MainCbs) do
+            local traitInfo = GAC.characterData.positiveTraits[traitName]
+            local level = traitInfo and traitInfo.level or 0
+            
+            mainCb:SetChecked(level > 0)
+            
+            local card = t5Cards[traitName]
+            if level > 0 then
+                card:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.8)
+                card.title:SetTextColor(1, 1, 1)
+            else
+                card:SetBackdropBorderColor(0.5, 0.5, 0.5, 0.4)
+                card.title:SetTextColor(0.5, 0.5, 0.5)
+            end
+
+            if t5LevelCbs[traitName] then
+                for l, cb in pairs(t5LevelCbs[traitName]) do
+                    cb:SetShown(level > 0)
+                    cb:SetChecked(level == l)
+                end
+            end
+            
+            if t5Dropdowns[traitName] then
+                t5Dropdowns[traitName]:SetShown(level > 0)
+                local selected = traitInfo and traitInfo.selectedTalent
+                if selected then
+                    UIDropDownMenu_SetText(t5Dropdowns[traitName], GAC:_(selected) or selected)
+                else
+                    UIDropDownMenu_SetText(t5Dropdowns[traitName], "Seleccionar...")
+                end
+            end
+        end
+    end
+
+    local function BuildTab5Traits()
+        if t5TraitsCreated then return end
+        if not GAC.PositiveTraits then return end
+        
+        local currentY = -10
+
+        for i, trait in ipairs(GAC.PositiveTraits) do
+            local maxLevel = 1
+            if trait.levelThree and trait.levelThree ~= "" then maxLevel = 3
+            elseif trait.levelTwo and trait.levelTwo ~= "" then maxLevel = 2 end
+
+            local cardHeight = (maxLevel > 1) and 65 or 40
+            
+            local card = CreateFrame("Frame", nil, traitsContainer, "BackdropTemplate")
+            card:SetPoint("TOPLEFT", 10, currentY)
+            card:SetPoint("RIGHT", -10, currentY)
+            card:SetHeight(cardHeight)
+            card:SetBackdrop({
+                bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+                edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+                tile = true, tileSize = 16, edgeSize = 8,
+                insets = { left = 2, right = 2, top = 2, bottom = 2 },
+            })
+            card:SetBackdropColor(0, 0, 0, 0.6)
+            card:SetBackdropBorderColor(0.5, 0.5, 0.5, 0.4)
+            t5Cards[trait.name] = card
+
+            local mainCb = CreateFrame("CheckButton", nil, card, "ChatConfigCheckButtonTemplate")
+            mainCb:SetHitRectInsets(0, 0, 0, 0)
+            mainCb:SetPoint("TOPLEFT", 5, -5)
+            t5MainCbs[trait.name] = mainCb
+
+            local title = card:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            title:SetPoint("LEFT", mainCb, "RIGHT", 5, 0)
+            title:SetText(trait.label)
+            card.title = title
+            
+            local function ShowTooltip(self)
+                GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                GameTooltip:SetText(trait.label, 0.94, 0.78, 0.25)
+                GameTooltip:AddLine(trait.description, 1, 1, 1, true)
+                if trait.levelOne and trait.levelOne ~= "" then GameTooltip:AddLine("|cFF40C7EBNivel 1:|r " .. trait.levelOne, 1, 1, 1, true) end
+                if trait.levelTwo and trait.levelTwo ~= "" then GameTooltip:AddLine("|cFF40C7EBNivel 2:|r " .. trait.levelTwo, 1, 1, 1, true) end
+                if trait.levelThree and trait.levelThree ~= "" then GameTooltip:AddLine("|cFF40C7EBNivel 3:|r " .. trait.levelThree, 1, 1, 1, true) end
+                GameTooltip:Show()
+            end
+            mainCb:SetScript("OnEnter", ShowTooltip)
+            mainCb:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+            mainCb:SetScript("OnClick", function(self)
+                local isChecked = self:GetChecked()
+                local traitInfo = GAC.characterData.positiveTraits and GAC.characterData.positiveTraits[trait.name]
+                local oldTalent = traitInfo and traitInfo.selectedTalent
+                if isChecked then
+                    GAC:UpdateTraitLevel(trait.name, 1, oldTalent)
+                else
+                    GAC:UpdateTraitLevel(trait.name, 0, nil)
+                end
+                RefreshTab5Traits()
+            end)
+
+            if maxLevel > 1 then
+                t5LevelCbs[trait.name] = {}
+                for lvl = 1, maxLevel do
+                    local lvlCb = CreateFrame("CheckButton", nil, card, "ChatConfigCheckButtonTemplate")
+                    lvlCb:SetHitRectInsets(0, 0, 0, 0)
+                    if lvl == 1 then
+                        lvlCb:SetPoint("BOTTOMLEFT", 10, 5)
+                    else
+                        lvlCb:SetPoint("LEFT", t5LevelCbs[trait.name][lvl - 1].lbl, "RIGHT", 15, 0)
+                    end
+                    
+                    local lbl = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+                    lbl:SetPoint("LEFT", lvlCb, "RIGHT", 2, 0)
+                    lbl:SetText("Nivel " .. lvl)
+                    lvlCb.lbl = lbl
+                    
+                    lvlCb:SetScript("OnClick", function(self)
+                        self:SetChecked(true)
+                        local traitInfo = GAC.characterData.positiveTraits and GAC.characterData.positiveTraits[trait.name]
+                        local oldTalent = traitInfo and traitInfo.selectedTalent
+                        GAC:UpdateTraitLevel(trait.name, lvl, oldTalent)
+                        RefreshTab5Traits()
+                    end)
+                    
+                    t5LevelCbs[trait.name][lvl] = lvlCb
+                end
+            end
+
+            if trait.requiresTalentSelection then
+                local drop = CreateFrame("Frame", "GAC_MM_TraitDrop_" .. trait.name, card, "UIDropDownMenuTemplate")
+                drop:SetPoint("TOPRIGHT", card, "TOPRIGHT", 10, -5)
+                UIDropDownMenu_SetWidth(drop, 120)
+                drop:Hide()
+                t5Dropdowns[trait.name] = drop
+                
+                UIDropDownMenu_Initialize(drop, function(self, level, menuList)
+                    local options = {}
+                    if trait.talentOptions then
+                        options = trait.talentOptions
+                    elseif trait.talentGroup then
+                        for _, grp in ipairs(GAC.attributeGroups) do
+                            if grp.name == trait.talentGroup then options = grp.talents; break end
+                        end
+                    else
+                        for _, grp in ipairs(GAC.attributeGroups) do
+                            for _, t in ipairs(grp.talents) do table.insert(options, t) end
+                        end
+                    end
+                    
+                    for _, t in ipairs(options) do
+                        local info = UIDropDownMenu_CreateInfo()
+                        info.text = GAC:_(t) or t
+                        info.func = function()
+                            local tInfo = GAC.characterData.positiveTraits[trait.name]
+                            local lvl = tInfo and tInfo.level or 1
+                            GAC:UpdateTraitLevel(trait.name, lvl, t)
+                            UIDropDownMenu_SetText(drop, info.text)
+                        end
+                        UIDropDownMenu_AddButton(info)
+                    end
+                end)
+            end
+
+            currentY = currentY - cardHeight - 5
+        end
+
+        traitsContainer:SetHeight((currentY * -1) + 10)
+        t5TraitsCreated = true
+    end
+
+    tab5:SetScript("OnShow", function()
+        BuildTab5Traits()
+        RefreshTab5Traits()
+    end)
+
     -- Inicializar Tab 1
     SelectSubTab(1)
 
@@ -508,7 +709,9 @@ function GAC:CreateCharSheetContent(parent)
         if currentClass then
             local cl = RAID_CLASS_COLORS[select(2, UnitClass("player"))] or {r=1, g=1, b=1}
             infoText:SetTextColor(cl.r, cl.g, cl.b)
-            infoText:SetText(string.format("Nivel %d (%s) - %s - %s", GAC.characterData.progress.level, GAC.characterData.progress.category:gsub("^%l", string.upper), GAC:GetActiveTRP3ProfileRace(), currentClass))
+            local level = GAC.characterData.level or (GAC.characterData.progress and GAC.characterData.progress.level) or 1
+            local category = (GAC.characterData.progress and GAC.characterData.progress.category) or "normal"
+            infoText:SetText(string.format("Nivel %d (%s) - %s - %s", level, category:gsub("^%l", string.upper), GAC:GetCharacterRaceString(), currentClass))
         end
         nameText:SetText(GAC:GetRollDisplayName())
     end

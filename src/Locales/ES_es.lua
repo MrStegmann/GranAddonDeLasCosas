@@ -51,4 +51,15 @@ GAC.Locales.ES_es =
     normal = "Normal",
     elite = "Élite",
     boss = "Jefe",
+    human = "Humano",
+    dwarf = "Enano",
+    gnome = "Gnomo",
+    kaldorei = "Kaldorei",
+    draenei = "Draenei",
+    quelDorei = "Quel'dorei",
+    forsaken = "No-muerto",
+    orcs = "Orco",
+    tauren = "Tauren",
+    goblins = "Goblin",
+    sindorei = "Sindorei"
 }

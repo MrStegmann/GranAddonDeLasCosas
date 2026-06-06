@@ -1,8 +1,8 @@
 ## Interface: 110205
-## Title: GranAddonDeLasCosas
+## Title: GAC_DEV
 ## Notes: Addon para gestionar tiradas de dados basadas en nuestro sistema de rol.
 ## Author: PatrickJS
-## Version: 1.2.0
+## Version: 1.0.0
 ## SavedVariables: GranAddonDeLasCosasDB
 ## SavedVariablesPerCharacter: GranAddonDeLasCosasCharDB
 

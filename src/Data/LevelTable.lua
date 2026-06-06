@@ -265,6 +265,13 @@ function GAC:AddExperience(experienceAmount)
         return
     end
 
+    if self.characterData.positiveTraits and self.characterData.positiveTraits["fastLearner"] then
+        local lvl = self.characterData.positiveTraits["fastLearner"].level or 0
+        if lvl > 0 then
+            amount = amount * 2
+        end
+    end
+
     self.characterData.progress = self.characterData.progress or {}
     self:NormalizeExperienceProgressData()
 
