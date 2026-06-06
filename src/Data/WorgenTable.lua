@@ -20,6 +20,10 @@ local worgenMod = {
         lossOfControlResistance = -2,
         stealth = -2,
         sleightOfHand = -1
+    },
+    special = {
+        "superStrength",
+        "hughMovility:fourLegs",
     }
 }
 

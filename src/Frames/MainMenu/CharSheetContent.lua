@@ -197,7 +197,7 @@ function GAC:CreateCharSheetContent(parent)
     local _, hpText = CreateInfoBox(progBg, "Salud Máxima", 20, -50)
     local _, expText = CreateInfoBox(progBg, "Exp para Nivel", 190, -50)
     local _, attText = CreateInfoBox(progBg, "Puntos de Atributo", 20, -100)
-    local _, skillText = CreateInfoBox(progBg, "Puntos de Talento", 190, -100)
+    local _, skillText = CreateInfoBox(progBg, "Ranuras de hechisos/habilidadeh", 190, -100)
     local _, heroicText = CreateInfoBox(progBg, "Puntos Heroicos", 20, -150)
     local _, traitText = CreateInfoBox(progBg, "Rasgos Positivos", 190, -150)
 
