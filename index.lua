@@ -40,6 +40,7 @@ function GAC:ADDON_LOADED(loadedAddonName)
         if self.CreateMinimapButton then self:CreateMinimapButton() end
         if self.InitializePlayerPlate then self:InitializePlayerPlate() end
         if self.InitializeTargetPlate then self:InitializeTargetPlate() end
+        if self.InitializeTargetTooltip then self:InitializeTargetTooltip() end
         if self.InitializeTransmitter then self:InitializeTransmitter() end
         if self.InitializeReceiver then self:InitializeReceiver() end
 

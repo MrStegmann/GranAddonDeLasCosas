@@ -138,8 +138,22 @@ function GAC:InitializeReceiver()
                         end
                     end
                     -- TAL is the last packet, open the menu!
-                    if GAC.OpenInspectionMenu then
-                        GAC:OpenInspectionMenu()
+                    if GAC.silentInspections and GAC.silentInspections[sender] then
+                        GAC.silentInspections[sender] = nil
+                        if TargetFrame and TargetFrame:IsMouseOver() and UnitName("target") then
+                            local tName, tRealm = UnitName("target")
+                            local fullName = tName
+                            if tRealm and tRealm ~= "" then
+                                fullName = tName .. "-" .. tRealm
+                            end
+                            if fullName == sender and GAC.ShowTargetTooltip then
+                                GAC:ShowTargetTooltip(TargetFrame, GAC.inspectedPlayer.attributes, GAC.inspectedPlayer.talents)
+                            end
+                        end
+                    else
+                        if GAC.OpenInspectionMenu then
+                            GAC:OpenInspectionMenu()
+                        end
                     end
                 end
             end
