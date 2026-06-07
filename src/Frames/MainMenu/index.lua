@@ -141,8 +141,19 @@ function GAC:CreateMainMenuFrame()
     AddTab("CharSheet", "Ficha de Personaje", function(p) return GAC:CreateCharSheetContent(p) end)
     AddTab("ExpConfig", "Conf. Experiencia", function(p) return GAC:CreateExperienceConfigurator(p) end)
 
+    frame.tabs = tabs
     self.mainMenuFrame = frame
     SelectTab("CharSheet")
+end
+
+function GAC:UpdateMainMenu()
+    if self.mainMenuFrame and self.mainMenuFrame:IsShown() then
+        for id, data in pairs(self.mainMenuFrame.tabs) do
+            if data.content and data.content:IsShown() and data.content.Update then
+                data.content:Update()
+            end
+        end
+    end
 end
 
 function GAC:ToggleMainMenu()

@@ -511,6 +511,23 @@ function GAC:CreateCharSheetContent(parent)
             infoText:SetText(string.format("Nivel %d (%s) - %s - %s", GAC.characterData.progress.level, GAC.characterData.progress.category:gsub("^%l", string.upper), GAC:GetActiveTRP3ProfileRace(), currentClass))
         end
         nameText:SetText(GAC:GetRollDisplayName())
+
+        -- Update progression dropdowns to reflect current actual progress, 
+        -- assuming the user wants to see their current level when updated.
+        if GAC.characterData and GAC.characterData.progress then
+            currentCat = GAC.characterData.progress.category or "normal"
+            currentLvl = GAC.characterData.progress.level or 1
+            if catDrop and UIDropDownMenu_SetText then
+                UIDropDownMenu_SetText(catDrop, GAC:_(currentCat))
+            end
+            if lvlDrop and UIDropDownMenu_SetText then
+                UIDropDownMenu_SetText(lvlDrop, tostring(currentLvl))
+            end
+            if UpdateProgressionInfo then
+                UpdateProgressionInfo()
+            end
+            if saveProgBtn then saveProgBtn:Hide() end
+        end
     end
 
     return frame
