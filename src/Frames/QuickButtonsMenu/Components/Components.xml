@@ -3,4 +3,5 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="QuickButton.lua"/>
 	<Include file="Tooltip.lua"/>
 	<Include file="ContextMenus.lua"/>
+	<Include file="Telemetry.lua"/>
 </Ui>
