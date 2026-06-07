@@ -1,7 +1,7 @@
 local addonName, GAC = ...
 
 GAC.name = addonName
-GAC.version = "1.0.0"
+GAC.version = "1.2.1"
 
 GAC.characterData = nil
 GAC.db = nil
@@ -44,6 +44,7 @@ function GAC:ADDON_LOADED(loadedAddonName)
         if self.InitializeTransmitter then self:InitializeTransmitter() end
         if self.InitializeReceiver then self:InitializeReceiver() end
 
+        print("¡|cFF00FF00[" .. self.name .. "]|r listo! Version: " .. self.version)
         self.eventFrame:UnregisterEvent("ADDON_LOADED")
     end
 end
