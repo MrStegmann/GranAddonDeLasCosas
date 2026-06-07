@@ -1,5 +1,7 @@
 local addonName, GAC = ...
 
+local addonName, GAC = ...
+
 function GAC:CreateMainMenuFrame()
     if self.mainMenuFrame then return end
 
@@ -46,10 +48,7 @@ function GAC:CreateMainMenuFrame()
     close:SetPoint("TOPRIGHT", -4, -4)
 
     -- Título del Addon
-    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", 20, -18)
-    title:SetText("GRAN ADDON DE LAS COSAS")
-    title:SetTextColor(0.25, 0.78, 0.94)
+    local title = GAC:CreateFontString(frame, "GRAN ADDON DE LAS COSAS", "GameFontNormalLarge", { "TOPLEFT", 20, -18 }, {0.25, 0.78, 0.94})
 
     -- Línea divisoria (Estilo TRP3)
     local line = frame:CreateTexture(nil, "ARTWORK")
@@ -113,9 +112,7 @@ function GAC:CreateMainMenuFrame()
         indicator:Hide()
         btn.indicator = indicator
 
-        local text = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        text:SetPoint("LEFT", 15, 0)
-        text:SetText(label:upper())
+        local text = GAC:CreateFontString(btn, label:upper(), "GameFontHighlight", { "LEFT", 15, 0 }, {1, 1, 1})
         btn.text = text
 
         btn:SetScript("OnClick", function() SelectTab(id) end)
