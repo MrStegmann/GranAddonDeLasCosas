@@ -90,9 +90,9 @@ function GAC:ModifyPlayerLife(amount)
     
     self.characterData.currentHealth = self.characterData.currentHealth + amount
     
-    -- Clamp entre 0 y el máximo
-    if self.characterData.currentHealth < 0 then
-        self.characterData.currentHealth = 0
+    -- Clamp entre -maxHealth y el máximo
+    if self.characterData.currentHealth < -maxHealth then
+        self.characterData.currentHealth = -maxHealth
     elseif self.characterData.currentHealth > maxHealth then
         self.characterData.currentHealth = maxHealth
     end

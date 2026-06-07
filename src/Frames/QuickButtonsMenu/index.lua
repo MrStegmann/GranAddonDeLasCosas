@@ -1,48 +1,5 @@
 local addonName, GAC = ...
 
--- Namespace local para utilidades de acciones rápidas
-GAC.quickActions = GAC.quickActions or {}
-local qa = GAC.quickActions
-
-qa.setupTooltip = function(button, title, ...)
-    local lines = {...}
-    button:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText(title)
-        for _, line in ipairs(lines) do
-            if type(line) == "table" then GameTooltip:AddLine(unpack(line)) else GameTooltip:AddLine(line, 1, 1, 1) end
-        end
-        GameTooltip:Show()
-    end)
-    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
-end
-
-qa.createQuickButton = function(parent)
-    local btn = CreateFrame("Button", nil, parent, "BackdropTemplate")
-    btn:SetBackdrop({
-        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 10,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
-    btn:SetBackdropColor(0, 0, 0, 0.6)
-    btn:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.5)
-
-    local highlight = btn:CreateTexture(nil, "HIGHLIGHT")
-    highlight:SetColorTexture(1, 1, 1, 0.2)
-    highlight:SetPoint("TOPLEFT", 2, -2)
-    highlight:SetPoint("BOTTOMRIGHT", -2, 2)
-
-    btn:HookScript("OnEnter", function(self)
-        self:SetBackdropBorderColor(0.25, 0.78, 0.94, 1)
-    end)
-    btn:HookScript("OnLeave", function(self)
-        self:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.5)
-    end)
-    return btn
-end
-
-
 
 function GAC:GetQuickModifierValue()
     if not self.quickActionsFrame or not self.quickActionsFrame.modifierInput then
@@ -65,7 +22,7 @@ function GAC:UpdateTargetInspectButtonVisibility()
             canShow = true
         end
     end
-    -- qa.setupTooltip(self.targetInspectQuickButton, "Inspeccionar a " .. currentTarget, "Muestra la ficha de personaje del objetivo actual")
+    -- GAC:SetupQuickTooltip(self.targetInspectQuickButton, "Inspeccionar a " .. currentTarget, "Muestra la ficha de personaje del objetivo actual")
     self.targetInspectQuickButton:SetShown(canShow)
 end
 
@@ -123,9 +80,64 @@ function GAC:CreateQuickActionsFrame()
     -- Botones
     local buttonX, buttonSpacing, buttonRowSpacing = 10, 0, 0
 
+    local function ShowModifyValuePopup(title, callback)
+        if not GAC.modifyValuePopup then
+            local f = CreateFrame("Frame", "GACModifyValuePopup", UIParent, "BackdropTemplate")
+            f:SetSize(220, 110)
+            f:SetPoint("CENTER")
+            f:SetFrameStrata("DIALOG")
+            f:SetBackdrop({
+                bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+                edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+                tile = true, tileSize = 32, edgeSize = 32,
+                insets = { left = 11, right = 12, top = 12, bottom = 11 },
+            })
+            
+            local text = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            text:SetPoint("TOP", 0, -20)
+            f.text = text
+            
+            local editBox = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+            editBox:SetSize(80, 20)
+            editBox:SetPoint("CENTER", 0, 0)
+            editBox:SetAutoFocus(true)
+            -- No usamos SetNumeric porque necesitamos aceptar números negativos como "-5"
+            f.editBox = editBox
+            
+            local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+            btn:SetSize(80, 22)
+            btn:SetPoint("BOTTOM", 0, 15)
+            btn:SetText("Aceptar")
+            f.btn = btn
+            
+            local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+            closeBtn:SetPoint("TOPRIGHT", -5, -5)
+            
+            local function submit()
+                local val = tonumber(f.editBox:GetText())
+                if val then
+                    if f.callback then f.callback(val) end
+                end
+                f:Hide()
+            end
+            
+            btn:SetScript("OnClick", submit)
+            editBox:SetScript("OnEnterPressed", submit)
+            editBox:SetScript("OnEscapePressed", function() f:Hide() end)
+            
+            GAC.modifyValuePopup = f
+        end
+        
+        GAC.modifyValuePopup.text:SetText(title)
+        GAC.modifyValuePopup.editBox:SetText("")
+        GAC.modifyValuePopup.callback = callback
+        GAC.modifyValuePopup:Show()
+        GAC.modifyValuePopup.editBox:SetFocus()
+    end
+
     -- ================= ROW 1 (Utilities) =================
     -- 3. Vida
-    local lifeButton = qa.createQuickButton(frame)
+    local lifeButton = GAC:CreateQuickButton(frame)
     lifeButton:SetSize(25, 25)
     lifeButton:SetPoint("TOPLEFT", frame, "TOPLEFT", buttonX, -8)
     local lifeIcon = lifeButton:CreateTexture(nil, "ARTWORK")
@@ -135,15 +147,22 @@ function GAC:CreateQuickActionsFrame()
     lifeIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     lifeButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     lifeButton:SetScript("OnClick", function(_, b)
-        if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(b == "RightButton" and -1 or 1) end
+        if IsControlKeyDown() then
+            ShowModifyValuePopup("Modificar Vida (Ej: 5 o -5)", function(val)
+                if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(val) end
+            end)
+        else
+            if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(b == "RightButton" and -1 or 1) end
+        end
     end)
-    qa.setupTooltip(lifeButton, "Modificar vida ±1", 
+    GAC:SetupQuickTooltip(lifeButton, "Modificar vida ±1", 
         "Clic izquierdo: Añade 1 punto de vida.", 
-        {"Clic derecho: Quita 1 punto de vida.", 1, 0.7, 0.7}
+        {"Clic derecho: Quita 1 punto de vida.", 1, 0.7, 0.7},
+        {"Control + Clic: Introducir valor manual", 1, 1, 0.5}
     )
 
     -- 4. Escudo
-    local shieldButton = qa.createQuickButton(frame)
+    local shieldButton = GAC:CreateQuickButton(frame)
     shieldButton:SetSize(25, 25)
     shieldButton:SetPoint("LEFT", lifeButton, "RIGHT", buttonSpacing, 0)
     local shieldIcon = shieldButton:CreateTexture(nil, "ARTWORK")
@@ -153,15 +172,22 @@ function GAC:CreateQuickActionsFrame()
     shieldIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     shieldButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     shieldButton:SetScript("OnClick", function(_, b)
-        if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(b == "RightButton" and -1 or 1) end
+        if IsControlKeyDown() then
+            ShowModifyValuePopup("Modificar Escudo (Ej: 5 o -5)", function(val)
+                if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(val) end
+            end)
+        else
+            if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(b == "RightButton" and -1 or 1) end
+        end
     end)
-    qa.setupTooltip(shieldButton, "Modificar escudo ±1", 
+    GAC:SetupQuickTooltip(shieldButton, "Modificar escudo ±1", 
         "Clic izquierdo: Añade 1 punto de escudo.", 
-        {"Clic derecho: Quita 1 punto de escudo.", 1, 0.7, 0.7}
+        {"Clic derecho: Quita 1 punto de escudo.", 1, 0.7, 0.7},
+        {"Control + Clic: Introducir valor manual", 1, 1, 0.5}
     )
 
     -- 7. Expandir Turnos
-    local expandTurnButton = qa.createQuickButton(frame)
+    local expandTurnButton = GAC:CreateQuickButton(frame)
     expandTurnButton:SetSize(25, 25)
     expandTurnButton:SetPoint("LEFT", shieldButton, "RIGHT", buttonSpacing, 0)
     local expandIcon = expandTurnButton:CreateTexture(nil, "ARTWORK")
@@ -173,14 +199,14 @@ function GAC:CreateQuickActionsFrame()
         if GAC.SetTurnOrderMinimized then GAC:SetTurnOrderMinimized(false) end
         if GAC.UpdateTurnOrderFrameVisibility then GAC:UpdateTurnOrderFrameVisibility() end
     end)
-    qa.setupTooltip(expandTurnButton, "Maximizar Orden de Turnos", 
+    GAC:SetupQuickTooltip(expandTurnButton, "Maximizar Orden de Turnos", 
         "Haz clic para mostrar el panel de orden de turnos si está minimizado.",
         {"Permite expandir el panel de gestión de turnos del grupo.", 0.8, 0.95, 1}
     )
     expandTurnButton:Hide()
 
     -- Inspect Button (encima del frame)
-    local inspectBtn = qa.createQuickButton(frame)
+    local inspectBtn = GAC:CreateQuickButton(frame)
     inspectBtn:SetSize(20, 20)
     inspectBtn:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", -8, -1)
     local inspectIcon = inspectBtn:CreateTexture(nil, "ARTWORK")
@@ -189,12 +215,9 @@ function GAC:CreateQuickActionsFrame()
     inspectIcon:SetPoint("BOTTOMRIGHT", -2, 2)
     inspectIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     inspectBtn:SetScript("OnClick", function()
-        local tName, tRealm = UnitName("target")
-        if tName then
-            local fullName = tName
-            if tRealm and tRealm ~= "" then
-                fullName = tName .. "-" .. tRealm
-            end
+        local fullName = GetUnitName("target", true)
+        if fullName then
+            fullName = Ambiguate(fullName, "none")
             if GAC.RequestInspection then
                 GAC:RequestInspection(fullName)
             end
@@ -214,7 +237,7 @@ function GAC:CreateQuickActionsFrame()
             end
         end
     end)
-    qa.setupTooltip(inspectBtn, "Inspeccionar objetivo", "Muestra la ficha de personaje del objetivo actual")
+    GAC:SetupQuickTooltip(inspectBtn, "Inspeccionar objetivo", "Muestra la ficha de personaje del objetivo actual")
     inspectBtn:Hide()
 
     -- Modificador UI
@@ -230,7 +253,7 @@ function GAC:CreateQuickActionsFrame()
 
     -- ================= ROW 2 (Actions) =================
     -- 1. Dados (Talentos)
-    local diceButton = qa.createQuickButton(frame)
+    local diceButton = GAC:CreateQuickButton(frame)
     diceButton:SetSize(25, 25)
     diceButton:SetPoint("TOPLEFT", frame, "TOPLEFT", buttonX, -35)
     local diceIcon = diceButton:CreateTexture(nil, "ARTWORK")
@@ -251,13 +274,13 @@ function GAC:CreateQuickActionsFrame()
             EasyMenu(GAC:CreateTalentsOptions(), GAC.quickActionsMenuFrame, frame, 0, 0, "MENU", 2)
         end
     end)
-    qa.setupTooltip(diceButton, "Talentos (d20)", 
+    GAC:SetupQuickTooltip(diceButton, "Talentos (d20)", 
         "Click para abrir menu de tiradas por talento",
         {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
     )
 
     -- 2. Atributos
-    local attrButton = qa.createQuickButton(frame)
+    local attrButton = GAC:CreateQuickButton(frame)
     attrButton:SetSize(25, 25)
     attrButton:SetPoint("LEFT", diceButton, "RIGHT", buttonSpacing, 0)
     local attrIcon = attrButton:CreateTexture(nil, "ARTWORK")
@@ -278,13 +301,13 @@ function GAC:CreateQuickActionsFrame()
             EasyMenu(GAC:CreateAttributesOptions(), GAC.attributeActionsMenuFrame, frame, 0, 0, "MENU", 2)
         end
     end)
-    qa.setupTooltip(attrButton, "Atributos (d20)", 
+    GAC:SetupQuickTooltip(attrButton, "Atributos (d20)", 
         "Click para abrir menu de tiradas por atributo",
         {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
     )
 
     -- 5. Iniciativa
-    local swordButton = qa.createQuickButton(frame)
+    local swordButton = GAC:CreateQuickButton(frame)
     swordButton:SetSize(25, 25)
     swordButton:SetPoint("LEFT", attrButton, "RIGHT", buttonSpacing, 0)
     local swordIcon = swordButton:CreateTexture(nil, "ARTWORK")
@@ -300,10 +323,10 @@ function GAC:CreateQuickActionsFrame()
             GAC.pendingInitiativeRoll.modifierValue = mod
         end
     end)
-    qa.setupTooltip(swordButton, "Iniciativa (d100)", "Click para tirar Iniciativa")
+    GAC:SetupQuickTooltip(swordButton, "Iniciativa (d100)", "Click para tirar Iniciativa")
 
     -- 6. Ataque
-    local attackButton = qa.createQuickButton(frame)
+    local attackButton = GAC:CreateQuickButton(frame)
     attackButton:SetSize(25, 25)
     attackButton:SetPoint("LEFT", swordButton, "RIGHT", buttonSpacing, 0)
     local attackIcon = attackButton:CreateTexture(nil, "ARTWORK")
@@ -324,7 +347,7 @@ function GAC:CreateQuickActionsFrame()
             EasyMenu(GAC:CreateAttackOptions(), GAC.attackActionsMenuFrame, frame, 0, 0, "MENU", 2)
         end
     end)
-    qa.setupTooltip(attackButton, "Ataque", 
+    GAC:SetupQuickTooltip(attackButton, "Ataque", 
         "Click para abrir menu de tirada de ataque",
         {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
     )
@@ -352,7 +375,7 @@ function GAC:CreateQuickActionsFrame()
     faceInput:SetNumeric(true)
     faceInput:SetText("20")
 
-    local customRollBtn = qa.createQuickButton(frame)
+    local customRollBtn = GAC:CreateQuickButton(frame)
     customRollBtn:SetSize(25, 25)
     customRollBtn:SetPoint("LEFT", faceInput, "RIGHT", 5, 0)
     local customIcon = customRollBtn:CreateTexture(nil, "ARTWORK")
@@ -363,7 +386,7 @@ function GAC:CreateQuickActionsFrame()
     customRollBtn:SetScript("OnClick", function()
         GAC:StartCustomDiceRoll(qtyInput:GetText(), faceInput:GetText())
     end)
-    qa.setupTooltip(customRollBtn, "Tirada Personalizada", "Lanza la cantidad y caras de dados indicadas.")
+    GAC:SetupQuickTooltip(customRollBtn, "Tirada Personalizada", "Lanza la cantidad y caras de dados indicadas.")
 
     -- Asignaciones al objeto GAC
     frame.modifierInput = modInput
@@ -377,6 +400,8 @@ function GAC:CreateQuickActionsFrame()
     local eventFrame = CreateFrame("Frame")
     eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     eventFrame:SetScript("OnEvent", function() GAC:UpdateTargetInspectButtonVisibility() end)
+    
+    -- Crear marco de telemetría eliminado
 end
 
 
