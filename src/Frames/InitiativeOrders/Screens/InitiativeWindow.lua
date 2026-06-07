@@ -10,7 +10,17 @@ function GAC:InitializeInitiativeFrame()
     -- Marco principal
     local frame = CreateFrame("Frame", "GACInitiativeFrame", UIParent, "BackdropTemplate")
     frame:SetSize(FRAME_WIDTH, 300)
-    frame:SetPoint("CENTER", UIParent, "CENTER", 300, 0)
+    
+    local anchor, relAnchor, x, y = "CENTER", "CENTER", 300, 0
+    if GAC.characterData and GAC.characterData.ui and GAC.characterData.ui.initiativeFrame then
+        local pos = GAC.characterData.ui.initiativeFrame
+        if pos.anchor then
+            anchor, relAnchor = pos.anchor, pos.relativeAnchor or pos.anchor
+            x, y = tonumber(pos.x) or x, tonumber(pos.y) or y
+        end
+    end
+    frame:SetPoint(anchor, UIParent, relAnchor, x, y)
+    
     frame:SetBackdrop({
         bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -23,7 +33,18 @@ function GAC:InitializeInitiativeFrame()
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetScript("OnDragStart", frame.StartMoving)
-    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    frame:SetScript("OnDragStop", function(s)
+        s:StopMovingOrSizing()
+        local a, _, ra, ox, oy = s:GetPoint(1)
+        if not GAC.characterData then return end
+        if not GAC.characterData.ui then GAC.characterData.ui = {} end
+        if not GAC.characterData.ui.initiativeFrame then GAC.characterData.ui.initiativeFrame = {} end
+        ra = ra or a
+        GAC.characterData.ui.initiativeFrame.anchor = a
+        GAC.characterData.ui.initiativeFrame.relativeAnchor = ra
+        GAC.characterData.ui.initiativeFrame.x = math.floor(ox + 0.5)
+        GAC.characterData.ui.initiativeFrame.y = math.floor(oy + 0.5)
+    end)
     
     -- Título
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -282,8 +303,13 @@ function GAC:InitializeInitiativeFrame()
     minimizeBtn:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight", "ADD")
     
     local isMinimized = false
-    minimizeBtn:SetScript("OnClick", function()
-        isMinimized = not isMinimized
+    if GAC.characterData and GAC.characterData.ui and GAC.characterData.ui.initiativeFrame then
+        if GAC.characterData.ui.initiativeFrame.isMinimized ~= nil then
+            isMinimized = GAC.characterData.ui.initiativeFrame.isMinimized
+        end
+    end
+
+    local function ApplyMinimizedState()
         if isMinimized then
             frame:SetHeight(30)
             scrollFrame:Hide()
@@ -300,6 +326,16 @@ function GAC:InitializeInitiativeFrame()
             minimizeBtn:SetPushedTexture("Interface\\Buttons\\UI-Panel-CollapseButton-Down")
             if frame.UpdateButtonVisibility then frame.UpdateButtonVisibility() end
         end
+    end
+
+    minimizeBtn:SetScript("OnClick", function()
+        isMinimized = not isMinimized
+        if GAC.characterData then
+            if not GAC.characterData.ui then GAC.characterData.ui = {} end
+            if not GAC.characterData.ui.initiativeFrame then GAC.characterData.ui.initiativeFrame = {} end
+            GAC.characterData.ui.initiativeFrame.isMinimized = isMinimized
+        end
+        ApplyMinimizedState()
     end)
     
     local function UpdateButtonVisibility()
@@ -348,6 +384,7 @@ function GAC:InitializeInitiativeFrame()
         frame:Hide()
     end
     UpdateButtonVisibility()
+    ApplyMinimizedState()
 end
 
 function GAC:UpdateInitiativeFrame()
