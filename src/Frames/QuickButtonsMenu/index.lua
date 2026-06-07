@@ -80,6 +80,61 @@ function GAC:CreateQuickActionsFrame()
     -- Botones
     local buttonX, buttonSpacing, buttonRowSpacing = 10, 0, 0
 
+    local function ShowModifyValuePopup(title, callback)
+        if not GAC.modifyValuePopup then
+            local f = CreateFrame("Frame", "GACModifyValuePopup", UIParent, "BackdropTemplate")
+            f:SetSize(220, 110)
+            f:SetPoint("CENTER")
+            f:SetFrameStrata("DIALOG")
+            f:SetBackdrop({
+                bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+                edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+                tile = true, tileSize = 32, edgeSize = 32,
+                insets = { left = 11, right = 12, top = 12, bottom = 11 },
+            })
+            
+            local text = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            text:SetPoint("TOP", 0, -20)
+            f.text = text
+            
+            local editBox = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+            editBox:SetSize(80, 20)
+            editBox:SetPoint("CENTER", 0, 0)
+            editBox:SetAutoFocus(true)
+            -- No usamos SetNumeric porque necesitamos aceptar números negativos como "-5"
+            f.editBox = editBox
+            
+            local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+            btn:SetSize(80, 22)
+            btn:SetPoint("BOTTOM", 0, 15)
+            btn:SetText("Aceptar")
+            f.btn = btn
+            
+            local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+            closeBtn:SetPoint("TOPRIGHT", -5, -5)
+            
+            local function submit()
+                local val = tonumber(f.editBox:GetText())
+                if val then
+                    if f.callback then f.callback(val) end
+                end
+                f:Hide()
+            end
+            
+            btn:SetScript("OnClick", submit)
+            editBox:SetScript("OnEnterPressed", submit)
+            editBox:SetScript("OnEscapePressed", function() f:Hide() end)
+            
+            GAC.modifyValuePopup = f
+        end
+        
+        GAC.modifyValuePopup.text:SetText(title)
+        GAC.modifyValuePopup.editBox:SetText("")
+        GAC.modifyValuePopup.callback = callback
+        GAC.modifyValuePopup:Show()
+        GAC.modifyValuePopup.editBox:SetFocus()
+    end
+
     -- ================= ROW 1 (Utilities) =================
     -- 3. Vida
     local lifeButton = GAC:CreateQuickButton(frame)
@@ -92,11 +147,18 @@ function GAC:CreateQuickActionsFrame()
     lifeIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     lifeButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     lifeButton:SetScript("OnClick", function(_, b)
-        if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(b == "RightButton" and -1 or 1) end
+        if IsControlKeyDown() then
+            ShowModifyValuePopup("Modificar Vida (Ej: 5 o -5)", function(val)
+                if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(val) end
+            end)
+        else
+            if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(b == "RightButton" and -1 or 1) end
+        end
     end)
     GAC:SetupQuickTooltip(lifeButton, "Modificar vida ±1", 
         "Clic izquierdo: Añade 1 punto de vida.", 
-        {"Clic derecho: Quita 1 punto de vida.", 1, 0.7, 0.7}
+        {"Clic derecho: Quita 1 punto de vida.", 1, 0.7, 0.7},
+        {"Control + Clic: Introducir valor manual", 1, 1, 0.5}
     )
 
     -- 4. Escudo
@@ -110,11 +172,18 @@ function GAC:CreateQuickActionsFrame()
     shieldIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     shieldButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     shieldButton:SetScript("OnClick", function(_, b)
-        if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(b == "RightButton" and -1 or 1) end
+        if IsControlKeyDown() then
+            ShowModifyValuePopup("Modificar Escudo (Ej: 5 o -5)", function(val)
+                if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(val) end
+            end)
+        else
+            if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(b == "RightButton" and -1 or 1) end
+        end
     end)
     GAC:SetupQuickTooltip(shieldButton, "Modificar escudo ±1", 
         "Clic izquierdo: Añade 1 punto de escudo.", 
-        {"Clic derecho: Quita 1 punto de escudo.", 1, 0.7, 0.7}
+        {"Clic derecho: Quita 1 punto de escudo.", 1, 0.7, 0.7},
+        {"Control + Clic: Introducir valor manual", 1, 1, 0.5}
     )
 
     -- 7. Expandir Turnos

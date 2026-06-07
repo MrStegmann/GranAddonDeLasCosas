@@ -45,8 +45,37 @@ function GAC:UpdateRaidPlate(frame)
         local currentShield = unitData.currentShield or 0
         
         -- Override Blizzard's min/max and value
+        local displayHealth = math.max(0, currentHealth)
         frame.healthBar:SetMinMaxValues(0, maxHealth)
-        frame.healthBar:SetValue(currentHealth)
+        frame.healthBar:SetValue(displayHealth)
+        
+        if not frame.healthBar.GAC_NegativeHealthBar then
+            frame.healthBar.GAC_NegativeHealthBar = frame.healthBar:CreateTexture(nil, "BORDER")
+            frame.healthBar.GAC_NegativeHealthBar:SetColorTexture(0.5, 0.05, 0.05, 1)
+        end
+        
+        if currentHealth < 0 then
+            local barWidth = frame.healthBar:GetWidth()
+            if barWidth == 0 then barWidth = frame:GetWidth() or 1 end
+            
+            local negPercent = math.abs(currentHealth) / maxHealth
+            if negPercent > 1 then negPercent = 1 end
+            local negWidth = negPercent * barWidth
+            
+            if negWidth > 0 then
+                frame.healthBar.GAC_NegativeHealthBar:SetWidth(negWidth)
+                frame.healthBar.GAC_NegativeHealthBar:ClearAllPoints()
+                frame.healthBar.GAC_NegativeHealthBar:SetPoint("TOPLEFT", frame.healthBar, "TOPLEFT", 0, 0)
+                frame.healthBar.GAC_NegativeHealthBar:SetPoint("BOTTOMLEFT", frame.healthBar, "BOTTOMLEFT", 0, 0)
+                frame.healthBar.GAC_NegativeHealthBar:Show()
+            else
+                frame.healthBar.GAC_NegativeHealthBar:Hide()
+            end
+        else
+            if frame.healthBar.GAC_NegativeHealthBar then
+                frame.healthBar.GAC_NegativeHealthBar:Hide()
+            end
+        end
         
         -- Shield logic
         if not frame.healthBar.GAC_ShieldBar then
