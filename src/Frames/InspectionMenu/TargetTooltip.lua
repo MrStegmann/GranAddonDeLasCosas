@@ -61,7 +61,7 @@ function GAC:InitializeTargetTooltip()
             local tName, tRealm = UnitName("target")
             local fullName = tName
             if tRealm and tRealm ~= "" then
-                fullName = tName .. "-" .. tRealm
+                fullName = tName .. "-" .. tRealm:gsub("%s+", "")
             end
             
             local isPlayer = UnitIsUnit("target", "player")
