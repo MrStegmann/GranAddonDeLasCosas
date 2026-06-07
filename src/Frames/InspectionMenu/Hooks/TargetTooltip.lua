@@ -58,11 +58,8 @@ function GAC:InitializeTargetTooltip()
         TargetFrame:HookScript("OnEnter", function(self)
             if not UnitExists("target") or not UnitIsPlayer("target") then return end
             
-            local tName, tRealm = UnitName("target")
-            local fullName = tName
-            if tRealm and tRealm ~= "" then
-                fullName = tName .. "-" .. tRealm:gsub("%s+", "")
-            end
+            local fullName = GetUnitName("target", true)
+            if fullName then fullName = Ambiguate(fullName, "none") end
             
             local isPlayer = UnitIsUnit("target", "player")
             local attributes, talents

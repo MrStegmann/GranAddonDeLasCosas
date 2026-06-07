@@ -1,6 +1,5 @@
 local _, GAC = ...
 
--- Elementos de la UI
 local FRAME_WIDTH = 250
 local ROW_HEIGHT = 20
 local MAX_ROWS = 20
@@ -45,59 +44,21 @@ function GAC:InitializeInitiativeFrame()
     
     -- Array visual de filas
     frame.rows = {}
+    local prevRow = nil
     for i = 1, MAX_ROWS do
-        local row = CreateFrame("Button", nil, scrollChild)
-        row:SetSize(FRAME_WIDTH - 40, ROW_HEIGHT)
-        if i == 1 then
-            row:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
-        else
-            row:SetPoint("TOPLEFT", frame.rows[i-1], "BOTTOMLEFT", 0, 0)
-        end
-        row:RegisterForClicks("RightButtonUp")
-        
-        local highlight = row:CreateTexture(nil, "HIGHLIGHT")
-        highlight:SetAllPoints()
-        highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
-        highlight:SetBlendMode("ADD")
-        
-        local icon = row:CreateTexture(nil, "ARTWORK")
-        icon:SetSize(14, 14)
-        icon:SetPoint("LEFT", row, "LEFT", 2, 0)
-        icon:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
-        icon:Hide()
-        row.icon = icon
-        
-        local text = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        text:SetPoint("LEFT", icon, "RIGHT", 4, 0)
-        text:SetPoint("RIGHT", row, "RIGHT", -30, 0)
-        text:SetJustifyH("LEFT")
-        row.text = text
-        
-        local val = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        val:SetPoint("RIGHT", row, "RIGHT", -5, 0)
-        val:SetJustifyH("RIGHT")
-        row.val = val
-        
-        row.index = i
-        row:SetScript("OnClick", function(self, button)
-            if button == "RightButton" and GAC.activeInitiativeView == "current" then
-                if UnitIsGroupLeader("player") or not IsInGroup() then
-                    GAC.contextMenuIndex = self.index
-                    ToggleDropDownMenu(1, nil, contextMenu, "cursor", 0, 0)
-                end
-            end
-        end)
-        
-        row:Hide()
+        local row = GAC:CreateInitiativeRow(scrollChild, FRAME_WIDTH - 40, ROW_HEIGHT, i, contextMenu, prevRow)
         table.insert(frame.rows, row)
+        prevRow = row
     end
     
+    -- Menú Desplegable (Dropdown) - Needs to be defined before buttons that use it
+    local dropdown = CreateFrame("Frame", "GACInitiativeHistoryDropdown", frame, "UIDropDownMenuTemplate")
+    dropdown:SetPoint("BOTTOM", frame, "BOTTOM", 0, 7)
+    UIDropDownMenu_SetWidth(dropdown, 110)
+    UIDropDownMenu_SetText(dropdown, "Combate Actual")
+    
     -- Botón Ordenar
-    local sortBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    sortBtn:SetSize(25, 25)
-    sortBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 10, 10)
-    sortBtn:SetNormalTexture("Interface\\Icons\\INV_Misc_Book_08")
-    sortBtn:SetScript("OnClick", function()
+    local sortBtn = GAC:CreateIconButton(frame, 25, "Interface\\Icons\\INV_Misc_Book_08", "Ordenar", "Ordenar y guardar historial", function()
         if GAC.activeInitiativeView == "current" then
             GAC:SortInitiativeOrder()
             if GAC.BroadcastInitiativeAction then
@@ -105,20 +66,10 @@ function GAC:InitializeInitiativeFrame()
             end
         end
     end)
-    sortBtn:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("Ordenar y guardar historial")
-        GameTooltip:Show()
-    end)
-    sortBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    sortBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 10, 10)
     
     -- Botón Cargar Historial
-    local loadBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    loadBtn:SetSize(25, 25)
-    loadBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 10, 10)
-    loadBtn:SetNormalTexture("Interface\\Icons\\INV_Misc_EngGizmos_18")
-    loadBtn:Hide()
-    loadBtn:SetScript("OnClick", function()
+    local loadBtn = GAC:CreateIconButton(frame, 25, "Interface\\Icons\\INV_Misc_EngGizmos_18", "Cargar", "Cargar historial a toda la banda", function()
         if GAC.activeInitiativeView ~= "current" then
             -- Borramos la red actual
             GAC:ClearInitiativeOrder()
@@ -130,9 +81,7 @@ function GAC:InitializeInitiativeFrame()
             local hist = GAC.characterData.initiativeHistory[GAC.activeInitiativeView]
             if hist and hist.rolls then
                 for i, roll in ipairs(hist.rolls) do
-                    -- ADD local and remote
                     table.insert(GAC.initiativeOrder, {name = roll.name, total = roll.total})
-                    -- Forzamos enviar el addon message manual imitando un add normal
                     local payload = "INIT:ADD:" .. tostring(roll.name) .. ":" .. tostring(roll.total)
                     if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
                         C_ChatInfo.SendAddonMessage(GAC.COMM_PREFIX, payload, "INSTANCE_CHAT")
@@ -143,7 +92,6 @@ function GAC:InitializeInitiativeFrame()
                     end
                 end
                 
-                -- ICON local and remote
                 for i, roll in ipairs(hist.rolls) do
                     if roll.icon and roll.icon > 0 then
                         GAC:SetInitiativeIcon(i, roll.icon)
@@ -154,43 +102,34 @@ function GAC:InitializeInitiativeFrame()
                 end
             end
             
-            -- Nos vinculamos al historial que acabamos de cargar
             GAC.currentLinkedHistory = GAC.activeInitiativeView
             GAC.activeInitiativeView = "current"
-            UIDropDownMenu_SetText(frame.historyDropdown, "Combate Actual")
+            UIDropDownMenu_SetText(dropdown, "Combate Actual")
             GAC:UpdateInitiativeFrame()
             if frame.UpdateButtonVisibility then frame.UpdateButtonVisibility() end
         end
     end)
-    loadBtn:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("Cargar historial a toda la banda")
-        GameTooltip:Show()
-    end)
-    loadBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    loadBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 10, 10)
+    loadBtn:Hide()
     
     -- Botón Limpiar
-    local clearBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    clearBtn:SetSize(25, 25)
-    clearBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -10, 10)
-    clearBtn:SetNormalTexture("Interface\\Icons\\INV_Misc_Bag_08")
-    clearBtn:SetScript("OnClick", function()
+    local clearBtn = GAC:CreateIconButton(frame, 25, "Interface\\Icons\\INV_Misc_Bag_08", "Limpiar", "Limpiar lista actual / Borrar historial", function()
         if GAC.activeInitiativeView == "current" then
             GAC:ClearInitiativeOrder()
             if GAC.BroadcastInitiativeAction then
                 GAC:BroadcastInitiativeAction("CLEAR")
             end
         else
-            -- Borrar el historial seleccionado
             if GAC.characterData and GAC.characterData.initiativeHistory then
                 table.remove(GAC.characterData.initiativeHistory, GAC.activeInitiativeView)
                 GAC.activeInitiativeView = "current"
                 GAC:UpdateInitiativeFrame()
-                UIDropDownMenu_SetText(frame.historyDropdown, "Combate Actual")
+                UIDropDownMenu_SetText(dropdown, "Combate Actual")
                 if frame.UpdateButtonVisibility then frame.UpdateButtonVisibility() end
             end
         end
     end)
+    clearBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -10, 10)
     clearBtn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         if GAC.activeInitiativeView == "current" then
@@ -199,14 +138,7 @@ function GAC:InitializeInitiativeFrame()
             GameTooltip:SetText("Borrar este historial")
         end
         GameTooltip:Show()
-    end)
-    clearBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    
-    -- Menú Desplegable (Dropdown)
-    local dropdown = CreateFrame("Frame", "GACInitiativeHistoryDropdown", frame, "UIDropDownMenuTemplate")
-    dropdown:SetPoint("BOTTOM", frame, "BOTTOM", 0, 7)
-    UIDropDownMenu_SetWidth(dropdown, 110)
-    UIDropDownMenu_SetText(dropdown, "Combate Actual")
+    end) -- Overwrite the generic tooltip logic just to make it dynamic
     
     UIDropDownMenu_Initialize(dropdown, function(self, level, menuList)
         local info = UIDropDownMenu_CreateInfo()
@@ -236,6 +168,7 @@ function GAC:InitializeInitiativeFrame()
             end
         end
     end)
+
     UIDropDownMenu_Initialize(contextMenu, function(self, level, menuList)
         local index = GAC.contextMenuIndex
         if not index then return end
@@ -444,98 +377,5 @@ function GAC:UpdateInitiativeFrame()
         else
             row:Hide()
         end
-    end
-end
-
-function GAC:AddInitiativeRoll(playerName, total)
-    if not IsInGroup() and not IsInRaid() then return end
-    
-    if not self.initiativeFrame then
-        self:InitializeInitiativeFrame()
-    end
-    
-    self.initiativeFrame:Show()
-    
-    table.insert(self.initiativeOrder, { name = playerName, total = total })
-    
-    if self.activeInitiativeView == "current" then
-        self:UpdateInitiativeFrame()
-    end
-end
-
-function GAC:ClearInitiativeOrder()
-    self.initiativeOrder = {}
-    self.currentLinkedHistory = nil
-    if self.activeInitiativeView == "current" then
-        self:UpdateInitiativeFrame()
-    end
-end
-
-function GAC:SyncCurrentHistory()
-    if self.currentLinkedHistory and self.characterData and self.characterData.initiativeHistory then
-        local hist = self.characterData.initiativeHistory[self.currentLinkedHistory]
-        if hist then
-            local copy = {}
-            for i, v in ipairs(self.initiativeOrder) do
-                table.insert(copy, {name = v.name, total = v.total, icon = v.icon})
-            end
-            hist.rolls = copy
-        end
-    end
-end
-
-function GAC:SortInitiativeOrder()
-    if #self.initiativeOrder == 0 then return end
-    
-    table.sort(self.initiativeOrder, function(a, b)
-        local valA = tonumber(a.total) or 0
-        local valB = tonumber(b.total) or 0
-        return valA > valB
-    end)
-    
-    -- Guardar copia en el historial persistente
-    self.characterData = self.characterData or {}
-    self.characterData.initiativeHistory = self.characterData.initiativeHistory or {}
-    
-    local copy = {}
-    for i, v in ipairs(self.initiativeOrder) do
-        table.insert(copy, {name = v.name, total = v.total, icon = v.icon})
-    end
-    
-    if self.currentLinkedHistory and self.characterData.initiativeHistory[self.currentLinkedHistory] then
-        -- Si ya hay un historial vinculado, solo lo actualizamos para no crear spam
-        self.characterData.initiativeHistory[self.currentLinkedHistory].rolls = copy
-    else
-        local currentDate = date("%Y-%m-%d %H:%M:%S")
-        table.insert(self.characterData.initiativeHistory, { date = currentDate, rolls = copy })
-        self.currentLinkedHistory = #self.characterData.initiativeHistory
-    end
-    
-    self:UpdateInitiativeFrame()
-end
-
-function GAC:MoveInitiativeIndex(fromIndex, toIndex)
-    if not self.initiativeOrder[fromIndex] then return end
-    if toIndex < 1 then toIndex = 1 end
-    if toIndex > #self.initiativeOrder then toIndex = #self.initiativeOrder end
-    
-    local element = table.remove(self.initiativeOrder, fromIndex)
-    table.insert(self.initiativeOrder, toIndex, element)
-    
-    self:SyncCurrentHistory()
-    
-    if self.activeInitiativeView == "current" then
-        self:UpdateInitiativeFrame()
-    end
-end
-
-function GAC:SetInitiativeIcon(index, iconID)
-    if not self.initiativeOrder[index] then return end
-    self.initiativeOrder[index].icon = iconID
-    
-    self:SyncCurrentHistory()
-    
-    if self.activeInitiativeView == "current" then
-        self:UpdateInitiativeFrame()
     end
 end

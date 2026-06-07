@@ -141,11 +141,8 @@ function GAC:InitializeReceiver()
                     if GAC.silentInspections and GAC.silentInspections[shortSender] then
                         GAC.silentInspections[shortSender] = nil
                         if TargetFrame and TargetFrame:IsMouseOver() and UnitName("target") then
-                            local tName, tRealm = UnitName("target")
-                            local fullName = tName
-                            if tRealm and tRealm ~= "" then
-                                fullName = tName .. "-" .. tRealm:gsub("%s+", "")
-                            end
+                            local fullName = GetUnitName("target", true)
+                            if fullName then fullName = Ambiguate(fullName, "none") end
                             if fullName == shortSender and GAC.ShowTargetTooltip then
                                 GAC:ShowTargetTooltip(TargetFrame, GAC.inspectedPlayer.attributes, GAC.inspectedPlayer.talents)
                             end
