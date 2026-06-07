@@ -332,8 +332,7 @@ function GAC:CreateQuickActionsFrame()
     eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     eventFrame:SetScript("OnEvent", function() GAC:UpdateTargetInspectButtonVisibility() end)
     
-    -- Crear marco de telemetría a la izquierda
-    GAC:CreateTelemetryFrame(frame)
+    -- Crear marco de telemetría eliminado
 end
 
 
