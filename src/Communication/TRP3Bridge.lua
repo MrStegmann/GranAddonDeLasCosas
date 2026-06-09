@@ -276,3 +276,95 @@ end
 function GAC:GetTargetTRP3ProfileClass()
     return getTargetTRP3ProfileValue(getProfileClassFromData) or UnitClass("target")
 end
+
+-- ============================================================================
+-- TRP3 Extended: Equipped Items & Events
+-- ============================================================================
+
+-- Devuelve una tabla con los objetos equipados en el inventario de TRP3 Extended
+function GAC:GetTRP3ExtendedEquippedItems()
+    if type(TRP3_API) ~= "table" or type(TRP3_API.inventory) ~= "table" then
+        return {}
+    end
+
+    local equippedItems = {}
+    
+    -- Intentamos usar getWearables que es comúnmente usado en TRP3 Extended
+    if type(TRP3_API.inventory.getWearables) == "function" then
+        local wearables = safeCall(TRP3_API.inventory.getWearables)
+        if type(wearables) == "table" then
+            for slot, itemData in pairs(wearables) do
+                table.insert(equippedItems, {
+                    slot = slot,
+                    data = itemData
+                })
+            end
+            return equippedItems
+        end
+    end
+
+    -- Alternativamente, intentamos iterar sobre el inventario buscando objetos con flag de equipado
+    if type(TRP3_API.inventory.getInventoryList) == "function" then
+        local invList = safeCall(TRP3_API.inventory.getInventoryList, "player")
+        if type(invList) == "table" then
+            for _, itemData in pairs(invList) do
+                if itemData.isWearable or itemData.isEquipped then
+                    table.insert(equippedItems, {
+                        data = itemData
+                    })
+                end
+            end
+            return equippedItems
+        end
+    end
+
+    return equippedItems
+end
+
+-- Evento para detectar cuando el jugador se equipa/desequipa algo en TRP3 Extended
+local trp3EquipmentCallbacks = {}
+
+function GAC:RegisterTRP3EquipmentCallback(callbackFn)
+    if type(callbackFn) == "function" then
+        table.insert(trp3EquipmentCallbacks, callbackFn)
+    end
+end
+
+-- Función interna para notificar a nuestros callbacks
+local function FireTRP3EquipmentChanged()
+    local equippedItems = GAC:GetTRP3ExtendedEquippedItems()
+    for _, callbackFn in ipairs(trp3EquipmentCallbacks) do
+        safeCall(callbackFn, equippedItems)
+    end
+end
+
+-- Inicializador de eventos para TRP3 Extended
+function GAC:InitTRP3ExtendedEvents()
+    if type(TRP3_API) ~= "table" then return end
+
+    -- Registramos un callback nativo de TRP3. Los eventos exactos de TRP3 Extended 
+    -- pueden variar, pero comúnmente son de este tipo:
+    local eventsToWatch = {
+        "TRP3_INVENTORY_CHANGED",
+        "TRP3_WEARABLES_CHANGED",
+        "TRP3_ITEM_EQUIPPED",
+        "TRP3_ITEM_UNEQUIPPED",
+        (TRP3_API.inventory and TRP3_API.inventory.EVENTS and TRP3_API.inventory.EVENTS.INVENTORY_CHANGED)
+    }
+
+    for _, eventName in ipairs(eventsToWatch) do
+        if type(eventName) == "string" and type(TRP3_API.RegisterCallback) == "function" then
+            TRP3_API.RegisterCallback("GAC_TRP3_BRIDGE", eventName, function()
+                FireTRP3EquipmentChanged()
+            end)
+        end
+    end
+
+    -- Además, si queremos monitorear el OnEvent de WoW para eventos de TRP3 que se envían globalmente
+    local f = CreateFrame("Frame")
+    f:RegisterEvent("USER_DATA_SAVED") -- A veces TRP3 guarda después de un cambio de inventario
+    f:SetScript("OnEvent", function(self, event, ...)
+        -- Solo disparamos si sospechamos que cambió el equipo
+        FireTRP3EquipmentChanged()
+    end)
+end
