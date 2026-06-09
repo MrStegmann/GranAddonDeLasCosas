@@ -332,4 +332,8 @@ function GAC:AddExperience(experienceAmount)
     progress.level = level
     progress.currentExperience = currentExperience
     self:NormalizeExperienceProgressData()
+
+    if self.UpdateMainMenu then
+        self:UpdateMainMenu()
+    end
 end
