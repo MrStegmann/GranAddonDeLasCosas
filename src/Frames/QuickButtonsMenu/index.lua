@@ -528,19 +528,25 @@ function GAC:CreateQuickActionsFrame()
                                 if ratio > 1 then ratio = 1 end
                                 if ratio < 0 then ratio = 0 end
                                 
-                                if ratio > 0.5 then
-                                    r = (1 - ratio) * 2
-                                    g = 1
+                                if curVal == 0 then
+                                    btn.icon:SetDesaturated(true)
+                                    r, g, b = 1, 0, 0
                                 else
-                                    r = 1
-                                    g = ratio * 2
+                                    btn.icon:SetDesaturated(false)
+                                    if ratio > 0.5 then
+                                        r = (1 - ratio) * 2
+                                        g = 1
+                                    else
+                                        r = 1
+                                        g = ratio * 2
+                                    end
+                                    b = 0
+                                    
+                                    -- Mezclamos un poco con blanco para no saturar excesivamente el icono original
+                                    r = r * 0.6 + 0.4
+                                    g = g * 0.6 + 0.4
+                                    b = b * 0.6 + 0.4
                                 end
-                                b = 0
-                                
-                                -- Mezclamos un poco con blanco para no saturar excesivamente el icono original
-                                r = r * 0.6 + 0.4
-                                g = g * 0.6 + 0.4
-                                b = b * 0.6 + 0.4
                             end
                         end
                     end

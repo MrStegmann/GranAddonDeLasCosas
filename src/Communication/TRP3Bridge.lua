@@ -319,8 +319,57 @@ local function getItemTooltipFields(slotInfo)
     local itemName = parseTRP3Text(classData.BA.NA, slotInfo) or getItemDisplayName(slotInfo)
     local tooltipLeft = parseTRP3Text(classData.BA.LE, slotInfo)
     local tooltipRight = parseTRP3Text(classData.BA.RI, slotInfo)
+    
     local itemDescription = parseTRP3Text(classData.BA.DE, slotInfo)
-    local itemIcon = classData.BA.IC
+
+    -- Extraemos la durabilidad dinámicamente de la tabla base en vez de la descripción
+    local itemTypeStrL, hasReinfL, reinfStrL = GAC:ParseArmorString(tooltipLeft)
+    local itemTypeStrR, hasReinfR, reinfStrR = GAC:ParseArmorString(tooltipRight)
+    
+    local baseKey = GAC:GetArmorKeyByAlias(itemTypeStrL)
+    local slotKey = GAC:GetArmorKeyByAlias(itemTypeStrR)
+    
+    local hasReinforcement = hasReinfL or hasReinfR
+    local reinforcementStr = (hasReinfL and reinfStrL) or (hasReinfR and reinfStrR) or ""
+    
+    if (not baseKey or not GAC:GetArmorTypeInfo(baseKey)) and GAC:GetArmorTypeInfo(GAC:GetArmorKeyByAlias(itemTypeStrR)) then
+        baseKey = GAC:GetArmorKeyByAlias(itemTypeStrR)
+        slotKey = GAC:GetArmorKeyByAlias(itemTypeStrL)
+    end
+    
+    local maxDurability = nil
+    if baseKey then
+        local info = GAC:GetArmorTypeInfo(baseKey)
+        if info then
+            maxDurability = info.durability or 0
+            if hasReinforcement then
+                local rKey = GAC:GetArmorKeyByAlias(reinforcementStr)
+                if rKey then
+                    local rInfo = GAC:GetArmorReinforcementInfo(rKey)
+                    if rInfo then
+                        maxDurability = maxDurability + (rInfo.durability or 0)
+                    end
+                end
+            end
+        end
+    end
+    
+    if maxDurability then
+        local curDur = maxDurability
+        if slotInfo and slotInfo.VA and slotInfo.VA.durability then
+            curDur = tonumber(slotInfo.VA.durability)
+        end
+        
+        local durStr = "\n\nDurabilidad: " .. tostring(curDur) .. "/" .. tostring(maxDurability)
+        
+        if type(itemDescription) == "string" and itemDescription ~= "" then
+            itemDescription = itemDescription .. durStr
+        else
+            itemDescription = "Durabilidad: " .. tostring(curDur) .. "/" .. tostring(maxDurability)
+        end
+    end
+
+    local itemIcon = classData.BA.IC or "INV_Misc_QuestionMark"
     local itemQuality = classData.BA.QA
 
     return itemName, tooltipLeft, tooltipRight, itemDescription, itemIcon, itemQuality
@@ -555,6 +604,7 @@ function GAC:GetTRP3ExtendedEquippedItems()
                 itemDescription = itemDescription,
                 itemIcon = itemIcon,
                 itemQuality = itemQuality,
+                itemVA = itemData.VA or {},
             }
         end
     end
@@ -582,20 +632,19 @@ function GAC:UpdateEquippedArmor()
         local baseKey = self:GetArmorKeyByAlias(itemTypeStrL)
         local slotKey = self:GetArmorKeyByAlias(itemTypeStrR)
         
+        local hasReinforcement = hasReinfL or hasReinfR
+        local reinforcementStr = (hasReinfL and reinfStrL) or (hasReinfR and reinfStrR) or ""
+        
         -- Si están invertidos (Ej: "Cabeza" a la izquierda, "Placas" a la derecha)
         if (not baseKey or not self:GetArmorTypeInfo(baseKey)) and self:GetArmorTypeInfo(self:GetArmorKeyByAlias(itemTypeStrR)) then
             baseKey = self:GetArmorKeyByAlias(itemTypeStrR)
-            itemTypeStrL, hasReinfL, reinfStrL = itemTypeStrR, hasReinfR, reinfStrR
-            slotKey = self:GetArmorKeyByAlias(item.tooltipLeft)
+            slotKey = self:GetArmorKeyByAlias(itemTypeStrL)
         end
         
         -- Si la base Key se detectó pero es un slot (Ej: "Cabeza"), descartarlo como base
         if baseKey and not self:GetArmorTypeInfo(baseKey) then
             baseKey = nil
         end
-        
-        local hasReinforcement = hasReinfL
-        local reinforcementStr = reinfStrL
         
         local targetSlot = slotKey or item.slotID
         if not groupedBySlot[targetSlot] then groupedBySlot[targetSlot] = {} end
@@ -739,6 +788,11 @@ function GAC:UpdateEquippedArmor()
                     end
                 end
                 
+                local curVal = pInfo.maxDurability
+                if item.itemVA and item.itemVA.durability then
+                    curVal = tonumber(item.itemVA.durability)
+                end
+                
                 item.armorData = {
                     baseStr = pInfo.itemTypeStr,
                     hasReinforcement = pInfo.hasReinforcement,
@@ -746,35 +800,12 @@ function GAC:UpdateEquippedArmor()
                     slotStr = item.tooltipRight or "",
                     physRed = pInfo.physRed,
                     magRed = pInfo.magRed,
-                    currentDurability = item.itemDescription or "0",
+                    currentDurability = tostring(curVal) .. "/" .. tostring(pInfo.maxDurability),
                     maxDurability = pInfo.maxDurability,
                     requirements = pInfo.reqs,
                     penalties = pInfo.pens,
                     meetsRequirements = globallyMeetsRequirements
                 }
-                
-                if pInfo.hasReinforcement then
-                    local rKey = self:GetArmorKeyByAlias(pInfo.reinforcementStr)
-                    if rKey then
-                        local rInfo = self:GetArmorReinforcementInfo(rKey)
-                        if rInfo and rInfo.durability then
-                            local desc = item.armorData.currentDurability
-                            local replaced = false
-                            local newDesc = string.gsub(desc, "(%d+)%s*/%s*(%d+)", function(c, m)
-                                replaced = true
-                                return tostring(tonumber(c) + rInfo.durability) .. "/" .. tostring(tonumber(m) + rInfo.durability)
-                            end)
-                            if replaced then
-                                item.armorData.currentDurability = newDesc
-                            else
-                                newDesc = string.gsub(desc, "(%d+)", function(n)
-                                    return tostring(tonumber(n) + rInfo.durability)
-                                end, 1)
-                                item.armorData.currentDurability = newDesc
-                            end
-                        end
-                    end
-                end
             end
             table.insert(slotList, item)
         end
@@ -813,53 +844,69 @@ function GAC:UpdateTRP3ItemDurability(slotName, diffAmount)
     if not slotList or #slotList == 0 then return end
     
     local item = slotList[1]
-    if not item or not item.armorData or not item.id then return end
+    if not item or not item.armorData or not item.itemID then return end
     
-    local classData = nil
-    if type(TRP3_API) == "table" and type(TRP3_API.extended) == "table" and type(TRP3_API.extended.getClass) == "function" then
-        classData = TRP3_API.extended.getClass(item.id)
+    local tableMax = tonumber(item.armorData.maxDurability)
+    if not tableMax then return end
+    
+    local equipped = self:GetTRP3ExtendedEquippedSnapshot()
+    local itemData = readSlotValue(equipped, item.slotID)
+    if not itemData then return end
+    
+    local currentVal = tableMax
+    if itemData.VA and itemData.VA.durability then
+        currentVal = tonumber(itemData.VA.durability)
     end
     
-    if not classData or not classData.BA or not classData.BA.DE then return end
+    local newVal = currentVal + diffAmount
+    if newVal < 0 then newVal = 0 end
+    if newVal > tableMax then newVal = tableMax end
     
-    local currentDesc = classData.BA.DE
-    local replaced = false
-    
-    -- Patrón 1: "Durabilidad: X" o "Durabilidad X" o "durabilidad: X/Y"
-    local newDesc = string.gsub(currentDesc, "([Dd]urabilidad[%s:]*)(%d+)", function(prefix, currentNum)
-        local newVal = tonumber(currentNum) + diffAmount
-        if newVal < 0 then newVal = 0 end
-        replaced = true
-        return prefix .. tostring(newVal)
-    end, 1)
-    
-    -- Patrón 2: Fallback a "X/Y" sin la palabra durabilidad delante
-    if not replaced then
-        newDesc = string.gsub(currentDesc, "(%d+)%s*/%s*(%d+)", function(currentNum, maxNum)
-            local newVal = tonumber(currentNum) + diffAmount
-            if newVal < 0 then newVal = 0 end
-            if newVal > tonumber(maxNum) then newVal = tonumber(maxNum) end
-            replaced = true
-            return tostring(newVal) .. "/" .. maxNum
-        end, 1)
+    local amount = math.abs(newVal - currentVal)
+    if amount > 0 then
+        local qualityColor = "|cFFFFFFFF"
+        local q = item.itemQuality or 1
+        if type(q) == "number" or tonumber(q) then
+            q = tonumber(q)
+            if ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[q] and ITEM_QUALITY_COLORS[q].color then
+                qualityColor = ITEM_QUALITY_COLORS[q].color:GenerateHexColorMarkup() or ITEM_QUALITY_COLORS[q].hex or "|cFFFFFFFF"
+            else
+                local _, _, _, hex = GetItemQualityColor(q)
+                if hex then
+                    qualityColor = "|c" .. hex
+                end
+            end
+        end
+        
+        -- Fallback si ITEM_QUALITY_COLORS[q].hex no existe en esta versión de WoW (Epsilon usa 9.2 o similar)
+        if not qualityColor:match("^|c") then
+            local _, _, _, hex = GetItemQualityColor(q)
+            qualityColor = hex and ("|c" .. hex) or "|cFFFFFFFF"
+        end
+        
+        local coloredName = qualityColor .. "[" .. tostring(item.itemName) .. "]|r"
+        
+        if newVal > currentVal then
+            print(coloredName .. " recibe " .. amount .. " de durabilidad.")
+        elseif newVal < currentVal then
+            print(coloredName .. " pierde " .. amount .. " de durabilidad.")
+        end
     end
     
-    if replaced then
-        classData.BA.DE = newDesc
-        self:UpdateEquippedArmor()
-        
-        if self.quickActionsFrame and self.quickActionsFrame.UpdateArmorIcons then
-            self.quickActionsFrame:UpdateArmorIcons()
-        end
-        
-        if self.contentFrames and self.contentFrames.inventory and self.contentFrames.inventory:IsShown() then
-            self.contentFrames.inventory:Update()
-        end
-        
-        -- Opcional: Feedback en chat si queremos asegurarnos
-        -- print("|cFF00FF00[GAC]|r Durabilidad actualizada.")
-    else
-        print("|cFFFF0000[GAC]|r No se pudo encontrar un patrón de durabilidad válido en la descripción del objeto: " .. tostring(currentDesc))
+    self:SetTRP3ExtendedItemVariable(item.slotID, "durability", newVal)
+    
+    if type(TRP3_API.events) == "table" and type(TRP3_API.events.fireEvent) == "function" then
+        TRP3_API.events.fireEvent("EXTENDED_INVENTORY_UPDATE")
+    end
+    
+    self:UpdateEquippedArmor()
+    
+    if self.quickActionsFrame and self.quickActionsFrame.UpdateArmorIcons then
+        self.quickActionsFrame:UpdateArmorIcons()
+    end
+    
+    if self.contentFrames and self.contentFrames.inventory and self.contentFrames.inventory:IsShown() then
+        self.contentFrames.inventory:Update()
     end
 end
 
