@@ -173,3 +173,60 @@ GAC.armor.alias = {
 -- Normal (0): Reducción física normal.
 -- Resistente (1): Reducción física tiene el doble de eficacia.
 -- Muy Resistente (2): El daño del arma es siempre 0 y no reduce la durabilidad
+
+function GAC:ParseArmorString(armorString)
+    if type(armorString) ~= "string" then return "", false, "" end
+    
+    -- Limpiamos códigos de color de WoW
+    local cleanString = string.gsub(armorString, "|c%x%x%x%x%x%x%x%x", "")
+    cleanString = string.gsub(cleanString, "|r", "")
+    cleanString = string.match(cleanString, "^%s*(.-)%s*$") or cleanString
+    
+    -- Buscamos el patrón "Base:Refuerzos-Refuerzo" o "Base: Refuerzado con Refuerzo"
+    local base, reinforcement = string.match(cleanString, "^([^:]+)%s*:%s*Refuerzos%s*%-%s*(.+)$")
+    
+    if not base then
+        base, reinforcement = string.match(cleanString, "^([^:]+)%s*:%s*[Rr]efuerzad[oa] con%s+(.+)$")
+    end
+    
+    if base and reinforcement then
+        base = string.match(base, "^%s*(.-)%s*$") or base
+        reinforcement = string.match(reinforcement, "^%s*(.-)%s*$") or reinforcement
+        return base, true, reinforcement
+    end
+    
+    -- Si no tiene refuerzos, devolvemos la base (limpia de colores y espacios), false, y un string vacío
+    return cleanString, false, ""
+end
+
+function GAC:GetArmorKeyByAlias(aliasString)
+    if type(aliasString) ~= "string" then return nil end
+    
+    local cleanString = string.gsub(aliasString, "|c%x%x%x%x%x%x%x%x", "")
+    cleanString = string.gsub(cleanString, "|r", "")
+    cleanString = string.match(cleanString, "^%s*(.-)%s*$") or cleanString
+    local lowerClean = string.lower(cleanString)
+    
+    -- Corrección de typo común: Placa -> Placas
+    if lowerClean == "placa" then lowerClean = "placas" end
+    
+    for key, value in pairs(GAC.armor.alias) do
+        if string.lower(value) == lowerClean then
+            return key
+        end
+    end
+    
+    return nil
+end
+
+function GAC:GetArmorTypeInfo(typeKey)
+    if type(typeKey) ~= "string" then return nil end
+    
+    return GAC.armor.types[typeKey]
+end
+
+function GAC:GetArmorReinforcementInfo(typeKey)
+    if type(typeKey) ~= "string" then return nil end
+    
+    return GAC.armor.reinforcements[typeKey]
+end

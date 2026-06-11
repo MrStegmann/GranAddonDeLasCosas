@@ -402,6 +402,159 @@ function GAC:CreateQuickActionsFrame()
     eventFrame:SetScript("OnEvent", function() GAC:UpdateTargetInspectButtonVisibility() end)
     
     -- Crear marco de telemetría eliminado
+    
+    -- ================= ROW 3 (Armor Slots) =================
+    local armorIconSize = 25
+    local armorSpacing = 5
+    frame.armorButtons = {}
+    local armorSlots = {
+        { id = "head", numId = 1, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Head", label = "Cabeza" },
+        { id = "chest", numId = 5, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Chest", label = "Pecho" },
+        { id = "hands", numId = 10, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Hands", label = "Manos" },
+        { id = "legs", numId = 7, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Legs", label = "Piernas" }
+    }
+    for i, slotData in ipairs(armorSlots) do
+        local btn = GAC:CreateQuickButton(frame)
+        btn:SetSize(armorIconSize, armorIconSize)
+        
+        -- Formato 2x2 a la izquierda del marco principal
+        local col = (i - 1) % 2
+        local row = math.floor((i - 1) / 2)
+        -- La columna 1 está más cerca del frame (-5), la columna 0 está más a la izquierda
+        local xOffset = -5 - ((1 - col) * (armorIconSize + armorSpacing))
+        local yOffset = -5 - (row * (armorIconSize + armorSpacing))
+        btn:SetPoint("TOPRIGHT", frame, "TOPLEFT", xOffset, yOffset)
+        
+        local icon = btn:CreateTexture(nil, "ARTWORK")
+        icon:SetTexture(slotData.icon)
+        icon:SetPoint("TOPLEFT", 2, -2)
+        icon:SetPoint("BOTTOMRIGHT", -2, 2)
+        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        btn.icon = icon
+        btn.slotID = slotData.id
+        btn.numId = slotData.numId
+        btn.emptyIconPath = slotData.icon
+        
+        btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        btn:SetScript("OnClick", function(_, buttonClicked)
+            local correctKey = nil
+            local equippedArmor = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor
+            if equippedArmor then
+                if equippedArmor[slotData.id] then correctKey = slotData.id
+                elseif equippedArmor[slotData.numId] then correctKey = slotData.numId
+                elseif equippedArmor[tostring(slotData.numId)] then correctKey = tostring(slotData.numId) end
+            end
+            if not correctKey then return end
+            if buttonClicked == "LeftButton" then
+                if GAC.UpdateTRP3ItemDurability then GAC:UpdateTRP3ItemDurability(correctKey, 1) end
+            elseif buttonClicked == "RightButton" then
+                if GAC.UpdateTRP3ItemDurability then GAC:UpdateTRP3ItemDurability(correctKey, -1) end
+            end
+            
+            -- Refrescar el tooltip si tenemos el ratón encima
+            if GameTooltip:IsOwned(self) then
+                local onEnter = self:GetScript("OnEnter")
+                if onEnter then onEnter(self) end
+            end
+        end)
+        btn:SetScript("OnEnter", function(self)
+            local itemData = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor and (GAC.characterData.inventory.equippedArmor[slotData.id] or GAC.characterData.inventory.equippedArmor[slotData.numId] or GAC.characterData.inventory.equippedArmor[tostring(slotData.numId)])
+            if not itemData or #itemData == 0 then return end
+            local item = itemData[1]
+            if not item or not item.armorData then return end
+            
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            
+            local totalPhys = 0
+            local totalMag = 0
+            for _, it in ipairs(itemData) do
+                if it.armorData then
+                    totalPhys = totalPhys + (tonumber(it.armorData.physRed) or 0)
+                    totalMag = totalMag + (tonumber(it.armorData.magRed) or 0)
+                end
+            end
+            
+            GameTooltip:AddLine(item.itemName, 1, 1, 1)
+            GameTooltip:AddLine("Reducción Física Total: " .. totalPhys, 1, 1, 1)
+            GameTooltip:AddLine("Reducción Mágica Total: " .. totalMag, 1, 1, 1)
+            
+            local curDur = item.armorData.currentDurability or ""
+            if not string.match(string.lower(curDur), "durabilidad") then
+                curDur = "Durabilidad: " .. curDur
+            end
+            GameTooltip:AddLine(curDur, 1, 1, 1)
+            
+            if itemData.notAllowed then
+                GameTooltip:AddLine(" ")
+                GameTooltip:AddLine("* COMBINACIÓN NO PERMITIDA *", 1, 0, 0)
+            end
+            
+            GameTooltip:AddLine(" ")
+            GameTooltip:AddLine("Clic izquierdo: Añadir durabilidad", 0.5, 1, 0.5)
+            GameTooltip:AddLine("Clic derecho: Quitar durabilidad", 1, 0.5, 0.5)
+            
+            GameTooltip:Show()
+        end)
+        btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        table.insert(frame.armorButtons, btn)
+    end
+    
+    frame.UpdateArmorIcons = function(self)
+        local equippedArmor = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor
+        for _, btn in ipairs(self.armorButtons) do
+            local itemData = equippedArmor and (equippedArmor[btn.slotID] or equippedArmor[btn.numId] or equippedArmor[tostring(btn.numId)])
+            
+            btn:Show() -- Siempre visible
+            
+            if itemData and #itemData > 0 then
+                btn:SetAlpha(1)
+                local iconPath = itemData[1].itemIcon or "INV_Misc_QuestionMark"
+                if type(iconPath) == "string" and not iconPath:match("\\") then
+                    iconPath = "Interface\\Icons\\" .. iconPath
+                end
+                btn.icon:SetTexture(iconPath)
+                if itemData.notAllowed then
+                    btn.icon:SetVertexColor(1, 0, 0)
+                else
+                    local r, g, b = 1, 1, 1
+                    if itemData[1].armorData and itemData[1].armorData.maxDurability and itemData[1].armorData.currentDurability then
+                        local curStr = itemData[1].armorData.currentDurability
+                        local curVal = string.match(curStr, "(%d+)")
+                        if curVal then
+                            curVal = tonumber(curVal)
+                            local maxVal = tonumber(itemData[1].armorData.maxDurability)
+                            if maxVal and maxVal > 0 then
+                                local ratio = curVal / maxVal
+                                if ratio > 1 then ratio = 1 end
+                                if ratio < 0 then ratio = 0 end
+                                
+                                if ratio > 0.5 then
+                                    r = (1 - ratio) * 2
+                                    g = 1
+                                else
+                                    r = 1
+                                    g = ratio * 2
+                                end
+                                b = 0
+                                
+                                -- Mezclamos un poco con blanco para no saturar excesivamente el icono original
+                                r = r * 0.6 + 0.4
+                                g = g * 0.6 + 0.4
+                                b = b * 0.6 + 0.4
+                            end
+                        end
+                    end
+                    btn.icon:SetVertexColor(r, g, b)
+                end
+            else
+                btn:SetAlpha(0.2) -- Transparente si está vacío
+                btn.icon:SetTexture(btn.emptyIconPath) -- Usamos la textura por defecto
+                btn.icon:SetVertexColor(1, 1, 1)
+            end
+        end
+    end
+    
+    frame:UpdateArmorIcons()
 end
 
 

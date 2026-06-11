@@ -197,6 +197,7 @@ function GAC:StartAttackRoll(dice, talentKey, talentLabel)
     local mod, hasMod = self:GetQuickModifierValue()
 
     self.pendingAttackRoll = {
+        talentKey = talentKey,
         talentName = talentLabel,
         talentValue = talentValue,
         min = 1,
