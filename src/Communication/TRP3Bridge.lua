@@ -895,43 +895,42 @@ function GAC:UpdateTRP3ItemDurability(slotName, diffAmount)
     
     self:SetTRP3ExtendedItemVariable(item.slotID, "durability", newVal)
     
-    if type(TRP3_API.events) == "table" and type(TRP3_API.events.fireEvent) == "function" then
-        TRP3_API.events.fireEvent("EXTENDED_INVENTORY_UPDATE")
-    end
-    
-    self:UpdateEquippedArmor()
-    
-    if self.quickActionsFrame and self.quickActionsFrame.UpdateArmorIcons then
-        self.quickActionsFrame:UpdateArmorIcons()
-    end
-    
-    if self.contentFrames and self.contentFrames.inventory and self.contentFrames.inventory:IsShown() then
-        self.contentFrames.inventory:Update()
+    if type(TRP3_API.events) == "table" and type(TRP3_API.events.fireEvent) == "function" and TRP3_API.inventory then
+        TRP3_API.events.fireEvent(TRP3_API.inventory.EVENT_REFRESH_BAG)
+        if TRP3_API.events.ON_OBJECT_UPDATED then
+            TRP3_API.events.fireEvent(TRP3_API.events.ON_OBJECT_UPDATED)
+        end
     end
 end
 
 function GAC:InitTRP3ArmorHook()
-    if isTRP3Hooked then return end
+    if isTRP3Hooked then 
+        return 
+    end
     
     if type(TRP3_API) == "table" and type(TRP3_API.events) == "table" and type(TRP3_API.events.listenToEvent) == "function" then
-        local function onInventoryUpdate()
+        local function onInventoryUpdate(...)
             GAC:UpdateEquippedArmor()
             if GAC.contentFrames and GAC.contentFrames.inventory and GAC.contentFrames.inventory:IsVisible() then
                 GAC.contentFrames.inventory:Update()
             end
+            if GAC.quickActionsFrame and GAC.quickActionsFrame.UpdateArmorIcons then
+                GAC.quickActionsFrame:UpdateArmorIcons()
+            end
         end
         
         local eventsToHook = {
-            "WORKFLOW_ON_LOADED",
-            "EXTENDED_INVENTORY_UPDATE",
-            "EXTENDED_WEARABLE_UPDATE"
+            TRP3_API.events.WORKFLOW_ON_LOADED,
+            TRP3_API.events.ON_OBJECT_UPDATED,
+            TRP3_API.inventory and TRP3_API.inventory.EVENT_REFRESH_BAG,
+            TRP3_API.inventory and TRP3_API.inventory.EVENT_ON_SLOT_SWAP,
+            TRP3_API.inventory and TRP3_API.inventory.EVENT_ON_SLOT_REMOVE,
+            TRP3_API.inventory and TRP3_API.inventory.EVENT_ON_SLOT_USE,
         }
         
-        for _, eventName in ipairs(eventsToHook) do
-            if TRP3_API.events[eventName] then
-                TRP3_API.events.listenToEvent(TRP3_API.events[eventName], onInventoryUpdate)
-            else
-                TRP3_API.events.listenToEvent(eventName, onInventoryUpdate)
+        for _, eventKey in pairs(eventsToHook) do
+            if eventKey then
+                TRP3_API.events.listenToEvent(eventKey, onInventoryUpdate)
             end
         end
         isTRP3Hooked = true

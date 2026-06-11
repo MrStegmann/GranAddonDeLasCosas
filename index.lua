@@ -56,6 +56,7 @@ end
 function GAC:PLAYER_ENTERING_WORLD(isInitialLogin, isReloadingUi)
     -- Le damos un margen de 1 segundo para que TRP3 Extended inicialice su inventario
     C_Timer.After(1.5, function()
+        if GAC.InitTRP3ArmorHook then GAC:InitTRP3ArmorHook() end
         if GAC.UpdateEquippedArmor then
             GAC:UpdateEquippedArmor()
         end
