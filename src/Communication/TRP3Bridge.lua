@@ -311,16 +311,25 @@ local function getItemClassData(slotInfo)
 end
 
 local function getItemTooltipFields(slotInfo)
-    local classData = getItemClassData(slotInfo)
-    if type(classData) ~= "table" or type(classData.BA) ~= "table" then
+    local BA = nil
+    if type(slotInfo) == "table" and type(slotInfo.BA) == "table" then
+        BA = slotInfo.BA
+    else
+        local classData = getItemClassData(slotInfo)
+        if type(classData) == "table" and type(classData.BA) == "table" then
+            BA = classData.BA
+        end
+    end
+    
+    if type(BA) ~= "table" then
         return getItemDisplayName(slotInfo), nil, nil, nil
     end
 
-    local itemName = parseTRP3Text(classData.BA.NA, slotInfo) or getItemDisplayName(slotInfo)
-    local tooltipLeft = parseTRP3Text(classData.BA.LE, slotInfo)
-    local tooltipRight = parseTRP3Text(classData.BA.RI, slotInfo)
+    local itemName = parseTRP3Text(BA.NA, slotInfo) or getItemDisplayName(slotInfo)
+    local tooltipLeft = parseTRP3Text(BA.LE, slotInfo)
+    local tooltipRight = parseTRP3Text(BA.RI, slotInfo)
     
-    local itemDescription = parseTRP3Text(classData.BA.DE, slotInfo)
+    local itemDescription = parseTRP3Text(BA.DE, slotInfo)
 
     -- Extraemos la durabilidad dinámicamente de la tabla base en vez de la descripción
     local itemTypeStrL, hasReinfL, reinfStrL = GAC:ParseArmorString(tooltipLeft)
@@ -369,8 +378,8 @@ local function getItemTooltipFields(slotInfo)
         end
     end
 
-    local itemIcon = classData.BA.IC or "INV_Misc_QuestionMark"
-    local itemQuality = classData.BA.QA
+    local itemIcon = BA.IC or "INV_Misc_QuestionMark"
+    local itemQuality = BA.QA
 
     return itemName, tooltipLeft, tooltipRight, itemDescription, itemIcon, itemQuality
 end
@@ -579,6 +588,37 @@ function GAC:SetTRP3ExtendedItemVariable(slotID, varName, value)
     return false
 end
 
+local targetInventoryCallback = nil
+
+local function onInspectionResponseReceived(response, sender)
+    local expected = GAC.inspectedPlayerName and Ambiguate(GAC.inspectedPlayerName, "none") or ""
+    local actual = sender and Ambiguate(sender, "none") or ""
+    
+    if actual == expected and expected ~= "" and targetInventoryCallback then
+        targetInventoryCallback(response.slots or {})
+    end
+end
+
+function GAC:RequestTargetExtendedInventory(targetName, callback)
+    if not TRP3_API or not AddOn_TotalRP3 or not AddOn_TotalRP3.Communications then 
+        if callback then callback({}) end
+        return 
+    end
+    
+    if not self.inspectionResponseRegistered then
+        AddOn_TotalRP3.Communications.registerSubSystemPrefix("IIRS", onInspectionResponseReceived)
+        self.inspectionResponseRegistered = true
+    end
+    
+    self.inspectedPlayerName = targetName
+    targetInventoryCallback = callback
+    
+    local reservedMessageID = AddOn_TotalRP3.Communications.getNewMessageToken()
+    local data = { reservedMessageID }
+    
+    AddOn_TotalRP3.Communications.sendObject("IIRQ", data, targetName, AddOn_TotalRP3.Communications.PRIORITIES.MEDIUM)
+end
+
 function GAC:GetTRP3ExtendedEquippedSnapshot()
     return getExtendedInventoryFromAPI() or getExtendedInventoryFromProfileData()
 end
@@ -610,6 +650,22 @@ function GAC:GetTRP3ExtendedEquippedItems()
     end
 
     return items
+end
+
+function GAC:ParseTRP3ExtendedItem(itemData, slotID)
+    if not itemData then return nil end
+    local itemName, tooltipLeft, tooltipRight, itemDescription, itemIcon, itemQuality = getItemTooltipFields(itemData)
+    return {
+        slotID = slotID,
+        itemID = itemData.id,
+        itemName = itemName,
+        tooltipLeft = tooltipLeft,
+        tooltipRight = tooltipRight,
+        itemDescription = itemDescription,
+        itemIcon = itemIcon,
+        itemQuality = itemQuality,
+        itemVA = itemData.VA or {},
+    }
 end
 
 local isTRP3Hooked = false

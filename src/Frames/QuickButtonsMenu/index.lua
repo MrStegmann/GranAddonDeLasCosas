@@ -223,7 +223,7 @@ function GAC:CreateQuickActionsFrame()
             end
             if GAC.OpenInspectionMenu then
                 GAC.inspectedPlayer = {
-                    name = "Cargando...",
+                    name = fullName,
                     level = 0,
                     category = "normal",
                     race = "-",
