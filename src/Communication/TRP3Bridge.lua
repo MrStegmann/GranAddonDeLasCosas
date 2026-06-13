@@ -717,7 +717,7 @@ function GAC:UpdateEquippedArmor()
         local shieldKey = nil
         if item.tooltipRight and string.find(string.lower(item.tooltipRight), "escudo") then
             isShield = true
-            shieldKey = GAC:GetShieldKeyByAlias(item.tooltipRight)
+            shieldKey = GAC:GetShieldKeyByAlias(item.tooltipRight) or GAC:GetShieldKeyByAlias(item.tooltipLeft)
         end
         
         local targetSlot = slotKey or item.slotID

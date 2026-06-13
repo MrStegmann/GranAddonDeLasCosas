@@ -471,7 +471,7 @@ function GAC:CreateInspectionInventoryContent(parent)
                             local shieldKey = nil
                             if parsedItem.tooltipRight and string.find(string.lower(parsedItem.tooltipRight), "escudo") then
                                 isShield = true
-                                shieldKey = GAC:GetShieldKeyByAlias(parsedItem.tooltipRight)
+                                shieldKey = GAC:GetShieldKeyByAlias(parsedItem.tooltipRight) or GAC:GetShieldKeyByAlias(parsedItem.tooltipLeft)
                             end
                             
                             local targetSlot = slotKey or tonumber(parsedItem.slotID) or parsedItem.slotID

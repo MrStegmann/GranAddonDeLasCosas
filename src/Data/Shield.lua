@@ -44,7 +44,7 @@ GAC.shields = {
 
 GAC.shields.alias = {
     light = "Ligero",
-    medium = "Mediano",
+    medium = "Medio",
     heavy = "Pesado"
 }
 
@@ -59,7 +59,7 @@ function GAC:GetShieldKeyByAlias(aliasString)
         end
     end
     
-    return "medium"
+    return nil
 end
 
 function GAC:GetShieldInfo(shieldKey)
