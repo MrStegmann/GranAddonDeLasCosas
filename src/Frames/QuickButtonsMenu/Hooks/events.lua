@@ -212,7 +212,7 @@ function GAC:StartAttackRoll(dice, talentKey, talentLabel)
     RandomRoll(1, dice)
 end
 
-function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName)
+function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier)
     if not self.characterData or not GAC:CanTriggerRoll() then return end
     
     local wInfo = GAC:GetWeaponInfo(weaponKey)
@@ -258,6 +258,7 @@ function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName)
         talentKey = usedTalentKey,
         hasModifier = hasMod,
         modifierValue = mod,
+        weaponModifier = damageModifier or 0,
         currentTotal = 0,
         rolls = {},
         quantity = rollData.diceNumber or 1

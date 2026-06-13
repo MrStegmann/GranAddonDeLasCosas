@@ -870,9 +870,18 @@ function GAC:UpdateEquippedArmor()
             local pInfo = parsedItemsInfo[item.slotID]
             if pInfo then
                 if pInfo.isWeapon then
+                    local damageModifier = 0
+                    if item.tooltipLeft then
+                        local modVal = string.match(item.tooltipLeft, "%+(%d+)")
+                        if modVal then
+                            damageModifier = tonumber(modVal) or 0
+                        end
+                    end
+                    
                     item.weaponData = {
                         weaponKey = pInfo.weaponKey,
-                        baseStr = pInfo.itemTypeStr
+                        baseStr = pInfo.itemTypeStr,
+                        damageModifier = damageModifier
                     }
                 else
                     if not globallyMeetsRequirements then

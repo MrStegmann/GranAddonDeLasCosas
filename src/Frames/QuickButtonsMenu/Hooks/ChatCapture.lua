@@ -203,7 +203,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
                     armorPen = GAC:GetArmorPenalty(self.pendingWeaponRoll.talentKey)
                 end
                 
-                local total = self.pendingWeaponRoll.currentTotal + self.pendingWeaponRoll.talentValue + armorPen
+                local total = self.pendingWeaponRoll.currentTotal + self.pendingWeaponRoll.talentValue + armorPen + (self.pendingWeaponRoll.weaponModifier or 0)
                 
                 local modStr = ""
                 if self.pendingWeaponRoll.hasModifier then
@@ -212,6 +212,11 @@ function GAC:CHAT_MSG_SYSTEM(message)
                         total = total + modVal
                         modStr = " + Mod (" .. modVal .. ")"
                     end
+                end
+                
+                local wModStr = ""
+                if self.pendingWeaponRoll.weaponModifier and self.pendingWeaponRoll.weaponModifier ~= 0 then
+                    wModStr = " + Mejora (+" .. self.pendingWeaponRoll.weaponModifier .. ")"
                 end
                 
                 local armorModStr = ""
@@ -231,6 +236,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 local rollMessage = displayName .. " tira Daño (" .. self.pendingWeaponRoll.weaponName .. "): "
                     .. diceFormula .. " (" .. rollsStr .. ") + "
                     .. talentKeyLoc .. " (" .. self.pendingWeaponRoll.talentValue .. ")"
+                    .. wModStr
                     .. modStr
                     .. armorModStr
                     .. " = " .. total

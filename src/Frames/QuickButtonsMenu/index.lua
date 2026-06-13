@@ -385,18 +385,18 @@ function GAC:CreateQuickActionsFrame()
                     
                     local menuOptions = {}
                     table.insert(menuOptions, { text = "Daño " .. self.slotLabel, isTitle = true, notCheckable = true })
-                    table.insert(menuOptions, { text = "Ataque Normal", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName) end, notCheckable = true })
+                    table.insert(menuOptions, { text = "Ataque Normal", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName, self.damageModifier) end, notCheckable = true })
                     if hasTwoHanded then
-                        table.insert(menuOptions, { text = "Ataque a Dos Manos", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "twoHanded", self.weaponName) end, notCheckable = true })
+                        table.insert(menuOptions, { text = "Ataque a Dos Manos", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "twoHanded", self.weaponName, self.damageModifier) end, notCheckable = true })
                     end
                     if hasThrowable then
-                        table.insert(menuOptions, { text = "Lanzar Arma", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "throwable", self.weaponName) end, notCheckable = true })
+                        table.insert(menuOptions, { text = "Lanzar Arma", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "throwable", self.weaponName, self.damageModifier) end, notCheckable = true })
                     end
                     table.insert(menuOptions, { text = "Cancelar", notCheckable = true })
                     
                     EasyMenu(menuOptions, GAC.weaponActionsMenuFrame, self, 0, 0, "MENU", 2)
                 else
-                    GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName)
+                    GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName, self.damageModifier)
                 end
             end
         end)
@@ -622,6 +622,7 @@ function GAC:CreateQuickActionsFrame()
                 btn:Show()
                 btn.weaponKey = itemData[1].weaponData.weaponKey
                 btn.weaponName = itemData[1].itemName
+                btn.damageModifier = itemData[1].weaponData.damageModifier or 0
                 
                 local iconPath = itemData[1].itemIcon or "INV_Misc_QuestionMark"
                 if type(iconPath) == "string" and not iconPath:match("\\") then

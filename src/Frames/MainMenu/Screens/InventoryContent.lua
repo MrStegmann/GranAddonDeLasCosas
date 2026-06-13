@@ -84,8 +84,8 @@ function GAC:CreateInventoryContent(parent)
                         talentVal = (playerAttrs[info.talent] or 0) + (playerTalents[info.talent] or 0)
                     end
                     
-                    local minDmg = baseMinDmg + talentVal
-                    local maxDmg = baseMaxDmg + talentVal
+                    local minDmg = baseMinDmg + talentVal + (data.damageModifier or 0)
+                    local maxDmg = baseMaxDmg + talentVal + (data.damageModifier or 0)
                     
                     local str = minDmg .. " - " .. maxDmg
                     if isTwoHanded then str = "(" .. str .. ")" end
@@ -108,6 +108,10 @@ function GAC:CreateInventoryContent(parent)
                 tooltipFrame:AddLine(" ")
                 tooltipFrame:AddLine(dmgLine, 1, 1, 1)
                 tooltipFrame:AddLine(diceLine, 1, 0.82, 0)
+                
+                if itemData.tooltipLeft and itemData.tooltipLeft ~= "" then
+                    tooltipFrame:AddLine("Mejora: " .. itemData.tooltipLeft, 0, 1, 0)
+                end
                 
                 local typeLine = "Tipo de daño: " .. (dmgTypeES[wInfo.damageType] or wInfo.damageType)
                 if wInfo.twoHanded and wInfo.twoHanded.damageType and wInfo.twoHanded.damageType ~= wInfo.damageType then
@@ -450,8 +454,9 @@ function GAC:CreateInventoryContent(parent)
                     elseif type(wInfo.talent) == "string" then
                         talentVal = (playerAttrs[wInfo.talent] or 0) + (playerTalents[wInfo.talent] or 0)
                     end
-                    local minDmg = wInfo.diceNumber + talentVal
-                    local maxDmg = (wInfo.diceNumber * wInfo.damage) + talentVal
+                    local wMod = slotList[1].weaponData.damageModifier or 0
+                    local minDmg = wInfo.diceNumber + talentVal + wMod
+                    local maxDmg = (wInfo.diceNumber * wInfo.damage) + talentVal + wMod
                     return "- " .. label .. ": " .. minDmg .. " - " .. maxDmg .. "\n"
                 end
             end
