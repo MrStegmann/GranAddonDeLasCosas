@@ -188,6 +188,61 @@ function GAC:CHAT_MSG_SYSTEM(message)
             
            
         end
+    elseif self.rollType == "weapon" then
+        if not self.pendingWeaponRoll then
+            return
+        end
+        if rollValue and lowValue == 1 and highValue == self.pendingWeaponRoll.damage then
+            table.insert(self.pendingWeaponRoll.rolls, rollValue)
+            self.pendingWeaponRoll.currentTotal = self.pendingWeaponRoll.currentTotal + rollValue
+            self.pendingWeaponRoll.quantity = self.pendingWeaponRoll.quantity - 1
+            
+            if self.pendingWeaponRoll.quantity <= 0 then
+                local armorPen = 0
+                if GAC.GetArmorPenalty and self.pendingWeaponRoll.talentKey ~= "" then
+                    armorPen = GAC:GetArmorPenalty(self.pendingWeaponRoll.talentKey)
+                end
+                
+                local total = self.pendingWeaponRoll.currentTotal + self.pendingWeaponRoll.talentValue + armorPen
+                
+                local modStr = ""
+                if self.pendingWeaponRoll.hasModifier then
+                    local modVal = tonumber(self.pendingWeaponRoll.modifierValue) or 0
+                    if modVal ~= 0 then
+                        total = total + modVal
+                        modStr = " + Mod (" .. modVal .. ")"
+                    end
+                end
+                
+                local armorModStr = ""
+                if armorPen ~= 0 then
+                    armorModStr = " + Armadura (" .. armorPen .. ")"
+                end
+
+                local displayName = self.GetRollDisplayNameWithColor and self:GetRollDisplayNameWithColor()
+                    or (self.GetRollDisplayName and self:GetRollDisplayName())
+                    or displayAddonName
+                
+                local rollsStr = table.concat(self.pendingWeaponRoll.rolls, ", ")
+                local diceFormula = self.pendingWeaponRoll.diceNumber .. "D" .. self.pendingWeaponRoll.damage
+                local talentKeyLoc = GAC:_(self.pendingWeaponRoll.talentKey)
+                if talentKeyLoc == self.pendingWeaponRoll.talentKey then talentKeyLoc = "Talento" end
+
+                local rollMessage = displayName .. " tira Daño (" .. self.pendingWeaponRoll.weaponName .. "): "
+                    .. diceFormula .. " (" .. rollsStr .. ") + "
+                    .. talentKeyLoc .. " (" .. self.pendingWeaponRoll.talentValue .. ")"
+                    .. modStr
+                    .. armorModStr
+                    .. " = " .. total
+
+                print(rollMessage)
+                if self.BroadcastRollMessage then self:BroadcastRollMessage(rollMessage) end
+
+                self.pendingWeaponRoll = nil
+                self.rollType = nil
+            end
+            return
+        end
     elseif self.rollType == "custom" then
         if not self.pendingCustomRoll then
             return

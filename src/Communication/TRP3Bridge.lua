@@ -680,6 +680,9 @@ function GAC:UpdateEquippedArmor()
     local groupedBySlot = {}
     local parsedItemsInfo = {}
     
+    local nextWeaponSlotIdx = 1
+    local weaponSlotsIds = {16, 17, 18}
+    
     -- PASO 1: Parseo individual de cada pieza y agrupación por ranura
     for _, item in ipairs(equippedItems) do
         local itemTypeStrL, hasReinfL, reinfStrL = self:ParseArmorString(item.tooltipLeft)
@@ -702,65 +705,93 @@ function GAC:UpdateEquippedArmor()
             baseKey = nil
         end
         
-        local targetSlot = slotKey or item.slotID
-        if not groupedBySlot[targetSlot] then groupedBySlot[targetSlot] = {} end
-        table.insert(groupedBySlot[targetSlot], item)
+        local weaponKey = self:GetWeaponKeyByAlias(item.tooltipRight)
         
-        if baseKey then
-            local info = self:GetArmorTypeInfo(baseKey)
-            if info then
-                local physRed = info.physicalReduction or 0
-                local magRed = info.magicalReduction or 0
-                local maxDurability = info.durability or 0
-                
-                local rInfo = nil
-                if hasReinforcement then
-                    local rKey = self:GetArmorKeyByAlias(reinforcementStr)
-                    if rKey then
-                        rInfo = self:GetArmorReinforcementInfo(rKey)
-                        if rInfo then
-                            physRed = physRed + (rInfo.physicalReduction or 0)
-                            magRed = magRed + (rInfo.magicalReduction or 0)
-                            maxDurability = maxDurability + (rInfo.durability or 0)
+        local targetSlot = slotKey or item.slotID
+        local isValidItem = true
+        
+        if weaponKey then
+            if nextWeaponSlotIdx <= 3 then
+                targetSlot = weaponSlotsIds[nextWeaponSlotIdx]
+                nextWeaponSlotIdx = nextWeaponSlotIdx + 1
+                item.slotID = targetSlot -- Actualizamos el ID del slot del item
+            else
+                isValidItem = false
+            end
+        else
+            if targetSlot == 16 or targetSlot == 17 or targetSlot == 18 then
+                isValidItem = false
+            end
+        end
+        
+        if isValidItem then
+            if not groupedBySlot[targetSlot] then groupedBySlot[targetSlot] = {} end
+            table.insert(groupedBySlot[targetSlot], item)
+            
+            if baseKey then
+                local info = self:GetArmorTypeInfo(baseKey)
+                if info then
+                    local physRed = info.physicalReduction or 0
+                    local magRed = info.magicalReduction or 0
+                    local maxDurability = info.durability or 0
+                    
+                    local rInfo = nil
+                    if hasReinforcement then
+                        local rKey = self:GetArmorKeyByAlias(reinforcementStr)
+                        if rKey then
+                            rInfo = self:GetArmorReinforcementInfo(rKey)
+                            if rInfo then
+                                physRed = physRed + (rInfo.physicalReduction or 0)
+                                magRed = magRed + (rInfo.magicalReduction or 0)
+                                maxDurability = maxDurability + (rInfo.durability or 0)
+                            end
                         end
                     end
-                end
-                
-                local reqs = {}
-                if slotKey and info.requirements and info.requirements[slotKey] then
-                    for stat, val in pairs(info.requirements[slotKey]) do
-                        reqs[stat] = (reqs[stat] or 0) + val
+                    
+                    local reqs = {}
+                    if slotKey and info.requirements and info.requirements[slotKey] then
+                        for stat, val in pairs(info.requirements[slotKey]) do
+                            reqs[stat] = (reqs[stat] or 0) + val
+                        end
                     end
-                end
-                if rInfo and rInfo.requirements then
-                    for stat, val in pairs(rInfo.requirements) do
-                        reqs[stat] = (reqs[stat] or 0) + val
+                    if rInfo and rInfo.requirements then
+                        for stat, val in pairs(rInfo.requirements) do
+                            reqs[stat] = (reqs[stat] or 0) + val
+                        end
                     end
-                end
-                
-                local pens = {}
-                if slotKey and info.disadvantage and info.disadvantage[slotKey] then
-                    for stat, val in pairs(info.disadvantage[slotKey]) do
-                        pens[stat] = (pens[stat] or 0) + val
+                    
+                    local pens = {}
+                    if slotKey and info.disadvantage and info.disadvantage[slotKey] then
+                        for stat, val in pairs(info.disadvantage[slotKey]) do
+                            pens[stat] = (pens[stat] or 0) + val
+                        end
                     end
-                end
-                if rInfo and rInfo.disadvantage then
-                    for stat, val in pairs(rInfo.disadvantage) do
-                        pens[stat] = (pens[stat] or 0) + val
+                    if rInfo and rInfo.disadvantage then
+                        for stat, val in pairs(rInfo.disadvantage) do
+                            pens[stat] = (pens[stat] or 0) + val
+                        end
                     end
+                    
+                    parsedItemsInfo[item.slotID] = {
+                        baseKey = baseKey,
+                        itemTypeStr = itemTypeStrL,
+                        hasReinforcement = hasReinforcement,
+                        reinforcementStr = reinforcementStr,
+                        slotKey = slotKey,
+                        physRed = physRed,
+                        magRed = magRed,
+                        maxDurability = maxDurability,
+                        reqs = reqs,
+                        pens = pens
+                    }
                 end
-                
+            elseif weaponKey then
                 parsedItemsInfo[item.slotID] = {
-                    baseKey = baseKey,
-                    itemTypeStr = itemTypeStrL,
-                    hasReinforcement = hasReinforcement,
-                    reinforcementStr = reinforcementStr,
-                    slotKey = slotKey,
-                    physRed = physRed,
-                    magRed = magRed,
-                    maxDurability = maxDurability,
-                    reqs = reqs,
-                    pens = pens
+                    weaponKey = weaponKey,
+                    isWeapon = true,
+                    itemTypeStr = item.tooltipRight,
+                    reqs = {},
+                    pens = {}
                 }
             end
         end
@@ -838,30 +869,37 @@ function GAC:UpdateEquippedArmor()
         for _, item in ipairs(itemsInSlot) do
             local pInfo = parsedItemsInfo[item.slotID]
             if pInfo then
-                if not globallyMeetsRequirements then
-                    for stat, val in pairs(pInfo.pens) do
-                        pInfo.pens[stat] = val * 2
+                if pInfo.isWeapon then
+                    item.weaponData = {
+                        weaponKey = pInfo.weaponKey,
+                        baseStr = pInfo.itemTypeStr
+                    }
+                else
+                    if not globallyMeetsRequirements then
+                        for stat, val in pairs(pInfo.pens) do
+                            pInfo.pens[stat] = val * 2
+                        end
                     end
+                    
+                    local curVal = pInfo.maxDurability
+                    if item.itemVA and item.itemVA.durability then
+                        curVal = tonumber(item.itemVA.durability)
+                    end
+                    
+                    item.armorData = {
+                        baseStr = pInfo.itemTypeStr,
+                        hasReinforcement = pInfo.hasReinforcement,
+                        reinforcementStr = pInfo.reinforcementStr,
+                        slotStr = item.tooltipRight or "",
+                        physRed = pInfo.physRed,
+                        magRed = pInfo.magRed,
+                        currentDurability = tostring(curVal) .. "/" .. tostring(pInfo.maxDurability),
+                        maxDurability = pInfo.maxDurability,
+                        requirements = pInfo.reqs,
+                        penalties = pInfo.pens,
+                        meetsRequirements = globallyMeetsRequirements
+                    }
                 end
-                
-                local curVal = pInfo.maxDurability
-                if item.itemVA and item.itemVA.durability then
-                    curVal = tonumber(item.itemVA.durability)
-                end
-                
-                item.armorData = {
-                    baseStr = pInfo.itemTypeStr,
-                    hasReinforcement = pInfo.hasReinforcement,
-                    reinforcementStr = pInfo.reinforcementStr,
-                    slotStr = item.tooltipRight or "",
-                    physRed = pInfo.physRed,
-                    magRed = pInfo.magRed,
-                    currentDurability = tostring(curVal) .. "/" .. tostring(pInfo.maxDurability),
-                    maxDurability = pInfo.maxDurability,
-                    requirements = pInfo.reqs,
-                    penalties = pInfo.pens,
-                    meetsRequirements = globallyMeetsRequirements
-                }
             end
             table.insert(slotList, item)
         end
@@ -870,6 +908,9 @@ function GAC:UpdateEquippedArmor()
     
     if self.quickActionsFrame and self.quickActionsFrame.UpdateArmorIcons then
         self.quickActionsFrame:UpdateArmorIcons()
+    end
+    if self.quickActionsFrame and self.quickActionsFrame.UpdateWeaponIcons then
+        self.quickActionsFrame:UpdateWeaponIcons()
     end
 end
 
@@ -972,6 +1013,9 @@ function GAC:InitTRP3ArmorHook()
             end
             if GAC.quickActionsFrame and GAC.quickActionsFrame.UpdateArmorIcons then
                 GAC.quickActionsFrame:UpdateArmorIcons()
+            end
+            if GAC.quickActionsFrame and GAC.quickActionsFrame.UpdateWeaponIcons then
+                GAC.quickActionsFrame:UpdateWeaponIcons()
             end
         end
         

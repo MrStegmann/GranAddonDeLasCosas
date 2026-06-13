@@ -48,7 +48,7 @@ function GAC:CreateQuickActionsFrame()
 
     local frame = CreateFrame("Frame", "GACQuickActionsFrame", UIParent, "BackdropTemplate")
     frame:SetPoint(anchor, UIParent, relAnchor, x, y)
-    frame:SetSize(340, 60) -- Altura dinámica luego
+    frame:SetSize(360, 65)
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
@@ -74,8 +74,6 @@ function GAC:CreateQuickActionsFrame()
         GAC.characterData.ui.quickFrame.x = math.floor(ox + 0.5)
         GAC.characterData.ui.quickFrame.y = math.floor(oy + 0.5)
     end)
-
-    frame:SetSize(320, 65)
 
     -- Botones
     local buttonX, buttonSpacing, buttonRowSpacing = 10, 0, 0
@@ -243,7 +241,7 @@ function GAC:CreateQuickActionsFrame()
     -- Modificador UI
     local modLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     modLabel:SetText("Mod")
-    modLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 160, -13)
+    modLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 215, -13)
 
     local modInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
     modInput:SetSize(26, 18)
@@ -352,10 +350,65 @@ function GAC:CreateQuickActionsFrame()
         {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
     )
 
+    -- Dynamic Weapon Buttons
+    frame.weaponButtons = {}
+    local weaponSlotsData = {
+        { id = 16, label = "Arma Principal" },
+        { id = 17, label = "Arma Secundaria" },
+        { id = 18, label = "Arma A Distancia" }
+    }
+    
+    local lastWpnBtn = attackButton
+    for i, wData in ipairs(weaponSlotsData) do
+        local btn = GAC:CreateQuickButton(frame)
+        btn:SetSize(25, 25)
+        btn:SetPoint("LEFT", lastWpnBtn, "RIGHT", buttonSpacing + 2, 0)
+        local icon = btn:CreateTexture(nil, "ARTWORK")
+        icon:SetPoint("TOPLEFT", 2, -2)
+        icon:SetPoint("BOTTOMRIGHT", -2, 2)
+        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        btn.icon = icon
+        btn.slotID = wData.id
+        btn.slotLabel = wData.label
+        
+        btn:RegisterForClicks("LeftButtonUp")
+        btn:SetScript("OnClick", function(self, buttonClicked)
+            if self.weaponKey then
+                local wInfo = GAC:GetWeaponInfo(self.weaponKey)
+                if not wInfo then return end
+                
+                local hasTwoHanded = wInfo.twoHanded ~= nil
+                local hasThrowable = wInfo.throwable ~= nil
+                
+                if hasTwoHanded or hasThrowable then
+                    if not GAC.weaponActionsMenuFrame then GAC.weaponActionsMenuFrame = CreateFrame("Frame", "GACWeaponActionsMenuFrame", UIParent, "UIDropDownMenuTemplate") end
+                    
+                    local menuOptions = {}
+                    table.insert(menuOptions, { text = "Daño " .. self.slotLabel, isTitle = true, notCheckable = true })
+                    table.insert(menuOptions, { text = "Ataque Normal", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName) end, notCheckable = true })
+                    if hasTwoHanded then
+                        table.insert(menuOptions, { text = "Ataque a Dos Manos", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "twoHanded", self.weaponName) end, notCheckable = true })
+                    end
+                    if hasThrowable then
+                        table.insert(menuOptions, { text = "Lanzar Arma", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "throwable", self.weaponName) end, notCheckable = true })
+                    end
+                    table.insert(menuOptions, { text = "Cancelar", notCheckable = true })
+                    
+                    EasyMenu(menuOptions, GAC.weaponActionsMenuFrame, self, 0, 0, "MENU", 2)
+                else
+                    GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName)
+                end
+            end
+        end)
+        btn:Hide()
+        table.insert(frame.weaponButtons, btn)
+        lastWpnBtn = btn
+    end
+
     -- Custom Dice UI
     local dadoLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     dadoLabel:SetText("Dado")
-    dadoLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 160, -41)
+    dadoLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 215, -41)
 
     local qtyInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
     qtyInput:SetSize(22, 18)
@@ -559,8 +612,38 @@ function GAC:CreateQuickActionsFrame()
             end
         end
     end
+    frame.UpdateWeaponIcons = function(self)
+        local equippedArmor = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor
+        
+        local currentLast = attackButton
+        for _, btn in ipairs(self.weaponButtons) do
+            local itemData = equippedArmor and (equippedArmor[btn.slotID] or equippedArmor[tostring(btn.slotID)])
+            if itemData and #itemData > 0 and itemData[1].weaponData then
+                btn:Show()
+                btn.weaponKey = itemData[1].weaponData.weaponKey
+                btn.weaponName = itemData[1].itemName
+                
+                local iconPath = itemData[1].itemIcon or "INV_Misc_QuestionMark"
+                if type(iconPath) == "string" and not iconPath:match("\\") then
+                    iconPath = "Interface\\Icons\\" .. iconPath
+                end
+                btn.icon:SetTexture(iconPath)
+                
+                btn:ClearAllPoints()
+                btn:SetPoint("LEFT", currentLast, "RIGHT", buttonSpacing + 2, 0)
+                currentLast = btn
+                
+                GAC:SetupQuickTooltip(btn, "Atacar con " .. itemData[1].itemName, "Click para tirar daño del arma", {"Este es tu " .. btn.slotLabel .. ".", 0.7, 0.7, 1})
+            else
+                btn:Hide()
+                btn.weaponKey = nil
+                btn.weaponName = nil
+            end
+        end
+    end
     
     frame:UpdateArmorIcons()
+    frame:UpdateWeaponIcons()
 end
 
 

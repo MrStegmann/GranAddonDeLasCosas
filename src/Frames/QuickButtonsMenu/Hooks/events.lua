@@ -211,3 +211,62 @@ function GAC:StartAttackRoll(dice, talentKey, talentLabel)
     self.lastAttackRolled = { dice = dice, talentKey = talentKey, talentLabel = talentLabel }
     RandomRoll(1, dice)
 end
+
+function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName)
+    if not self.characterData or not GAC:CanTriggerRoll() then return end
+    
+    local wInfo = GAC:GetWeaponInfo(weaponKey)
+    if not wInfo then return end
+    
+    local rollData = wInfo
+    local modeLabel = "Normal"
+    if mode == "twoHanded" and wInfo.twoHanded then
+        rollData = wInfo.twoHanded
+        modeLabel = "A dos manos"
+    elseif mode == "throwable" and wInfo.throwable then
+        rollData = wInfo.throwable
+        modeLabel = "Lanzar"
+    end
+    
+    local playerAttrs = self.characterData.attributes or {}
+    local playerTalents = self.characterData.talents or {}
+    local maxTalentVal = 0
+    local usedTalentKey = ""
+    
+    if type(rollData.talent) == "table" then
+        for _, t in ipairs(rollData.talent) do
+            local val = (tonumber(playerAttrs[t]) or 0) + (tonumber(playerTalents[t]) or 0)
+            if val > maxTalentVal or usedTalentKey == "" then
+                maxTalentVal = val
+                usedTalentKey = t
+            end
+        end
+    elseif type(rollData.talent) == "string" then
+        maxTalentVal = (tonumber(playerAttrs[rollData.talent]) or 0) + (tonumber(playerTalents[rollData.talent]) or 0)
+        usedTalentKey = rollData.talent
+    end
+    
+    local mod, hasMod = self:GetQuickModifierValue()
+    
+    self.pendingWeaponRoll = {
+        weaponKey = weaponKey,
+        weaponName = weaponName or weaponKey,
+        modeLabel = modeLabel,
+        diceNumber = rollData.diceNumber or 1,
+        damage = rollData.damage or 4,
+        talentValue = maxTalentVal,
+        talentKey = usedTalentKey,
+        hasModifier = hasMod,
+        modifierValue = mod,
+        currentTotal = 0,
+        rolls = {},
+        quantity = rollData.diceNumber or 1
+    }
+    
+    self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
+    self.rollType = "weapon"
+    
+    for i = 1, self.pendingWeaponRoll.quantity do
+        RandomRoll(1, self.pendingWeaponRoll.damage)
+    end
+end

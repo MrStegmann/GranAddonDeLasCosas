@@ -58,6 +58,82 @@ function GAC:CreateInspectionInventoryContent(parent)
                 tooltipFrame:AddLine(" ")
                 tooltipFrame:AddLine("* No cumple con los requisitos *", 1, 0.2, 0.2)
             end
+        elseif itemData.weaponData then
+            local data = itemData.weaponData
+            local wInfo = GAC:GetWeaponInfo(data.weaponKey)
+            
+            tooltipFrame:AddDoubleLine(data.baseStr, "Arma", 1, 1, 1, 1, 1, 1)
+            
+            if wInfo then
+                local dmgTypeES = { piercing = "Perforante", crushing = "Contundente", slashing = "Cortante" }
+                
+                local playerAttrs = GAC.inspectedPlayer and GAC.inspectedPlayer.attributes or {}
+                local playerTalents = GAC.inspectedPlayer and GAC.inspectedPlayer.talents or {}
+                
+                local function FormatDamage(info, isTwoHanded)
+                    local baseMinDmg = info.diceNumber
+                    local baseMaxDmg = info.diceNumber * info.damage
+                    
+                    local talentVal = 0
+                    if type(info.talent) == "table" then
+                        for _, t in ipairs(info.talent) do
+                            local val = (playerAttrs[t] or 0) + (playerTalents[t] or 0)
+                            if val > talentVal then talentVal = val end
+                        end
+                    elseif type(info.talent) == "string" then
+                        talentVal = (playerAttrs[info.talent] or 0) + (playerTalents[info.talent] or 0)
+                    end
+                    
+                    local minDmg = baseMinDmg + talentVal
+                    local maxDmg = baseMaxDmg + talentVal
+                    
+                    local str = minDmg .. " - " .. maxDmg
+                    if isTwoHanded then str = "(" .. str .. ")" end
+                    return str
+                end
+                
+                local function FormatDice(info, isTwoHanded)
+                    local str = info.diceNumber .. "D" .. info.damage
+                    if isTwoHanded then str = "(" .. str .. ")" end
+                    return str
+                end
+                
+                local dmgLine = "Daño: " .. FormatDamage(wInfo)
+                local diceLine = FormatDice(wInfo)
+                if wInfo.twoHanded then
+                    dmgLine = dmgLine .. " " .. FormatDamage(wInfo.twoHanded, true)
+                    diceLine = diceLine .. " " .. FormatDice(wInfo.twoHanded, true)
+                end
+                
+                tooltipFrame:AddLine(" ")
+                tooltipFrame:AddLine(dmgLine, 1, 1, 1)
+                tooltipFrame:AddLine(diceLine, 1, 0.82, 0)
+                
+                local typeLine = "Tipo de daño: " .. (dmgTypeES[wInfo.damageType] or wInfo.damageType)
+                if wInfo.twoHanded and wInfo.twoHanded.damageType and wInfo.twoHanded.damageType ~= wInfo.damageType then
+                    typeLine = typeLine .. " (" .. (dmgTypeES[wInfo.twoHanded.damageType] or wInfo.twoHanded.damageType) .. ")"
+                end
+                tooltipFrame:AddLine(typeLine, 1, 1, 1)
+                
+                if wInfo.throwable then
+                    tooltipFrame:AddLine(" ")
+                    tooltipFrame:AddLine("Arrojadiza:", 0, 1, 0)
+                    local thr = wInfo.throwable
+                    tooltipFrame:AddLine("Daño: " .. FormatDamage(thr), 1, 1, 1)
+                    tooltipFrame:AddLine(FormatDice(thr), 1, 0.82, 0)
+                    tooltipFrame:AddLine("Tipo de daño: " .. (dmgTypeES[thr.damageType] or thr.damageType), 1, 1, 1)
+                end
+                
+                if wInfo.twoHanded then
+                    tooltipFrame:AddLine(" ")
+                    tooltipFrame:AddLine("* Los valores entre paréntesis son empuñando el arma a dos manos.", 0.5, 0.5, 0.5)
+                end
+            end
+            
+            if itemData.itemDescription and itemData.itemDescription ~= "" then
+                tooltipFrame:AddLine(" ")
+                tooltipFrame:AddLine(itemData.itemDescription, 1, 0.82, 0, true)
+            end
         else
             if itemData.itemDescription and itemData.itemDescription ~= "" then
                 tooltipFrame:AddLine(itemData.itemDescription, 1, 0.82, 0, true)
@@ -87,15 +163,22 @@ function GAC:CreateInspectionInventoryContent(parent)
         { id = 7, label = "Piernas", name="legs", icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Legs" },
     }
 
+    local weaponSlots = {
+        { id = 16, label = "Mano diestra", name="mainHand", icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-MainHand" },
+        { id = 17, label = "Arma secundaria", name="secondaryHand", icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-SecondaryHand" },
+        { id = 18, label = "A distancia", name="ranged", icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Ranged" },
+    }
+
     local slotFrames = {}
 
     local startX = 30
     local startY = -70
     local yOffset = -60
-    for i, slotData in ipairs(slots) do
+
+    local function CreateInspectSlotButton(slotData, x, y)
         local slotButton = CreateFrame("Button", "GAC_InspectInventorySlot" .. slotData.id, frame)
         slotButton:SetSize(37, 37)
-        slotButton:SetPoint("TOPLEFT", startX, startY + (i - 1) * yOffset)
+        slotButton:SetPoint("TOPLEFT", x, y)
         
         local icon = slotButton:CreateTexture(nil, "BACKGROUND")
         icon:SetAllPoints()
@@ -148,9 +231,82 @@ function GAC:CreateInspectionInventoryContent(parent)
         slotFrames[#slotFrames + 1] = slotButton
     end
 
+    for i, slotData in ipairs(slots) do
+        CreateInspectSlotButton(slotData, startX, startY + (i - 1) * yOffset)
+    end
+    
+    local wStartX = 40
+    local wStartY = startY + (#slots) * yOffset - 10
+    local wXOffset = 100
+    
+    for i, slotData in ipairs(weaponSlots) do
+        local x = wStartX + (i - 1) * wXOffset
+        local y = wStartY
+        local slotButton = CreateFrame("Button", "GAC_InspectInventorySlot" .. slotData.id, frame)
+        slotButton:SetSize(37, 37)
+        slotButton:SetPoint("TOPLEFT", x, y)
+        
+        local icon = slotButton:CreateTexture(nil, "BACKGROUND")
+        icon:SetAllPoints()
+        slotButton.icon = icon
+        
+        local border = slotButton:CreateTexture(nil, "OVERLAY")
+        border:SetTexture("Interface\\Buttons\\UI-Quickslot2")
+        border:SetSize(60, 60)
+        border:SetPoint("CENTER", 0, 0)
+        slotButton.customBorder = border
+        
+        slotButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
+        slotButton:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
+
+        slotButton.icon:SetTexture(slotData.icon)
+        local label = GAC:CreateFontString(frame, slotData.label, "GameFontNormal", { "BOTTOM", slotButton, "TOP", 0, 5 }, { 0.5, 0.5, 0.5 })
+        
+        slotButton.slotID = slotData.id
+        slotButton.slotName = slotData.name
+        slotButton.emptyIcon = slotData.icon
+        slotButton.emptyLabel = slotData.label
+        slotButton.label = label
+        
+        local itemLabel = GAC:CreateFontString(frame, "", "GameFontNormalSmall", { "TOP", slotButton, "BOTTOM", 0, -5 }, { 0.5, 0.5, 0.5 })
+        itemLabel:SetWidth(wXOffset - 10)
+        itemLabel:SetWordWrap(false)
+        slotButton.itemLabel = itemLabel
+        
+        slotButton:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            if self.itemDataList and #self.itemDataList > 0 then
+                DrawTooltip(GameTooltip, self.itemDataList[1], self.itemDataList.notAllowed)
+                if self.itemDataList[2] then
+                    ShoppingTooltip1:SetOwner(GameTooltip, "ANCHOR_NONE")
+                    ShoppingTooltip1:ClearAllPoints()
+                    ShoppingTooltip1:SetPoint("TOPLEFT", GameTooltip, "TOPRIGHT", 5, 0)
+                    DrawTooltip(ShoppingTooltip1, self.itemDataList[2], self.itemDataList.notAllowed)
+                end
+            else
+                GameTooltip:SetText(self.emptyLabel)
+                GameTooltip:Show()
+            end
+        end)
+        slotButton:SetScript("OnLeave", function(self)
+            if GameTooltip.originalBorderR then
+                GameTooltip:SetBackdropBorderColor(GameTooltip.originalBorderR, GameTooltip.originalBorderG, GameTooltip.originalBorderB, GameTooltip.originalBorderA)
+                GameTooltip.originalBorderR = nil
+            end
+            GameTooltip:Hide()
+            if ShoppingTooltip1.originalBorderR then
+                ShoppingTooltip1:SetBackdropBorderColor(ShoppingTooltip1.originalBorderR, ShoppingTooltip1.originalBorderG, ShoppingTooltip1.originalBorderB, ShoppingTooltip1.originalBorderA)
+                ShoppingTooltip1.originalBorderR = nil
+            end
+            ShoppingTooltip1:Hide()
+        end)
+        slotFrames[#slotFrames + 1] = slotButton
+    end
+
     local summaryFrame = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-    summaryFrame:SetSize(220, 260)
+    summaryFrame:SetWidth(220)
     summaryFrame:SetPoint("TOPRIGHT", -30, -70)
+    summaryFrame:SetPoint("BOTTOMRIGHT", -30, 30)
     summaryFrame:SetBackdrop({
         bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -171,6 +327,10 @@ function GAC:CreateInspectionInventoryContent(parent)
     
     local meetsReqText = GAC:CreateFontString(summaryFrame, "", "GameFontNormalSmall", { "BOTTOM", 0, 15 }, { 1, 0.2, 0.2 })
 
+    local wpnHeader = GAC:CreateFontString(summaryFrame, "Daño de Armas", "GameFontHighlight", { "TOPLEFT", 15, -250 }, { 0.25, 0.78, 0.94 })
+    local wpnText = GAC:CreateFontString(summaryFrame, "", "GameFontHighlightSmall", { "TOPLEFT", wpnHeader, "BOTTOMLEFT", 5, -5 }, { 1, 1, 1 })
+    wpnText:SetJustifyH("LEFT")
+
     local function ApplyItemDataToButton(btn, itemDataList)
         btn.itemDataList = itemDataList
         
@@ -189,8 +349,13 @@ function GAC:CreateInspectionInventoryContent(parent)
                 r, g, b = color.r, color.g, color.b
             end
             
-            btn.label:SetText(item.itemName)
-            btn.label:SetTextColor(r, g, b)
+            if btn.itemLabel then
+                btn.itemLabel:SetText(item.itemName)
+                btn.itemLabel:SetTextColor(r, g, b)
+            else
+                btn.label:SetText(item.itemName)
+                btn.label:SetTextColor(r, g, b)
+            end
             
             if itemDataList.notAllowed then
                 btn.customBorder:SetVertexColor(1, 0, 0)
@@ -203,6 +368,9 @@ function GAC:CreateInspectionInventoryContent(parent)
             btn.icon:SetVertexColor(1, 1, 1)
             btn.label:SetText(btn.emptyLabel)
             btn.label:SetTextColor(0.5, 0.5, 0.5)
+            if btn.itemLabel then
+                btn.itemLabel:SetText("")
+            end
             btn.customBorder:SetVertexColor(1, 1, 1)
         end
     end
@@ -246,6 +414,9 @@ function GAC:CreateInspectionInventoryContent(parent)
             local parsedItemsInfo = {}
             local equippedItems = {}
             
+            local nextWeaponSlotIdx = 1
+            local weaponSlotsIds = {16, 17, 18}
+            
             local equippedKeys = {}
             for k, _ in pairs(equippedData) do
                 table.insert(equippedKeys, k)
@@ -288,50 +459,78 @@ function GAC:CreateInspectionInventoryContent(parent)
                             end
                             if baseKey and not GAC:GetArmorTypeInfo(baseKey) then baseKey = nil end
                             
-                            local targetSlot = slotKey or tonumber(parsedItem.slotID) or parsedItem.slotID
-                            if not groupedBySlot[targetSlot] then groupedBySlot[targetSlot] = {} end
-                            table.insert(groupedBySlot[targetSlot], parsedItem)
+                            local weaponKey = GAC:GetWeaponKeyByAlias(parsedItem.tooltipRight)
                             
-                            if baseKey then
-                                local info = GAC:GetArmorTypeInfo(baseKey)
-                                if info then
-                                    local physRed = info.physicalReduction or 0
-                                    local magRed = info.magicalReduction or 0
-                                    local maxDurability = info.durability or 0
-                                    
-                                    local rInfo = nil
-                                    if hasReinforcement then
-                                        local rKey = GAC:GetArmorKeyByAlias(reinforcementStr)
-                                        if rKey then
-                                            rInfo = GAC:GetArmorReinforcementInfo(rKey)
-                                            if rInfo then
-                                                physRed = physRed + (rInfo.physicalReduction or 0)
-                                                magRed = magRed + (rInfo.magicalReduction or 0)
-                                                maxDurability = maxDurability + (rInfo.durability or 0)
+                            local targetSlot = slotKey or tonumber(parsedItem.slotID) or parsedItem.slotID
+                            
+                            local isValidItem = true
+                            if weaponKey then
+                                if nextWeaponSlotIdx <= 3 then
+                                    targetSlot = weaponSlotsIds[nextWeaponSlotIdx]
+                                    nextWeaponSlotIdx = nextWeaponSlotIdx + 1
+                                    parsedItem.slotID = targetSlot
+                                else
+                                    isValidItem = false
+                                end
+                            else
+                                if targetSlot == 16 or targetSlot == 17 or targetSlot == 18 then
+                                    isValidItem = false
+                                end
+                            end
+                            
+                            if isValidItem then
+                                if not groupedBySlot[targetSlot] then groupedBySlot[targetSlot] = {} end
+                                table.insert(groupedBySlot[targetSlot], parsedItem)
+                                
+                                if baseKey then
+                                    local info = GAC:GetArmorTypeInfo(baseKey)
+                                    if info then
+                                        local physRed = info.physicalReduction or 0
+                                        local magRed = info.magicalReduction or 0
+                                        local maxDurability = info.durability or 0
+                                        
+                                        local rInfo = nil
+                                        if hasReinforcement then
+                                            local rKey = GAC:GetArmorKeyByAlias(reinforcementStr)
+                                            if rKey then
+                                                rInfo = GAC:GetArmorReinforcementInfo(rKey)
+                                                if rInfo then
+                                                    physRed = physRed + (rInfo.physicalReduction or 0)
+                                                    magRed = magRed + (rInfo.magicalReduction or 0)
+                                                    maxDurability = maxDurability + (rInfo.durability or 0)
+                                                end
                                             end
                                         end
+                                        
+                                        local reqs = {}
+                                        if slotKey and info.requirements and info.requirements[slotKey] then
+                                            for stat, val in pairs(info.requirements[slotKey]) do reqs[stat] = (reqs[stat] or 0) + val end
+                                        end
+                                        if rInfo and rInfo.requirements then
+                                            for stat, val in pairs(rInfo.requirements) do reqs[stat] = (reqs[stat] or 0) + val end
+                                        end
+                                        
+                                        local pens = {}
+                                        if slotKey and info.disadvantage and info.disadvantage[slotKey] then
+                                            for stat, val in pairs(info.disadvantage[slotKey]) do pens[stat] = (pens[stat] or 0) + val end
+                                        end
+                                        if rInfo and rInfo.disadvantage then
+                                            for stat, val in pairs(rInfo.disadvantage) do pens[stat] = (pens[stat] or 0) + val end
+                                        end
+                                        
+                                        parsedItemsInfo[parsedItem.slotID] = {
+                                            baseKey = baseKey, itemTypeStr = itemTypeStrL, hasReinforcement = hasReinforcement,
+                                            reinforcementStr = reinforcementStr, slotKey = slotKey, physRed = physRed,
+                                            magRed = magRed, maxDurability = maxDurability, reqs = reqs, pens = pens
+                                        }
                                     end
-                                    
-                                    local reqs = {}
-                                    if slotKey and info.requirements and info.requirements[slotKey] then
-                                        for stat, val in pairs(info.requirements[slotKey]) do reqs[stat] = (reqs[stat] or 0) + val end
-                                    end
-                                    if rInfo and rInfo.requirements then
-                                        for stat, val in pairs(rInfo.requirements) do reqs[stat] = (reqs[stat] or 0) + val end
-                                    end
-                                    
-                                    local pens = {}
-                                    if slotKey and info.disadvantage and info.disadvantage[slotKey] then
-                                        for stat, val in pairs(info.disadvantage[slotKey]) do pens[stat] = (pens[stat] or 0) + val end
-                                    end
-                                    if rInfo and rInfo.disadvantage then
-                                        for stat, val in pairs(rInfo.disadvantage) do pens[stat] = (pens[stat] or 0) + val end
-                                    end
-                                    
+                                elseif weaponKey then
                                     parsedItemsInfo[parsedItem.slotID] = {
-                                        baseKey = baseKey, itemTypeStr = itemTypeStrL, hasReinforcement = hasReinforcement,
-                                        reinforcementStr = reinforcementStr, slotKey = slotKey, physRed = physRed,
-                                        magRed = magRed, maxDurability = maxDurability, reqs = reqs, pens = pens
+                                        weaponKey = weaponKey,
+                                        isWeapon = true,
+                                        itemTypeStr = parsedItem.tooltipRight,
+                                        reqs = {},
+                                        pens = {}
                                     }
                                 end
                             end
@@ -423,26 +622,33 @@ function GAC:CreateInspectionInventoryContent(parent)
             for _, item in ipairs(itemsInSlot) do
                 local pInfo = parsedItemsInfo[item.slotID]
                 if pInfo then
-                    hasAnyArmor = true
-                    if not globallyMeetsRequirements then
-                        if pInfo.pens then
-                            for stat, val in pairs(pInfo.pens) do pInfo.pens[stat] = val * 2 end
+                    if pInfo.isWeapon then
+                        item.weaponData = {
+                            weaponKey = pInfo.weaponKey,
+                            baseStr = pInfo.itemTypeStr
+                        }
+                    else
+                        hasAnyArmor = true
+                        if not globallyMeetsRequirements then
+                            if pInfo.pens then
+                                for stat, val in pairs(pInfo.pens) do pInfo.pens[stat] = val * 2 end
+                            end
+                            meetsAll = false
                         end
-                        meetsAll = false
-                    end
-                    local curVal = pInfo.maxDurability or 0
-                    if item.itemVA and item.itemVA.durability then
-                        local durVal = tonumber(item.itemVA.durability)
-                        if durVal then curVal = durVal end
-                    end
-                    item.armorData = {
-                        baseStr = pInfo.itemTypeStr or "Armadura", hasReinforcement = pInfo.hasReinforcement,
-                        reinforcementStr = pInfo.reinforcementStr, slotStr = item.tooltipRight or "",
-                        physRed = pInfo.physRed or 0, magRed = pInfo.magRed or 0, currentDurability = "Durabilidad: " .. tostring(curVal) .. "/" .. tostring(pInfo.maxDurability or 0),
-                        requirements = pInfo.reqs or {}, penalties = pInfo.pens or {}, meetsRequirements = globallyMeetsRequirements
-                    }
-                    if pInfo.pens then
-                        for s, v in pairs(pInfo.pens) do totalPens[s] = (totalPens[s] or 0) + v end
+                        local curVal = pInfo.maxDurability or 0
+                        if item.itemVA and item.itemVA.durability then
+                            local durVal = tonumber(item.itemVA.durability)
+                            if durVal then curVal = durVal end
+                        end
+                        item.armorData = {
+                            baseStr = pInfo.itemTypeStr or "Armadura", hasReinforcement = pInfo.hasReinforcement,
+                            reinforcementStr = pInfo.reinforcementStr, slotStr = item.tooltipRight or "",
+                            physRed = pInfo.physRed or 0, magRed = pInfo.magRed or 0, currentDurability = "Durabilidad: " .. tostring(curVal) .. "/" .. tostring(pInfo.maxDurability or 0),
+                            requirements = pInfo.reqs or {}, penalties = pInfo.pens or {}, meetsRequirements = globallyMeetsRequirements
+                        }
+                        if pInfo.pens then
+                            for s, v in pairs(pInfo.pens) do totalPens[s] = (totalPens[s] or 0) + v end
+                        end
                     end
                 end
                 table.insert(slotList, item)
@@ -470,6 +676,38 @@ function GAC:CreateInspectionInventoryContent(parent)
         local pStr = ""
         for stat, val in pairs(totalPens) do pStr = pStr .. "- " .. (statNames[stat] or stat) .. " " .. val .. "\n" end
         penText:SetText(pStr == "" and "Ninguno" or pStr)
+        
+        local wpnStr = ""
+        local function GetWeaponDamageStr(label, slotID)
+            local slotList = groupedBySlot[slotID]
+            if slotList and #slotList > 0 and slotList[1].weaponData then
+                local wInfo = GAC:GetWeaponInfo(slotList[1].weaponData.weaponKey)
+                if wInfo then
+                    local playerAttrs = GAC.inspectedPlayer and GAC.inspectedPlayer.attributes or {}
+                    local playerTalents = GAC.inspectedPlayer and GAC.inspectedPlayer.talents or {}
+                    local talentVal = 0
+                    if type(wInfo.talent) == "table" then
+                        for _, t in ipairs(wInfo.talent) do
+                            local val = (playerAttrs[t] or 0) + (playerTalents[t] or 0)
+                            if val > talentVal then talentVal = val end
+                        end
+                    elseif type(wInfo.talent) == "string" then
+                        talentVal = (playerAttrs[wInfo.talent] or 0) + (playerTalents[wInfo.talent] or 0)
+                    end
+                    local minDmg = wInfo.diceNumber + talentVal
+                    local maxDmg = (wInfo.diceNumber * wInfo.damage) + talentVal
+                    return "- " .. label .. ": " .. minDmg .. " - " .. maxDmg .. "\n"
+                end
+            end
+            return ""
+        end
+        
+        wpnStr = wpnStr .. GetWeaponDamageStr("Principal", 16)
+        wpnStr = wpnStr .. GetWeaponDamageStr("Secundaria", 17)
+        wpnStr = wpnStr .. GetWeaponDamageStr("A distancia", 18)
+        
+        if wpnStr == "" then wpnStr = "- Desarmado: 1 - 4" end
+        wpnText:SetText(wpnStr)
         
         if #notAllowedErrors > 0 then
             meetsReqText:SetText("* Comb. Inválidas:\n" .. table.concat(notAllowedErrors, "\n"))

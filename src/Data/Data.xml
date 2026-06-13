@@ -4,4 +4,5 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="LevelTable.lua"/>
 	<Include file="WorgenTable.lua" />
 	<Include file="Armor.lua" />
+	<Include file="Weapons.lua" />
 </Ui>
