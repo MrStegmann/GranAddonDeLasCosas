@@ -374,7 +374,7 @@ function GAC:CreateQuickActionsFrame()
         btn:RegisterForClicks("LeftButtonUp")
         btn:SetScript("OnClick", function(self, buttonClicked)
             if self.weaponKey then
-                local wInfo = GAC:GetWeaponInfo(self.weaponKey)
+                local wInfo = GAC:GetWeaponInfo(self.weaponKey) or GAC:GetShieldInfo(self.weaponKey)
                 if not wInfo then return end
                 
                 local hasTwoHanded = wInfo.twoHanded ~= nil
@@ -461,20 +461,21 @@ function GAC:CreateQuickActionsFrame()
     local armorSpacing = 5
     frame.armorButtons = {}
     local armorSlots = {
-        { id = "head", numId = 1, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Head", label = "Cabeza" },
-        { id = "chest", numId = 5, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Chest", label = "Pecho" },
-        { id = "hands", numId = 10, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Hands", label = "Manos" },
-        { id = "legs", numId = 7, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Legs", label = "Piernas" }
+        { id = "shield", numId = 17, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-SecondaryHand", label = "Escudo", col=0, row=0 },
+        { id = "head", numId = 1, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Head", label = "Cabeza", col=1, row=0 },
+        { id = "chest", numId = 5, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Chest", label = "Pecho", col=2, row=0 },
+        { id = "hands", numId = 10, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Hands", label = "Manos", col=1, row=1 },
+        { id = "legs", numId = 7, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Legs", label = "Piernas", col=2, row=1 }
     }
     for i, slotData in ipairs(armorSlots) do
         local btn = GAC:CreateQuickButton(frame)
         btn:SetSize(armorIconSize, armorIconSize)
         
-        -- Formato 2x2 a la izquierda del marco principal
-        local col = (i - 1) % 2
-        local row = math.floor((i - 1) / 2)
-        -- La columna 1 está más cerca del frame (-5), la columna 0 está más a la izquierda
-        local xOffset = -5 - ((1 - col) * (armorIconSize + armorSpacing))
+        -- Formato personalizado a la izquierda del marco principal (3 columnas, 2 filas)
+        local col = slotData.col
+        local row = slotData.row
+        -- La columna 2 está más cerca del frame (-5), la columna 0 está más a la izquierda
+        local xOffset = -5 - ((2 - col) * (armorIconSize + armorSpacing))
         local yOffset = -5 - (row * (armorIconSize + armorSpacing))
         btn:SetPoint("TOPRIGHT", frame, "TOPLEFT", xOffset, yOffset)
         
@@ -505,9 +506,9 @@ function GAC:CreateQuickActionsFrame()
             end
             
             -- Refrescar el tooltip si tenemos el ratón encima
-            if GameTooltip:IsOwned(self) then
-                local onEnter = self:GetScript("OnEnter")
-                if onEnter then onEnter(self) end
+            if GameTooltip:IsOwned(btn) then
+                local onEnter = btn:GetScript("OnEnter")
+                if onEnter then onEnter(btn) end
             end
         end)
         btn:SetScript("OnEnter", function(self)

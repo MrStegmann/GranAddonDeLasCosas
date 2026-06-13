@@ -60,7 +60,7 @@ function GAC:CreateInventoryContent(parent)
             end
         elseif itemData.weaponData then
             local data = itemData.weaponData
-            local wInfo = GAC:GetWeaponInfo(data.weaponKey)
+            local wInfo = GAC:GetWeaponInfo(data.weaponKey) or GAC:GetShieldInfo(data.weaponKey)
             
             tooltipFrame:AddDoubleLine(data.baseStr, "Arma", 1, 1, 1, 1, 1, 1)
             
@@ -441,7 +441,7 @@ function GAC:CreateInventoryContent(parent)
         local function GetWeaponDamageStr(label, slotID)
             local slotList = equippedBySlot[slotID]
             if slotList and #slotList > 0 and slotList[1].weaponData then
-                local wInfo = GAC:GetWeaponInfo(slotList[1].weaponData.weaponKey)
+                local wInfo = GAC:GetWeaponInfo(slotList[1].weaponData.weaponKey) or GAC:GetShieldInfo(slotList[1].weaponData.weaponKey)
                 if wInfo then
                     local playerAttrs = GAC.characterData and GAC.characterData.attributes or {}
                     local playerTalents = GAC.characterData and GAC.characterData.talents or {}

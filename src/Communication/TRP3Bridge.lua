@@ -683,6 +683,13 @@ function GAC:UpdateEquippedArmor()
     local nextWeaponSlotIdx = 1
     local weaponSlotsIds = {16, 17, 18}
     
+    for _, item in ipairs(equippedItems) do
+        if item.tooltipRight and string.find(string.lower(item.tooltipRight), "escudo") then
+            weaponSlotsIds = {16, 18}
+            break
+        end
+    end
+    
     -- PASO 1: Parseo individual de cada pieza y agrupación por ranura
     for _, item in ipairs(equippedItems) do
         local itemTypeStrL, hasReinfL, reinfStrL = self:ParseArmorString(item.tooltipLeft)
@@ -706,15 +713,22 @@ function GAC:UpdateEquippedArmor()
         end
         
         local weaponKey = self:GetWeaponKeyByAlias(item.tooltipRight)
+        local isShield = false
+        local shieldKey = nil
+        if item.tooltipRight and string.find(string.lower(item.tooltipRight), "escudo") then
+            isShield = true
+            shieldKey = GAC:GetShieldKeyByAlias(item.tooltipRight)
+        end
         
         local targetSlot = slotKey or item.slotID
         local isValidItem = true
         
-        if weaponKey then
-            if nextWeaponSlotIdx <= 3 then
+        if isShield and shieldKey then
+            targetSlot = 17
+        elseif weaponKey then
+            if nextWeaponSlotIdx <= #weaponSlotsIds then
                 targetSlot = weaponSlotsIds[nextWeaponSlotIdx]
                 nextWeaponSlotIdx = nextWeaponSlotIdx + 1
-                item.slotID = targetSlot -- Actualizamos el ID del slot del item
             else
                 isValidItem = false
             end
@@ -773,25 +787,38 @@ function GAC:UpdateEquippedArmor()
                     end
                     
                     parsedItemsInfo[item.slotID] = {
+                        isArmor = true,
                         baseKey = baseKey,
-                        itemTypeStr = itemTypeStrL,
+                        slotKey = slotKey,
+                        itemTypeStr = itemTypeStrL .. " - " .. itemTypeStrR,
                         hasReinforcement = hasReinforcement,
                         reinforcementStr = reinforcementStr,
-                        slotKey = slotKey,
+                        maxDurability = maxDurability,
                         physRed = physRed,
                         magRed = magRed,
-                        maxDurability = maxDurability,
                         reqs = reqs,
                         pens = pens
                     }
                 end
+            elseif isShield and shieldKey then
+                local info = GAC:GetShieldInfo(shieldKey)
+                if info then
+                    parsedItemsInfo[item.slotID] = {
+                        isShield = true,
+                        shieldKey = shieldKey,
+                        itemTypeStr = item.tooltipRight,
+                        maxDurability = info.durability or 0,
+                        physRed = info.physicalReduction or 0,
+                        magRed = 0,
+                        reqs = info.requirements or {},
+                        pens = info.penalties or {}
+                    }
+                end
             elseif weaponKey then
                 parsedItemsInfo[item.slotID] = {
-                    weaponKey = weaponKey,
                     isWeapon = true,
-                    itemTypeStr = item.tooltipRight,
-                    reqs = {},
-                    pens = {}
+                    weaponKey = weaponKey,
+                    itemTypeStr = item.tooltipRight
                 }
             end
         end
@@ -869,7 +896,15 @@ function GAC:UpdateEquippedArmor()
         for _, item in ipairs(itemsInSlot) do
             local pInfo = parsedItemsInfo[item.slotID]
             if pInfo then
-                if pInfo.isWeapon then
+                if pInfo.isShield or pInfo.isArmor then
+                    if not globallyMeetsRequirements then
+                        for stat, val in pairs(pInfo.pens) do
+                            pInfo.pens[stat] = val * 2
+                        end
+                    end
+                end
+
+                if pInfo.isShield or pInfo.isWeapon then
                     local damageModifier = 0
                     if item.tooltipLeft then
                         local modVal = string.match(item.tooltipLeft, "%+(%d+)")
@@ -879,17 +914,13 @@ function GAC:UpdateEquippedArmor()
                     end
                     
                     item.weaponData = {
-                        weaponKey = pInfo.weaponKey,
+                        weaponKey = pInfo.weaponKey or pInfo.shieldKey,
                         baseStr = pInfo.itemTypeStr,
                         damageModifier = damageModifier
                     }
-                else
-                    if not globallyMeetsRequirements then
-                        for stat, val in pairs(pInfo.pens) do
-                            pInfo.pens[stat] = val * 2
-                        end
-                    end
-                    
+                end
+                
+                if pInfo.isShield or pInfo.isArmor then
                     local curVal = pInfo.maxDurability
                     if item.itemVA and item.itemVA.durability then
                         curVal = tonumber(item.itemVA.durability)
@@ -897,8 +928,8 @@ function GAC:UpdateEquippedArmor()
                     
                     item.armorData = {
                         baseStr = pInfo.itemTypeStr,
-                        hasReinforcement = pInfo.hasReinforcement,
-                        reinforcementStr = pInfo.reinforcementStr,
+                        hasReinforcement = pInfo.hasReinforcement or false,
+                        reinforcementStr = pInfo.reinforcementStr or "",
                         slotStr = item.tooltipRight or "",
                         physRed = pInfo.physRed,
                         magRed = pInfo.magRed,

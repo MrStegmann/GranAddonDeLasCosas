@@ -215,7 +215,7 @@ end
 function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier)
     if not self.characterData or not GAC:CanTriggerRoll() then return end
     
-    local wInfo = GAC:GetWeaponInfo(weaponKey)
+    local wInfo = GAC:GetWeaponInfo(weaponKey) or GAC:GetShieldInfo(weaponKey)
     if not wInfo then return end
     
     local rollData = wInfo
@@ -261,7 +261,8 @@ function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier)
         weaponModifier = damageModifier or 0,
         currentTotal = 0,
         rolls = {},
-        quantity = rollData.diceNumber or 1
+        quantity = rollData.diceNumber or 1,
+        damageType = rollData.damageType or "Desconocido"
     }
     
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()

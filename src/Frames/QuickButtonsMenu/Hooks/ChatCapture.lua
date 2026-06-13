@@ -233,13 +233,16 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 local talentKeyLoc = GAC:_(self.pendingWeaponRoll.talentKey)
                 if talentKeyLoc == self.pendingWeaponRoll.talentKey then talentKeyLoc = "Talento" end
 
+                local dmgTypeES = { piercing = "Perforante", crushing = "Contundente", slashing = "Cortante" }
+                local dtLoc = dmgTypeES[self.pendingWeaponRoll.damageType] or self.pendingWeaponRoll.damageType
+                
                 local rollMessage = displayName .. " tira Daño (" .. self.pendingWeaponRoll.weaponName .. "): "
                     .. diceFormula .. " (" .. rollsStr .. ") + "
                     .. talentKeyLoc .. " (" .. self.pendingWeaponRoll.talentValue .. ")"
                     .. wModStr
                     .. modStr
                     .. armorModStr
-                    .. " = " .. total
+                    .. " = " .. total .. " (" .. dtLoc .. ")"
 
                 print(rollMessage)
                 if self.BroadcastRollMessage then self:BroadcastRollMessage(rollMessage) end

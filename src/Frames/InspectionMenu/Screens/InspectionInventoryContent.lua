@@ -60,7 +60,7 @@ function GAC:CreateInspectionInventoryContent(parent)
             end
         elseif itemData.weaponData then
             local data = itemData.weaponData
-            local wInfo = GAC:GetWeaponInfo(data.weaponKey)
+            local wInfo = GAC:GetWeaponInfo(data.weaponKey) or GAC:GetShieldInfo(data.weaponKey)
             
             tooltipFrame:AddDoubleLine(data.baseStr, "Arma", 1, 1, 1, 1, 1, 1)
             
@@ -422,8 +422,11 @@ function GAC:CreateInspectionInventoryContent(parent)
             local weaponSlotsIds = {16, 17, 18}
             
             local equippedKeys = {}
-            for k, _ in pairs(equippedData) do
+            for k, rawItem in pairs(equippedData) do
                 table.insert(equippedKeys, k)
+                if rawItem.itemVA and rawItem.itemVA.tooltipRight and string.find(string.lower(rawItem.itemVA.tooltipRight), "escudo") then
+                    weaponSlotsIds = {16, 18}
+                end
             end
             
             local currentIndex = 1
@@ -464,15 +467,22 @@ function GAC:CreateInspectionInventoryContent(parent)
                             if baseKey and not GAC:GetArmorTypeInfo(baseKey) then baseKey = nil end
                             
                             local weaponKey = GAC:GetWeaponKeyByAlias(parsedItem.tooltipRight)
+                            local isShield = false
+                            local shieldKey = nil
+                            if parsedItem.tooltipRight and string.find(string.lower(parsedItem.tooltipRight), "escudo") then
+                                isShield = true
+                                shieldKey = GAC:GetShieldKeyByAlias(parsedItem.tooltipRight)
+                            end
                             
                             local targetSlot = slotKey or tonumber(parsedItem.slotID) or parsedItem.slotID
                             
                             local isValidItem = true
-                            if weaponKey then
-                                if nextWeaponSlotIdx <= 3 then
+                            if isShield and shieldKey then
+                                targetSlot = 17
+                            elseif weaponKey then
+                                if nextWeaponSlotIdx <= #weaponSlotsIds then
                                     targetSlot = weaponSlotsIds[nextWeaponSlotIdx]
                                     nextWeaponSlotIdx = nextWeaponSlotIdx + 1
-                                    parsedItem.slotID = targetSlot
                                 else
                                     isValidItem = false
                                 end
@@ -523,15 +533,30 @@ function GAC:CreateInspectionInventoryContent(parent)
                                         end
                                         
                                         parsedItemsInfo[parsedItem.slotID] = {
-                                            baseKey = baseKey, itemTypeStr = itemTypeStrL, hasReinforcement = hasReinforcement,
+                                            isArmor = true,
+                                            baseKey = baseKey, itemTypeStr = itemTypeStrL .. " - " .. itemTypeStrR, hasReinforcement = hasReinforcement,
                                             reinforcementStr = reinforcementStr, slotKey = slotKey, physRed = physRed,
                                             magRed = magRed, maxDurability = maxDurability, reqs = reqs, pens = pens
                                         }
                                     end
+                                elseif isShield and shieldKey then
+                                    local info = GAC:GetShieldInfo(shieldKey)
+                                    if info then
+                                        parsedItemsInfo[parsedItem.slotID] = {
+                                            isShield = true,
+                                            shieldKey = shieldKey,
+                                            itemTypeStr = parsedItem.tooltipRight,
+                                            maxDurability = info.durability or 0,
+                                            physRed = info.physicalReduction or 0,
+                                            magRed = 0,
+                                            reqs = info.requirements or {},
+                                            pens = info.penalties or {}
+                                        }
+                                    end
                                 elseif weaponKey then
                                     parsedItemsInfo[parsedItem.slotID] = {
-                                        weaponKey = weaponKey,
                                         isWeapon = true,
+                                        weaponKey = weaponKey,
                                         itemTypeStr = parsedItem.tooltipRight,
                                         reqs = {},
                                         pens = {}
@@ -626,7 +651,17 @@ function GAC:CreateInspectionInventoryContent(parent)
             for _, item in ipairs(itemsInSlot) do
                 local pInfo = parsedItemsInfo[item.slotID]
                 if pInfo then
-                    if pInfo.isWeapon then
+                    if pInfo.isShield or pInfo.isArmor then
+                        hasAnyArmor = true
+                        if not globallyMeetsRequirements then
+                            if pInfo.pens then
+                                for stat, val in pairs(pInfo.pens) do pInfo.pens[stat] = val * 2 end
+                            end
+                            meetsAll = false
+                        end
+                    end
+
+                    if pInfo.isShield or pInfo.isWeapon then
                         local damageModifier = 0
                         if item.tooltipLeft then
                             local modVal = string.match(item.tooltipLeft, "%+(%d+)")
@@ -636,25 +671,20 @@ function GAC:CreateInspectionInventoryContent(parent)
                         end
                         
                         item.weaponData = {
-                            weaponKey = pInfo.weaponKey,
+                            weaponKey = pInfo.weaponKey or pInfo.shieldKey,
                             baseStr = pInfo.itemTypeStr,
                             damageModifier = damageModifier
                         }
-                    else
-                        hasAnyArmor = true
-                        if not globallyMeetsRequirements then
-                            if pInfo.pens then
-                                for stat, val in pairs(pInfo.pens) do pInfo.pens[stat] = val * 2 end
-                            end
-                            meetsAll = false
-                        end
+                    end
+                    
+                    if pInfo.isShield or pInfo.isArmor then
                         local curVal = pInfo.maxDurability or 0
                         if item.itemVA and item.itemVA.durability then
                             local durVal = tonumber(item.itemVA.durability)
                             if durVal then curVal = durVal end
                         end
                         item.armorData = {
-                            baseStr = pInfo.itemTypeStr or "Armadura", hasReinforcement = pInfo.hasReinforcement,
+                            baseStr = pInfo.itemTypeStr or "Armadura", hasReinforcement = pInfo.hasReinforcement or false,
                             reinforcementStr = pInfo.reinforcementStr, slotStr = item.tooltipRight or "",
                             physRed = pInfo.physRed or 0, magRed = pInfo.magRed or 0, currentDurability = "Durabilidad: " .. tostring(curVal) .. "/" .. tostring(pInfo.maxDurability or 0),
                             requirements = pInfo.reqs or {}, penalties = pInfo.pens or {}, meetsRequirements = globallyMeetsRequirements
@@ -694,7 +724,7 @@ function GAC:CreateInspectionInventoryContent(parent)
         local function GetWeaponDamageStr(label, slotID)
             local slotList = groupedBySlot[slotID]
             if slotList and #slotList > 0 and slotList[1].weaponData then
-                local wInfo = GAC:GetWeaponInfo(slotList[1].weaponData.weaponKey)
+                local wInfo = GAC:GetWeaponInfo(slotList[1].weaponData.weaponKey) or GAC:GetShieldInfo(slotList[1].weaponData.weaponKey)
                 if wInfo then
                     local playerAttrs = GAC.inspectedPlayer and GAC.inspectedPlayer.attributes or {}
                     local playerTalents = GAC.inspectedPlayer and GAC.inspectedPlayer.talents or {}
