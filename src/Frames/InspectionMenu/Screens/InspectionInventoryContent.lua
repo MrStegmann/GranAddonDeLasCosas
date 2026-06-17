@@ -699,7 +699,6 @@ function GAC:CreateInspectionInventoryContent(parent)
             
             for _, btn in ipairs(slotFrames) do
                 if btn.slotName == slot or btn.slotID == slot then
-                    print("|cff00ccff[GAC Debug]|r Aplicando objeto al botón lógico final. slot/targetSlot coincidente: " .. tostring(slot))
                     ApplyItemDataToButton(btn, slotList)
                     if slotList.notAllowed then
                         local n1 = slotList[1].armorData and slotList[1].armorData.baseStr or "Pieza 1"
