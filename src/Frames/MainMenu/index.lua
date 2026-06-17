@@ -16,6 +16,7 @@ function GAC:CreateMainMenuFrame()
     
     frame:SetPoint(pos.anchor, UIParent, pos.relativeAnchor, pos.x, pos.y)
     frame:SetMovable(true)
+    GAC:SetClampedWithVisiblePixels(frame, 20)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetClampedToScreen(true)

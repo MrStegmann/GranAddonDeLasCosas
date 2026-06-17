@@ -105,3 +105,16 @@ function GAC:SafeCall(func, ...)
     return xpcall(func, function(err) GAC:ErrorHandler(err) end, ...)
 end
 
+function GAC:SetClampedWithVisiblePixels(frame, visiblePixels)
+    visiblePixels = visiblePixels or 20
+    frame:SetClampedToScreen(true)
+    frame:HookScript("OnSizeChanged", function(self, width, height)
+        if width > 0 and height > 0 then
+            self:SetClampRectInsets(width - visiblePixels, -(width - visiblePixels), -(height - visiblePixels), height - visiblePixels)
+        end
+    end)
+    local w, h = frame:GetSize()
+    if w and h and w > 0 and h > 0 then
+        frame:SetClampRectInsets(w - visiblePixels, -(w - visiblePixels), -(h - visiblePixels), h - visiblePixels)
+    end
+end
