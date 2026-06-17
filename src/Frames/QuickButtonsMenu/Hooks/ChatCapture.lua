@@ -2,8 +2,9 @@ local addonName, GAC = ...
 local displayAddonName = GAC.name or addonName or "GranAddonDeLasCosas"
 
 function GAC:CHAT_MSG_SYSTEM(message) 
-    local finalMessage = nil
-    self.randomRollPattern = self.randomRollPattern or self:BuildRandomRollPattern()
+    GAC:SafeCall(function()
+        local finalMessage = nil
+        self.randomRollPattern = self.randomRollPattern or self:BuildRandomRollPattern()
 
     local plainMessage = self:StripColorCodes(message)
     local roller, roll, low, high = plainMessage:match(self.randomRollPattern)
@@ -291,9 +292,10 @@ function GAC:CHAT_MSG_SYSTEM(message)
         end
     end
 
-    if finalMessage then
-        print(finalMessage)
-        if self.BroadcastRollMessage then self:BroadcastRollMessage(finalMessage) end
-    end
+        if finalMessage then
+            print(finalMessage)
+            if self.BroadcastRollMessage then self:BroadcastRollMessage(finalMessage) end
+        end
+    end)
 end
 

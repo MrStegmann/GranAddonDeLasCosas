@@ -6,8 +6,9 @@ local commPrefix = "GAC_Sync"
 local commFrame = CreateFrame("Frame")
 commFrame:RegisterEvent("CHAT_MSG_ADDON")
 commFrame:SetScript("OnEvent", function(self, event, prefix, text, channel, sender, target, zoneChannelID, localID, name, instanceID)
-    if prefix ~= commPrefix then return end
-    local shortSender = Ambiguate(sender, "none")
+    GAC:SafeCall(function()
+        if prefix ~= commPrefix then return end
+        local shortSender = Ambiguate(sender, "none")
     
     if text == "TTIP:REQ" then
         if not GAC.characterData then return end
@@ -58,7 +59,8 @@ commFrame:SetScript("OnEvent", function(self, event, prefix, text, channel, send
                 GAC:ShowTargetTooltip(TargetFrame, GAC.tooltipCache[shortSender].attributes, GAC.tooltipCache[shortSender].talents)
             end
         end
-    end
+        end
+    end)
 end)
 
 function GAC:RequestTooltipData(targetName)
@@ -122,9 +124,10 @@ function GAC:InitializeTargetTooltip()
     
     if TargetFrame then
         TargetFrame:HookScript("OnEnter", function(self)
-            if not UnitExists("target") or not UnitIsPlayer("target") then return end
-            
-            local fullName = GetUnitName("target", true)
+            GAC:SafeCall(function()
+                if not UnitExists("target") or not UnitIsPlayer("target") then return end
+                
+                local fullName = GetUnitName("target", true)
             if fullName then fullName = Ambiguate(fullName, "none") end
             
             local isPlayer = UnitIsUnit("target", "player")
@@ -140,7 +143,8 @@ function GAC:InitializeTargetTooltip()
                 else
                     GAC:RequestTooltipData(fullName)
                 end
-            end
+                end
+            end)
         end)
         
         TargetFrame:HookScript("OnLeave", function(self)

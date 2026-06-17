@@ -22,3 +22,6 @@
 4. **Naming Conventions & Localization:**
    - Use `camelCase` for table properties and variable values.
    - Whenever a `camelCase` property or any string is used for UI labels or user-facing text, it **must** be added to a Locales localization table and referenced through the locale system, never hardcoded.
+
+5. **Error Handling:**
+   - You must use `SafeCall` to wrap any function that may throw an error.

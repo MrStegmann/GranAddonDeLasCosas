@@ -7,8 +7,9 @@ function GAC:InitializeReceiver()
     receiverFrame:RegisterEvent("CHAT_MSG_ADDON")
     
     receiverFrame:SetScript("OnEvent", function(self, event, prefix, text, channel, sender, target, zoneChannelID, localID, name, instanceID)
-        if event == "CHAT_MSG_ADDON" and prefix == GAC.COMM_PREFIX then
-            -- Limpiamos el nombre del sender para quitar el servidor si estamos en el mismo
+        GAC:SafeCall(function()
+            if event == "CHAT_MSG_ADDON" and prefix == GAC.COMM_PREFIX then
+                -- Limpiamos el nombre del sender para quitar el servidor si estamos en el mismo
             local shortSender = Ambiguate(sender, "none")
             
             if text == "REQ" then
@@ -143,6 +144,7 @@ function GAC:InitializeReceiver()
                     end
                 end
             end
-        end
+            end
+        end)
     end)
 end

@@ -80,4 +80,28 @@ function GAC:FormatRollValue(rollValue)
     return "|cffffffff" .. rollValue .. "|r"
 end
 
+function GAC:ErrorHandler(errorMessage)
+    local file, line, msg = string.match(tostring(errorMessage), "(.-):(%d+):%s*(.*)")
+    
+    if file and line then
+        local filename = string.match(file, "[^/\\]+$") or file
+        print(string.format("|cffff0000[GAC]|r |cffff8000Error detectado:|r Archivo |cffffff00%s|r, línea |cffffff00%s|r.", filename, line))
+        if msg then
+            print("|cffff0000[GAC]|r Detalle: " .. msg)
+        end
+    else
+        print("|cffff0000[GAC]|r |cffff8000Error detectado:|r " .. tostring(errorMessage))
+    end
+    
+    -- Pass the error to the standard UI error handler (e.g. BugSack, Swatter, or default WoW error frame)
+    local handler = geterrorhandler()
+    if handler then
+        handler(errorMessage)
+    end
+end
+
+function GAC:SafeCall(func, ...)
+    if type(func) ~= "function" then return end
+    return xpcall(func, function(err) GAC:ErrorHandler(err) end, ...)
+end
 
