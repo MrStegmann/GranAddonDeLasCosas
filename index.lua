@@ -46,8 +46,19 @@ function GAC:ADDON_LOADED(loadedAddonName)
         if self.InitializeTargetTooltip then self:InitializeTargetTooltip() end
         if self.InitializeTransmitter then self:InitializeTransmitter() end
         if self.InitializeReceiver then self:InitializeReceiver() end
+        if self.InitTRP3ArmorHook then self:InitTRP3ArmorHook() end
 
         print("¡|cFF00FF00[" .. self.name .. "]|r listo! Version: " .. self.version)
         self.eventFrame:UnregisterEvent("ADDON_LOADED")
     end
+end
+
+function GAC:PLAYER_ENTERING_WORLD(isInitialLogin, isReloadingUi)
+    -- Le damos un margen de 1 segundo para que TRP3 Extended inicialice su inventario
+    C_Timer.After(1.5, function()
+        if GAC.InitTRP3ArmorHook then GAC:InitTRP3ArmorHook() end
+        if GAC.UpdateEquippedArmor then
+            GAC:UpdateEquippedArmor()
+        end
+    end)
 end

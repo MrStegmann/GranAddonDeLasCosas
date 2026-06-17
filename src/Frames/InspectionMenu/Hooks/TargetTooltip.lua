@@ -1,5 +1,73 @@
 local _, GAC = ...
 
+GAC.tooltipCache = GAC.tooltipCache or {}
+
+local commPrefix = "GAC_Sync"
+local commFrame = CreateFrame("Frame")
+commFrame:RegisterEvent("CHAT_MSG_ADDON")
+commFrame:SetScript("OnEvent", function(self, event, prefix, text, channel, sender, target, zoneChannelID, localID, name, instanceID)
+    GAC:SafeCall(function()
+        if prefix ~= commPrefix then return end
+        local shortSender = Ambiguate(sender, "none")
+    
+    if text == "TTIP:REQ" then
+        if not GAC.characterData then return end
+        
+        -- Send Attributes
+        local attributes = GAC.characterData.attributes or {}
+        local attStr = ""
+        for k, v in pairs(attributes) do
+            attStr = attStr .. tostring(k) .. "=" .. tostring(v) .. ";"
+        end
+        if attStr ~= "" then
+            C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:ATT:" .. attStr, "WHISPER", shortSender)
+        end
+        
+        -- Send Talents
+        local talents = GAC.characterData.talents or {}
+        local talStr = ""
+        for k, v in pairs(talents) do
+            talStr = talStr .. tostring(k) .. "=" .. tostring(v) .. ";"
+        end
+        C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:TAL:" .. talStr, "WHISPER", shortSender)
+        
+    elseif string.sub(text, 1, 9) == "TTIP:ATT:" then
+        local data = string.sub(text, 10)
+        GAC.tooltipCache[shortSender] = GAC.tooltipCache[shortSender] or { attributes = {}, talents = {} }
+        for pair in string.gmatch(data, "([^;]+)") do
+            local k, v = strsplit("=", pair)
+            if k and v then
+                GAC.tooltipCache[shortSender].attributes[k] = tonumber(v) or 0
+            end
+        end
+        
+    elseif string.sub(text, 1, 9) == "TTIP:TAL:" then
+        local data = string.sub(text, 10)
+        GAC.tooltipCache[shortSender] = GAC.tooltipCache[shortSender] or { attributes = {}, talents = {} }
+        for pair in string.gmatch(data, "([^;]+)") do
+            local k, v = strsplit("=", pair)
+            if k and v then
+                GAC.tooltipCache[shortSender].talents[k] = tonumber(v) or 0
+            end
+        end
+        
+        -- TAL is the last packet, show tooltip if still hovering
+        if TargetFrame and TargetFrame:IsMouseOver() and UnitName("target") then
+            local fullName = GetUnitName("target", true)
+            if fullName then fullName = Ambiguate(fullName, "none") end
+            if fullName == shortSender then
+                GAC:ShowTargetTooltip(TargetFrame, GAC.tooltipCache[shortSender].attributes, GAC.tooltipCache[shortSender].talents)
+            end
+        end
+        end
+    end)
+end)
+
+function GAC:RequestTooltipData(targetName)
+    if not targetName or targetName == "" then return end
+    C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:REQ", "WHISPER", targetName)
+end
+
 local isTargetTooltipHooked = false
 
 function GAC:ShowTargetTooltip(anchorFrame, attributes, talents)
@@ -56,31 +124,27 @@ function GAC:InitializeTargetTooltip()
     
     if TargetFrame then
         TargetFrame:HookScript("OnEnter", function(self)
-            if not UnitExists("target") or not UnitIsPlayer("target") then return end
-            
-            local fullName = GetUnitName("target", true)
+            GAC:SafeCall(function()
+                if not UnitExists("target") or not UnitIsPlayer("target") then return end
+                
+                local fullName = GetUnitName("target", true)
             if fullName then fullName = Ambiguate(fullName, "none") end
             
             local isPlayer = UnitIsUnit("target", "player")
-            local attributes, talents
             
             if isPlayer then
-                attributes = GAC.characterData and GAC.characterData.attributes or {}
-                talents = GAC.characterData and GAC.characterData.talents or {}
-            elseif GAC.inspectedPlayer and GAC.inspectedPlayer.name == fullName then
-                attributes = GAC.inspectedPlayer.attributes or {}
-                talents = GAC.inspectedPlayer.talents or {}
-            end
-            
-            if attributes or talents then
+                local attributes = GAC.characterData and GAC.characterData.attributes or {}
+                local talents = GAC.characterData and GAC.characterData.talents or {}
                 GAC:ShowTargetTooltip(self, attributes, talents)
             else
-                if GAC.RequestInspection then
-                    GAC.silentInspections = GAC.silentInspections or {}
-                    GAC.silentInspections[fullName] = true
-                    GAC:RequestInspection(fullName)
+                local cached = GAC.tooltipCache[fullName]
+                if cached then
+                    GAC:ShowTargetTooltip(self, cached.attributes, cached.talents)
+                else
+                    GAC:RequestTooltipData(fullName)
                 end
-            end
+                end
+            end)
         end)
         
         TargetFrame:HookScript("OnLeave", function(self)

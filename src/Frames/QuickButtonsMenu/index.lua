@@ -48,8 +48,9 @@ function GAC:CreateQuickActionsFrame()
 
     local frame = CreateFrame("Frame", "GACQuickActionsFrame", UIParent, "BackdropTemplate")
     frame:SetPoint(anchor, UIParent, relAnchor, x, y)
-    frame:SetSize(340, 60) -- Altura dinámica luego
+    frame:SetSize(360, 65)
     frame:SetMovable(true)
+    GAC:SetClampedWithVisiblePixels(frame, 20)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetClampedToScreen(true)
@@ -74,8 +75,6 @@ function GAC:CreateQuickActionsFrame()
         GAC.characterData.ui.quickFrame.x = math.floor(ox + 0.5)
         GAC.characterData.ui.quickFrame.y = math.floor(oy + 0.5)
     end)
-
-    frame:SetSize(320, 65)
 
     -- Botones
     local buttonX, buttonSpacing, buttonRowSpacing = 10, 0, 0
@@ -223,7 +222,7 @@ function GAC:CreateQuickActionsFrame()
             end
             if GAC.OpenInspectionMenu then
                 GAC.inspectedPlayer = {
-                    name = "Cargando...",
+                    name = fullName,
                     level = 0,
                     category = "normal",
                     race = "-",
@@ -243,7 +242,7 @@ function GAC:CreateQuickActionsFrame()
     -- Modificador UI
     local modLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     modLabel:SetText("Mod")
-    modLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 160, -13)
+    modLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 215, -13)
 
     local modInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
     modInput:SetSize(26, 18)
@@ -352,10 +351,65 @@ function GAC:CreateQuickActionsFrame()
         {"Click derecho: Repetir última tirada", 0.7, 0.7, 1}
     )
 
+    -- Dynamic Weapon Buttons
+    frame.weaponButtons = {}
+    local weaponSlotsData = {
+        { id = 16, label = "Arma Principal" },
+        { id = 17, label = "Arma Secundaria" },
+        { id = 18, label = "Arma A Distancia" }
+    }
+    
+    local lastWpnBtn = attackButton
+    for i, wData in ipairs(weaponSlotsData) do
+        local btn = GAC:CreateQuickButton(frame)
+        btn:SetSize(25, 25)
+        btn:SetPoint("LEFT", lastWpnBtn, "RIGHT", buttonSpacing + 2, 0)
+        local icon = btn:CreateTexture(nil, "ARTWORK")
+        icon:SetPoint("TOPLEFT", 2, -2)
+        icon:SetPoint("BOTTOMRIGHT", -2, 2)
+        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        btn.icon = icon
+        btn.slotID = wData.id
+        btn.slotLabel = wData.label
+        
+        btn:RegisterForClicks("LeftButtonUp")
+        btn:SetScript("OnClick", function(self, buttonClicked)
+            if self.weaponKey then
+                local wInfo = GAC:GetWeaponInfo(self.weaponKey) or GAC:GetShieldInfo(self.weaponKey)
+                if not wInfo then return end
+                
+                local hasTwoHanded = wInfo.twoHanded ~= nil
+                local hasThrowable = wInfo.throwable ~= nil
+                
+                if hasTwoHanded or hasThrowable then
+                    if not GAC.weaponActionsMenuFrame then GAC.weaponActionsMenuFrame = CreateFrame("Frame", "GACWeaponActionsMenuFrame", UIParent, "UIDropDownMenuTemplate") end
+                    
+                    local menuOptions = {}
+                    table.insert(menuOptions, { text = "Daño " .. self.slotLabel, isTitle = true, notCheckable = true })
+                    table.insert(menuOptions, { text = "Ataque Normal", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName, self.damageModifier) end, notCheckable = true })
+                    if hasTwoHanded then
+                        table.insert(menuOptions, { text = "Ataque a Dos Manos", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "twoHanded", self.weaponName, self.damageModifier) end, notCheckable = true })
+                    end
+                    if hasThrowable then
+                        table.insert(menuOptions, { text = "Lanzar Arma", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "throwable", self.weaponName, self.damageModifier) end, notCheckable = true })
+                    end
+                    table.insert(menuOptions, { text = "Cancelar", notCheckable = true })
+                    
+                    EasyMenu(menuOptions, GAC.weaponActionsMenuFrame, self, 0, 0, "MENU", 2)
+                else
+                    GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName, self.damageModifier)
+                end
+            end
+        end)
+        btn:Hide()
+        table.insert(frame.weaponButtons, btn)
+        lastWpnBtn = btn
+    end
+
     -- Custom Dice UI
     local dadoLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     dadoLabel:SetText("Dado")
-    dadoLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 160, -41)
+    dadoLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 215, -41)
 
     local qtyInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
     qtyInput:SetSize(22, 18)
@@ -402,6 +456,197 @@ function GAC:CreateQuickActionsFrame()
     eventFrame:SetScript("OnEvent", function() GAC:UpdateTargetInspectButtonVisibility() end)
     
     -- Crear marco de telemetría eliminado
+    
+    -- ================= ROW 3 (Armor Slots) =================
+    local armorIconSize = 25
+    local armorSpacing = 5
+    frame.armorButtons = {}
+    local armorSlots = {
+        { id = "shield", numId = 17, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-SecondaryHand", label = "Escudo", col=0, row=0 },
+        { id = "head", numId = 1, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Head", label = "Cabeza", col=1, row=0 },
+        { id = "chest", numId = 5, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Chest", label = "Pecho", col=2, row=0 },
+        { id = "hands", numId = 10, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Hands", label = "Manos", col=1, row=1 },
+        { id = "legs", numId = 7, icon = "Interface\\PaperDoll\\UI-PaperDoll-Slot-Legs", label = "Piernas", col=2, row=1 }
+    }
+    for i, slotData in ipairs(armorSlots) do
+        local btn = GAC:CreateQuickButton(frame)
+        btn:SetSize(armorIconSize, armorIconSize)
+        
+        -- Formato personalizado a la izquierda del marco principal (3 columnas, 2 filas)
+        local col = slotData.col
+        local row = slotData.row
+        -- La columna 2 está más cerca del frame (-5), la columna 0 está más a la izquierda
+        local xOffset = -5 - ((2 - col) * (armorIconSize + armorSpacing))
+        local yOffset = -5 - (row * (armorIconSize + armorSpacing))
+        btn:SetPoint("TOPRIGHT", frame, "TOPLEFT", xOffset, yOffset)
+        
+        local icon = btn:CreateTexture(nil, "ARTWORK")
+        icon:SetTexture(slotData.icon)
+        icon:SetPoint("TOPLEFT", 2, -2)
+        icon:SetPoint("BOTTOMRIGHT", -2, 2)
+        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        btn.icon = icon
+        btn.slotID = slotData.id
+        btn.numId = slotData.numId
+        btn.emptyIconPath = slotData.icon
+        
+        btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        btn:SetScript("OnClick", function(_, buttonClicked)
+            local correctKey = nil
+            local equippedArmor = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor
+            if equippedArmor then
+                if equippedArmor[slotData.id] then correctKey = slotData.id
+                elseif equippedArmor[slotData.numId] then correctKey = slotData.numId
+                elseif equippedArmor[tostring(slotData.numId)] then correctKey = tostring(slotData.numId) end
+            end
+            if not correctKey then return end
+            if buttonClicked == "LeftButton" then
+                if GAC.UpdateTRP3ItemDurability then GAC:UpdateTRP3ItemDurability(correctKey, 1) end
+            elseif buttonClicked == "RightButton" then
+                if GAC.UpdateTRP3ItemDurability then GAC:UpdateTRP3ItemDurability(correctKey, -1) end
+            end
+            
+            -- Refrescar el tooltip si tenemos el ratón encima
+            if GameTooltip:IsOwned(btn) then
+                local onEnter = btn:GetScript("OnEnter")
+                if onEnter then onEnter(btn) end
+            end
+        end)
+        btn:SetScript("OnEnter", function(self)
+            local itemData = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor and (GAC.characterData.inventory.equippedArmor[slotData.id] or GAC.characterData.inventory.equippedArmor[slotData.numId] or GAC.characterData.inventory.equippedArmor[tostring(slotData.numId)])
+            if not itemData or #itemData == 0 then return end
+            local item = itemData[1]
+            if not item or not item.armorData then return end
+            
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            
+            local totalPhys = 0
+            local totalMag = 0
+            for _, it in ipairs(itemData) do
+                if it.armorData then
+                    totalPhys = totalPhys + (tonumber(it.armorData.physRed) or 0)
+                    totalMag = totalMag + (tonumber(it.armorData.magRed) or 0)
+                end
+            end
+            
+            GameTooltip:AddLine(item.itemName, 1, 1, 1)
+            GameTooltip:AddLine("Reducción Física Total: " .. totalPhys, 1, 1, 1)
+            GameTooltip:AddLine("Reducción Mágica Total: " .. totalMag, 1, 1, 1)
+            
+            local curDur = item.armorData.currentDurability or ""
+            if not string.match(string.lower(curDur), "durabilidad") then
+                curDur = "Durabilidad: " .. curDur
+            end
+            GameTooltip:AddLine(curDur, 1, 1, 1)
+            
+            if itemData.notAllowed then
+                GameTooltip:AddLine(" ")
+                GameTooltip:AddLine("* COMBINACIÓN NO PERMITIDA *", 1, 0, 0)
+            end
+            
+            GameTooltip:AddLine(" ")
+            GameTooltip:AddLine("Clic izquierdo: Añadir durabilidad", 0.5, 1, 0.5)
+            GameTooltip:AddLine("Clic derecho: Quitar durabilidad", 1, 0.5, 0.5)
+            
+            GameTooltip:Show()
+        end)
+        btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        table.insert(frame.armorButtons, btn)
+    end
+    
+    frame.UpdateArmorIcons = function(self)
+        local equippedArmor = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor
+        for _, btn in ipairs(self.armorButtons) do
+            local itemData = equippedArmor and (equippedArmor[btn.slotID] or equippedArmor[btn.numId] or equippedArmor[tostring(btn.numId)])
+            
+            btn:Show() -- Siempre visible
+            
+            if itemData and #itemData > 0 then
+                btn:SetAlpha(1)
+                local iconPath = itemData[1].itemIcon or "INV_Misc_QuestionMark"
+                if type(iconPath) == "string" and not iconPath:match("\\") then
+                    iconPath = "Interface\\Icons\\" .. iconPath
+                end
+                btn.icon:SetTexture(iconPath)
+                if itemData.notAllowed then
+                    btn.icon:SetVertexColor(1, 0, 0)
+                else
+                    local r, g, b = 1, 1, 1
+                    if itemData[1].armorData and itemData[1].armorData.maxDurability and itemData[1].armorData.currentDurability then
+                        local curStr = itemData[1].armorData.currentDurability
+                        local curVal = string.match(curStr, "(%d+)")
+                        if curVal then
+                            curVal = tonumber(curVal)
+                            local maxVal = tonumber(itemData[1].armorData.maxDurability)
+                            if maxVal and maxVal > 0 then
+                                local ratio = curVal / maxVal
+                                if ratio > 1 then ratio = 1 end
+                                if ratio < 0 then ratio = 0 end
+                                
+                                if curVal == 0 then
+                                    btn.icon:SetDesaturated(true)
+                                    r, g, b = 1, 0, 0
+                                else
+                                    btn.icon:SetDesaturated(false)
+                                    if ratio > 0.5 then
+                                        r = (1 - ratio) * 2
+                                        g = 1
+                                    else
+                                        r = 1
+                                        g = ratio * 2
+                                    end
+                                    b = 0
+                                    
+                                    -- Mezclamos un poco con blanco para no saturar excesivamente el icono original
+                                    r = r * 0.6 + 0.4
+                                    g = g * 0.6 + 0.4
+                                    b = b * 0.6 + 0.4
+                                end
+                            end
+                        end
+                    end
+                    btn.icon:SetVertexColor(r, g, b)
+                end
+            else
+                btn:SetAlpha(0.2) -- Transparente si está vacío
+                btn.icon:SetTexture(btn.emptyIconPath) -- Usamos la textura por defecto
+                btn.icon:SetVertexColor(1, 1, 1)
+            end
+        end
+    end
+    frame.UpdateWeaponIcons = function(self)
+        local equippedArmor = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor
+        
+        local currentLast = attackButton
+        for _, btn in ipairs(self.weaponButtons) do
+            local itemData = equippedArmor and (equippedArmor[btn.slotID] or equippedArmor[tostring(btn.slotID)])
+            if itemData and #itemData > 0 and itemData[1].weaponData then
+                btn:Show()
+                btn.weaponKey = itemData[1].weaponData.weaponKey
+                btn.weaponName = itemData[1].itemName
+                btn.damageModifier = itemData[1].weaponData.damageModifier or 0
+                
+                local iconPath = itemData[1].itemIcon or "INV_Misc_QuestionMark"
+                if type(iconPath) == "string" and not iconPath:match("\\") then
+                    iconPath = "Interface\\Icons\\" .. iconPath
+                end
+                btn.icon:SetTexture(iconPath)
+                
+                btn:ClearAllPoints()
+                btn:SetPoint("LEFT", currentLast, "RIGHT", buttonSpacing + 2, 0)
+                currentLast = btn
+                
+                GAC:SetupQuickTooltip(btn, "Atacar con " .. itemData[1].itemName, "Click para tirar daño del arma", {"Este es tu " .. btn.slotLabel .. ".", 0.7, 0.7, 1})
+            else
+                btn:Hide()
+                btn.weaponKey = nil
+                btn.weaponName = nil
+            end
+        end
+    end
+    
+    frame:UpdateArmorIcons()
+    frame:UpdateWeaponIcons()
 end
 
 
