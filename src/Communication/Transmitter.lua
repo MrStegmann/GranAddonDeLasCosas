@@ -100,18 +100,6 @@ function GAC:BroadcastRollMessage(message)
     elseif IsInGroup() then
         C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "PARTY")
     end
-    
-    -- Mandarlo también por susurro a todos los que nos tienen seleccionados (suscritos a nuestra vida)
-    if self.requestersCache then
-        local now = GetTime()
-        for requester, timestamp in pairs(self.requestersCache) do
-            if now - timestamp < 300 then
-                C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "WHISPER", requester)
-            else
-                self.requestersCache[requester] = nil
-            end
-        end
-    end
 end
 
 function GAC:BroadcastInitiativeAdd(playerName, total)
