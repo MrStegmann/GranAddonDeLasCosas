@@ -1074,6 +1074,27 @@ function GAC:InitTRP3ArmorHook()
             end
         end
         isTRP3Hooked = true
+        
+        -- Interceptar las respuestas de inspección de inventario (IIRS)
+        -- TRP3 Extended por defecto no envía las variables dinámicas (VA) al jugador que inspecciona.
+        -- Como la durabilidad vive en VA, debemos inyectarla justo antes de enviarla.
+        if AddOn_TotalRP3 and AddOn_TotalRP3.Communications and AddOn_TotalRP3.Communications.sendObject and not GAC.sendObjectHooked then
+            local original_sendObject = AddOn_TotalRP3.Communications.sendObject
+            AddOn_TotalRP3.Communications.sendObject = function(prefix, data, target, priority, reservedMessageID, ...)
+                if prefix == "IIRS" and type(data) == "table" and type(data.slots) == "table" then
+                    local playerInventory = TRP3_API.inventory and TRP3_API.inventory.getInventory and TRP3_API.inventory.getInventory()
+                    if playerInventory and playerInventory.content then
+                        for slotID, slotInfo in pairs(playerInventory.content) do
+                            if data.slots[slotID] and slotInfo.VA then
+                                data.slots[slotID].VA = slotInfo.VA
+                            end
+                        end
+                    end
+                end
+                return original_sendObject(prefix, data, target, priority, reservedMessageID, ...)
+            end
+            GAC.sendObjectHooked = true
+        end
     end
     
     -- Primera carga manual
