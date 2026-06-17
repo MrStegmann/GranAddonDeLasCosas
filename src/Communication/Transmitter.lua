@@ -14,6 +14,16 @@ function GAC:RequestTargetData(targetName)
     C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "REQ", "WHISPER", targetName)
 end
 
+function GAC:RequestGroupData()
+    if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "REQ", "INSTANCE_CHAT")
+    elseif IsInRaid() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "REQ", "RAID")
+    elseif IsInGroup() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "REQ", "PARTY")
+    end
+end
+
 function GAC:SendPlayerData(requesterName)
     if not requesterName or requesterName == "" then return end
     
@@ -42,12 +52,36 @@ function GAC:SendPlayerData(requesterName)
 end
 
 function GAC:BroadcastPlayerData()
+    local progress = self.characterData and self.characterData.progress or {}
+    local currentLevel = progress.level or 1
+    local category = progress.category or "normal"
+    local levelEntry = self:GetLevelEntry(category, currentLevel)
+    local baseHealth = levelEntry and levelEntry.maxHealth or 10
+    local attributes = self.characterData and self.characterData.attributes or {}
+    local constitution = attributes["constitution"] or 0
+    local maxHealth = baseHealth + constitution
+    if maxHealth < 1 then maxHealth = 1 end
+    
+    local currentHealth = self.characterData and self.characterData.currentHealth
+    if currentHealth == nil then currentHealth = maxHealth end
+    local currentShield = self.characterData and self.characterData.currentShield or 0
+    
+    local payload = string.format("RES:%s:%s:%s:%s:%s", tostring(currentLevel), tostring(category), tostring(maxHealth), tostring(currentHealth), tostring(currentShield))
+    
+    if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "INSTANCE_CHAT")
+    elseif IsInRaid() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "RAID")
+    elseif IsInGroup() then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "PARTY")
+    end
+
     if not self.requestersCache then return end
     local now = GetTime()
     for requester, timestamp in pairs(self.requestersCache) do
         -- Mantener la suscripción viva durante 5 minutos (300 segundos)
         if now - timestamp < 300 then
-            self:SendPlayerData(requester)
+            C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, payload, "WHISPER", requester)
         else
             self.requestersCache[requester] = nil
         end

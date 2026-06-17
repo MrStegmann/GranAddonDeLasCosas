@@ -1,7 +1,7 @@
 local addonName, GAC = ...
 
 GAC.name = addonName
-GAC.version = "1.0.0"
+GAC.version = "1.2.1"
 
 GAC.characterData = nil
 GAC.db = nil
@@ -24,6 +24,8 @@ end)
 
 eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
+eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 function GAC:ADDON_LOADED(loadedAddonName)
     if loadedAddonName == self.name then
@@ -40,9 +42,12 @@ function GAC:ADDON_LOADED(loadedAddonName)
         if self.CreateMinimapButton then self:CreateMinimapButton() end
         if self.InitializePlayerPlate then self:InitializePlayerPlate() end
         if self.InitializeTargetPlate then self:InitializeTargetPlate() end
+        if self.InitializeRaidPlate then self:InitializeRaidPlate() end
+        if self.InitializeTargetTooltip then self:InitializeTargetTooltip() end
         if self.InitializeTransmitter then self:InitializeTransmitter() end
         if self.InitializeReceiver then self:InitializeReceiver() end
 
+        print("¡|cFF00FF00[" .. self.name .. "]|r listo! Version: " .. self.version)
         self.eventFrame:UnregisterEvent("ADDON_LOADED")
     end
 end

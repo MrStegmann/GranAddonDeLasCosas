@@ -99,7 +99,7 @@ function GAC:InitializeReceiver()
                 local data = string.sub(text, 11)
                 local level, category, race, class, maxHealth, currentShield, currentExp, maxExp = strsplit(":", data)
                 GAC.inspectedPlayer = {
-                    name = sender,
+                    name = shortSender,
                     level = tonumber(level) or 1,
                     category = category or "normal",
                     race = race or "Desconocida",
@@ -120,7 +120,7 @@ function GAC:InitializeReceiver()
                 end
             elseif string.sub(text, 1, 9) == "INSP:ATT:" then
                 local data = string.sub(text, 10)
-                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == sender then
+                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == shortSender then
                     for pair in string.gmatch(data, "([^;]+)") do
                         local k, v = strsplit("=", pair)
                         if k and v then
@@ -130,7 +130,7 @@ function GAC:InitializeReceiver()
                 end
             elseif string.sub(text, 1, 9) == "INSP:TAL:" then
                 local data = string.sub(text, 10)
-                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == sender then
+                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == shortSender then
                     for pair in string.gmatch(data, "([^;]+)") do
                         local k, v = strsplit("=", pair)
                         if k and v then
@@ -138,8 +138,19 @@ function GAC:InitializeReceiver()
                         end
                     end
                     -- TAL is the last packet, open the menu!
-                    if GAC.OpenInspectionMenu then
-                        GAC:OpenInspectionMenu()
+                    if GAC.silentInspections and GAC.silentInspections[shortSender] then
+                        GAC.silentInspections[shortSender] = nil
+                        if TargetFrame and TargetFrame:IsMouseOver() and UnitName("target") then
+                            local fullName = GetUnitName("target", true)
+                            if fullName then fullName = Ambiguate(fullName, "none") end
+                            if fullName == shortSender and GAC.ShowTargetTooltip then
+                                GAC:ShowTargetTooltip(TargetFrame, GAC.inspectedPlayer.attributes, GAC.inspectedPlayer.talents)
+                            end
+                        end
+                    else
+                        if GAC.OpenInspectionMenu then
+                            GAC:OpenInspectionMenu()
+                        end
                     end
                 end
             end

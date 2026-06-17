@@ -54,8 +54,37 @@ function GAC:UpdateTargetPlate()
             local currentHealth = targetData.currentHealth or maxHealth
             local currentShield = targetData.currentShield or 0
             
+            local displayHealth = math.max(0, currentHealth)
             TargetFrameHealthBar:SetMinMaxValues(0, maxHealth)
-            TargetFrameHealthBar:SetValue(currentHealth)
+            TargetFrameHealthBar:SetValue(displayHealth)
+            
+            if not TargetFrameHealthBar.GAC_NegativeHealthBar then
+                TargetFrameHealthBar.GAC_NegativeHealthBar = TargetFrameHealthBar:CreateTexture(nil, "BORDER")
+                TargetFrameHealthBar.GAC_NegativeHealthBar:SetColorTexture(0.5, 0.05, 0.05, 1)
+            end
+            
+            if currentHealth < 0 then
+                local barWidth = TargetFrameHealthBar:GetWidth()
+                if barWidth == 0 then barWidth = 119 end
+                
+                local negPercent = math.abs(currentHealth) / maxHealth
+                if negPercent > 1 then negPercent = 1 end
+                local negWidth = negPercent * barWidth
+                
+                if negWidth > 0 then
+                    TargetFrameHealthBar.GAC_NegativeHealthBar:SetWidth(negWidth)
+                    TargetFrameHealthBar.GAC_NegativeHealthBar:ClearAllPoints()
+                    TargetFrameHealthBar.GAC_NegativeHealthBar:SetPoint("TOPLEFT", TargetFrameHealthBar, "TOPLEFT", 0, 0)
+                    TargetFrameHealthBar.GAC_NegativeHealthBar:SetPoint("BOTTOMLEFT", TargetFrameHealthBar, "BOTTOMLEFT", 0, 0)
+                    TargetFrameHealthBar.GAC_NegativeHealthBar:Show()
+                else
+                    TargetFrameHealthBar.GAC_NegativeHealthBar:Hide()
+                end
+            else
+                if TargetFrameHealthBar.GAC_NegativeHealthBar then
+                    TargetFrameHealthBar.GAC_NegativeHealthBar:Hide()
+                end
+            end
             
             -- Dibujar el escudo
             if not TargetFrameHealthBar.GAC_ShieldBar then
