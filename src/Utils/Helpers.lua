@@ -17,6 +17,28 @@ GAC.ATTACK_TALENT_OPTIONS = {
     { label = "Chi", key = "chi" },
 }
 
+function GAC:GetRacialTalentModifier(talentKey)
+    if not self.characterData or not self.characterData.characteristics then return 0 end
+    local chars = self.characterData.characteristics
+    local mod = 0
+    
+    if chars.activeAdvantages and chars.activeAdvantages[talentKey] then
+        mod = mod + chars.activeAdvantages[talentKey]
+    end
+    if chars.activeDisadvantages and chars.activeDisadvantages[talentKey] then
+        mod = mod + chars.activeDisadvantages[talentKey]
+    end
+    
+    if chars.adaptLocked and chars.adaptTarget == talentKey and chars.activeAdvantages and chars.activeAdvantages["adaptability"] then
+        mod = mod + chars.activeAdvantages["adaptability"]
+    end
+    if chars.perfLocked and chars.perfTarget == talentKey and chars.activeAdvantages and chars.activeAdvantages["perfectionism"] then
+        mod = mod + chars.activeAdvantages["perfectionism"]
+    end
+    
+    return mod
+end
+
 local ROLL_CLICK_GUARD_SECONDS = 0.5
 local lastActionAt = 0
 

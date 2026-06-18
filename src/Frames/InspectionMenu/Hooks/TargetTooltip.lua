@@ -29,11 +29,45 @@ commFrame:SetScript("OnEvent", function(self, event, prefix, text, channel, send
         for k, v in pairs(talents) do
             talStr = talStr .. tostring(k) .. "=" .. tostring(v) .. ";"
         end
-        C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:TAL:" .. talStr, "WHISPER", shortSender)
+        if talStr ~= "" then
+            C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:TAL:" .. talStr, "WHISPER", shortSender)
+        end
+        
+        -- Send Advantages
+        local advantages = GAC.characterData.characteristics and GAC.characterData.characteristics.activeAdvantages or {}
+        local advStr = ""
+        for k, v in pairs(advantages) do
+            advStr = advStr .. tostring(k) .. "=" .. tostring(v) .. ";"
+        end
+        if advStr ~= "" then
+            C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:ADV:" .. advStr, "WHISPER", shortSender)
+        end
+        
+        -- Send Disadvantages
+        local disadvantages = GAC.characterData.characteristics and GAC.characterData.characteristics.activeDisadvantages or {}
+        local disStr = ""
+        for k, v in pairs(disadvantages) do
+            disStr = disStr .. tostring(k) .. "=" .. tostring(v) .. ";"
+        end
+        if disStr ~= "" then
+            C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:DIS:" .. disStr, "WHISPER", shortSender)
+        end
+        
+        -- Send Special
+        local special = GAC.characterData.characteristics and GAC.characterData.characteristics.activeSpecial or {}
+        local spcStr = ""
+        for _, v in ipairs(special) do
+            spcStr = spcStr .. tostring(v) .. ";"
+        end
+        if spcStr ~= "" then
+            C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:SPC:" .. spcStr, "WHISPER", shortSender)
+        end
+        
+        C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:END", "WHISPER", shortSender)
         
     elseif string.sub(text, 1, 9) == "TTIP:ATT:" then
         local data = string.sub(text, 10)
-        GAC.tooltipCache[shortSender] = GAC.tooltipCache[shortSender] or { attributes = {}, talents = {} }
+        GAC.tooltipCache[shortSender] = GAC.tooltipCache[shortSender] or { attributes = {}, talents = {}, advantages = {}, disadvantages = {}, special = {} }
         for pair in string.gmatch(data, "([^;]+)") do
             local k, v = strsplit("=", pair)
             if k and v then
@@ -43,7 +77,7 @@ commFrame:SetScript("OnEvent", function(self, event, prefix, text, channel, send
         
     elseif string.sub(text, 1, 9) == "TTIP:TAL:" then
         local data = string.sub(text, 10)
-        GAC.tooltipCache[shortSender] = GAC.tooltipCache[shortSender] or { attributes = {}, talents = {} }
+        GAC.tooltipCache[shortSender] = GAC.tooltipCache[shortSender] or { attributes = {}, talents = {}, advantages = {}, disadvantages = {}, special = {} }
         for pair in string.gmatch(data, "([^;]+)") do
             local k, v = strsplit("=", pair)
             if k and v then
@@ -51,12 +85,40 @@ commFrame:SetScript("OnEvent", function(self, event, prefix, text, channel, send
             end
         end
         
-        -- TAL is the last packet, show tooltip if still hovering
+    elseif string.sub(text, 1, 9) == "TTIP:ADV:" then
+        local data = string.sub(text, 10)
+        GAC.tooltipCache[shortSender] = GAC.tooltipCache[shortSender] or { attributes = {}, talents = {}, advantages = {}, disadvantages = {}, special = {} }
+        for pair in string.gmatch(data, "([^;]+)") do
+            local k, v = strsplit("=", pair)
+            if k and v then
+                GAC.tooltipCache[shortSender].advantages[k] = tonumber(v) or 0
+            end
+        end
+        
+    elseif string.sub(text, 1, 9) == "TTIP:DIS:" then
+        local data = string.sub(text, 10)
+        GAC.tooltipCache[shortSender] = GAC.tooltipCache[shortSender] or { attributes = {}, talents = {}, advantages = {}, disadvantages = {}, special = {} }
+        for pair in string.gmatch(data, "([^;]+)") do
+            local k, v = strsplit("=", pair)
+            if k and v then
+                GAC.tooltipCache[shortSender].disadvantages[k] = tonumber(v) or 0
+            end
+        end
+        
+    elseif string.sub(text, 1, 9) == "TTIP:SPC:" then
+        local data = string.sub(text, 10)
+        GAC.tooltipCache[shortSender] = GAC.tooltipCache[shortSender] or { attributes = {}, talents = {}, advantages = {}, disadvantages = {}, special = {} }
+        for spc in string.gmatch(data, "([^;]+)") do
+            table.insert(GAC.tooltipCache[shortSender].special, spc)
+        end
+        
+    elseif text == "TTIP:END" then
         if TargetFrame and TargetFrame:IsMouseOver() and UnitName("target") then
             local fullName = GetUnitName("target", true)
             if fullName then fullName = Ambiguate(fullName, "none") end
             if fullName == shortSender then
-                GAC:ShowTargetTooltip(TargetFrame, GAC.tooltipCache[shortSender].attributes, GAC.tooltipCache[shortSender].talents)
+                local cached = GAC.tooltipCache[shortSender]
+                GAC:ShowTargetTooltip(TargetFrame, cached.attributes, cached.talents, cached.advantages, cached.disadvantages, cached.special)
             end
         end
         end
@@ -65,12 +127,13 @@ end)
 
 function GAC:RequestTooltipData(targetName)
     if not targetName or targetName == "" then return end
+    GAC.tooltipCache[targetName] = { attributes = {}, talents = {}, advantages = {}, disadvantages = {}, special = {} }
     C_ChatInfo.SendAddonMessage(commPrefix, "TTIP:REQ", "WHISPER", targetName)
 end
 
 local isTargetTooltipHooked = false
 
-function GAC:ShowTargetTooltip(anchorFrame, attributes, talents)
+function GAC:ShowTargetTooltip(anchorFrame, attributes, talents, advantages, disadvantages, special)
     if not GACTargetTooltip then
         GACTargetTooltip = CreateFrame("GameTooltip", "GACTargetTooltip", UIParent, "GameTooltipTemplate")
     end
@@ -96,23 +159,59 @@ function GAC:ShowTargetTooltip(anchorFrame, attributes, talents)
         end
     end
     
-    local talAdded = false
+    local combinedTalents = {}
     if talents then
-        if attAdded then GACTargetTooltip:AddLine(" ") end
         for k, v in pairs(talents) do
-            if v and type(v) == "number" and v > 0 then
-                if not talAdded then
-                    GACTargetTooltip:AddLine("Talentos:", 0.25, 0.78, 0.94)
-                    talAdded = true
-                end
-                GACTargetTooltip:AddDoubleLine(GAC:_(k), tostring(v), 1, 1, 1, 1, 1, 1)
-                hasAny = true
+            combinedTalents[k] = tonumber(v) or 0
+        end
+    end
+    if advantages then
+        for k, v in pairs(advantages) do
+            combinedTalents[k] = (combinedTalents[k] or 0) + (tonumber(v) or 0)
+        end
+    end
+    if disadvantages then
+        for k, v in pairs(disadvantages) do
+            combinedTalents[k] = (combinedTalents[k] or 0) + (tonumber(v) or 0)
+        end
+    end
+    
+    local sortedTalents = {}
+    for k in pairs(combinedTalents) do table.insert(sortedTalents, k) end
+    table.sort(sortedTalents)
+
+    local talAdded = false
+    for _, k in ipairs(sortedTalents) do
+        local v = combinedTalents[k]
+        if v ~= 0 then
+            if not talAdded then
+                if attAdded then GACTargetTooltip:AddLine(" ") end
+                GACTargetTooltip:AddLine("Talentos:", 0.25, 0.78, 0.94)
+                talAdded = true
             end
+            
+            local r, g, b = 1, 1, 1
+            if v < 0 then
+                r, g, b = 1, 0.2, 0.2
+            end
+            
+            GACTargetTooltip:AddDoubleLine(GAC:_(k), tostring(v), 1, 1, 1, r, g, b)
+            hasAny = true
+        end
+    end
+
+    local spcAdded = false
+    if special and #special > 0 then
+        if hasAny then GACTargetTooltip:AddLine(" ") end
+        GACTargetTooltip:AddLine("Especial:", 0.8, 0.4, 0.8)
+        for _, v in ipairs(special) do
+            GACTargetTooltip:AddLine(GAC:_(v) or v, 1, 1, 1)
+            hasAny = true
         end
     end
     
     if not hasAny then
-        GACTargetTooltip:AddLine("No tiene atributos o talentos con valor.", 0.5, 0.5, 0.5)
+        GACTargetTooltip:AddLine("No tiene estadísticas ni características.", 0.5, 0.5, 0.5)
     end
     
     GACTargetTooltip:Show()
@@ -135,11 +234,12 @@ function GAC:InitializeTargetTooltip()
             if isPlayer then
                 local attributes = GAC.characterData and GAC.characterData.attributes or {}
                 local talents = GAC.characterData and GAC.characterData.talents or {}
-                GAC:ShowTargetTooltip(self, attributes, talents)
+                local chars = GAC.characterData and GAC.characterData.characteristics or {}
+                GAC:ShowTargetTooltip(self, attributes, talents, chars.activeAdvantages, chars.activeDisadvantages, chars.activeSpecial)
             else
                 local cached = GAC.tooltipCache[fullName]
                 if cached then
-                    GAC:ShowTargetTooltip(self, cached.attributes, cached.talents)
+                    GAC:ShowTargetTooltip(self, cached.attributes, cached.talents, cached.advantages, cached.disadvantages, cached.special)
                 else
                     GAC:RequestTooltipData(fullName)
                 end

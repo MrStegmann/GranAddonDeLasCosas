@@ -84,6 +84,11 @@ function GAC:InitializeAttributeSystem()
     GranAddonDeLasCosasCharDB.talents = GranAddonDeLasCosasCharDB.talents or {}
 
     GAC.characterData = GranAddonDeLasCosasCharDB
+    
+    GAC.characterData.progress = GAC.characterData.progress or { category = "normal", level = 1 }
+    if type(GAC.characterData.progress.level) ~= "number" or GAC.characterData.progress.level < 1 then
+        GAC.characterData.progress.level = 1
+    end
 
     local hasMigratedData = next(GranAddonDeLasCosasCharDB.attributes) ~= nil or next(GranAddonDeLasCosasCharDB.talents) ~= nil
     if not hasMigratedData and GranAddonDeLasCosasDB.attributes and GranAddonDeLasCosasDB.talents then

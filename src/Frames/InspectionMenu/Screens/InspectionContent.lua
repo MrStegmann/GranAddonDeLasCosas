@@ -49,8 +49,11 @@ function GAC:CreateInspectionMenuContent(parent)
     contentArea:SetPoint("TOPLEFT", portraitBorder, "BOTTOMLEFT", -5, -40)
     contentArea:SetPoint("BOTTOMRIGHT", -15, 15)
 
+    local tabCaracteristicas = CreateFrame("Frame", nil, contentArea)
+    tabCaracteristicas:SetAllPoints()
     local tabProgresion = CreateFrame("Frame", nil, contentArea)
     tabProgresion:SetAllPoints()
+    tabProgresion:Hide()
     local tabAtributos = CreateFrame("Frame", nil, contentArea)
     tabAtributos:SetAllPoints()
     tabAtributos:Hide()
@@ -59,8 +62,11 @@ function GAC:CreateInspectionMenuContent(parent)
     tabExperiencia:Hide()
 
     -- Botones de Pestañas
+    local btnCaracteristicas = GAC:CreateSubTabButton(frame, "Características", 130)
+    btnCaracteristicas:SetPoint("BOTTOMLEFT", contentArea, "TOPLEFT", 5, 5)
+    
     local btnProgresion = GAC:CreateSubTabButton(frame, "Progresión", 120)
-    btnProgresion:SetPoint("BOTTOMLEFT", contentArea, "TOPLEFT", 5, 5)
+    btnProgresion:SetPoint("LEFT", btnCaracteristicas, "RIGHT", 5, 0)
     
     local btnAtributos = GAC:CreateSubTabButton(frame, "Atributos y Talentos", 150)
     btnAtributos:SetPoint("LEFT", btnProgresion, "RIGHT", 5, 0)
@@ -69,17 +75,72 @@ function GAC:CreateInspectionMenuContent(parent)
     btnExperiencia:SetPoint("LEFT", btnAtributos, "RIGHT", 5, 0)
 
     local function SelectSubTab(id)
-        btnProgresion.selected = (id == 1); btnProgresion:GetScript("OnLeave")(btnProgresion)
-        btnAtributos.selected = (id == 2); btnAtributos:GetScript("OnLeave")(btnAtributos)
-        btnExperiencia.selected = (id == 3); btnExperiencia:GetScript("OnLeave")(btnExperiencia)
+        btnCaracteristicas.selected = (id == 1); btnCaracteristicas:GetScript("OnLeave")(btnCaracteristicas)
+        btnProgresion.selected = (id == 2); btnProgresion:GetScript("OnLeave")(btnProgresion)
+        btnAtributos.selected = (id == 3); btnAtributos:GetScript("OnLeave")(btnAtributos)
+        btnExperiencia.selected = (id == 4); btnExperiencia:GetScript("OnLeave")(btnExperiencia)
         
-        tabProgresion:SetShown(id == 1)
-        tabAtributos:SetShown(id == 2)
-        tabExperiencia:SetShown(id == 3)
+        tabCaracteristicas:SetShown(id == 1)
+        tabProgresion:SetShown(id == 2)
+        tabAtributos:SetShown(id == 3)
+        tabExperiencia:SetShown(id == 4)
     end
-    btnProgresion:SetScript("OnClick", function() SelectSubTab(1) end)
-    btnAtributos:SetScript("OnClick", function() SelectSubTab(2) end)
-    btnExperiencia:SetScript("OnClick", function() SelectSubTab(3) end)
+    btnCaracteristicas:SetScript("OnClick", function() SelectSubTab(1) end)
+    btnProgresion:SetScript("OnClick", function() SelectSubTab(2) end)
+    btnAtributos:SetScript("OnClick", function() SelectSubTab(3) end)
+    btnExperiencia:SetScript("OnClick", function() SelectSubTab(4) end)
+
+    -------------------------------------------------
+    -- TAB 1: CARACTERÍSTICAS (Solo Lectura)
+    -------------------------------------------------
+    local charBg = CreateFrame("Frame", nil, tabCaracteristicas, "BackdropTemplate")
+    charBg:SetAllPoints()
+    charBg:SetBackdrop({
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12,
+    })
+    charBg:SetBackdropColor(0, 0, 0, 0.3)
+    charBg:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
+
+    local charTitle = charBg:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    charTitle:SetPoint("TOPLEFT", 15, -15)
+    charTitle:SetText("Características Raciales")
+    charTitle:SetTextColor(0.25, 0.78, 0.94)
+
+    local readRaceLabel = charBg:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    readRaceLabel:SetPoint("TOPLEFT", 15, -50)
+    readRaceLabel:SetText("Raza:")
+    
+    local readRaceValue = charBg:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    readRaceValue:SetPoint("TOPLEFT", readRaceLabel, "BOTTOMLEFT", 0, -5)
+    readRaceValue:SetText("-")
+
+    local raceSummaryLabel = charBg:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    raceSummaryLabel:SetPoint("TOPLEFT", 15, -110)
+    raceSummaryLabel:SetText("Resumen Racial:")
+    
+    local raceAdvText = charBg:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    raceAdvText:SetPoint("TOPLEFT", raceSummaryLabel, "BOTTOMLEFT", 0, -5)
+    raceAdvText:SetJustifyH("LEFT")
+    raceAdvText:SetWidth(400)
+    
+    local raceDisText = charBg:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    raceDisText:SetPoint("TOPLEFT", raceAdvText, "BOTTOMLEFT", 0, -5)
+    raceDisText:SetJustifyH("LEFT")
+    raceDisText:SetWidth(400)
+    
+    local raceSpcText = charBg:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    raceSpcText:SetPoint("TOPLEFT", raceDisText, "BOTTOMLEFT", 0, -5)
+    raceSpcText:SetJustifyH("LEFT")
+    raceSpcText:SetWidth(400)
+
+    local readWorgenLabel = charBg:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    readWorgenLabel:SetPoint("TOPLEFT", 15, -200)
+    readWorgenLabel:SetText("Maldición Huargen:")
+    
+    local readWorgenValue = charBg:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    readWorgenValue:SetPoint("TOPLEFT", readWorgenLabel, "BOTTOMLEFT", 0, -5)
+    readWorgenValue:SetText("No")
 
     -------------------------------------------------
     -- TAB 1: PROGRESIÓN (Niveles y Categorías)
@@ -121,6 +182,33 @@ function GAC:CreateInspectionMenuContent(parent)
     local lvlValue = progBg:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     lvlValue:SetPoint("TOPLEFT", lvlLabel, "BOTTOMLEFT", 0, -5)
     lvlValue:SetText("-")
+
+    -- Removing the raceSummary labels from Progression Tab
+    
+    local function FormatStatList(list)
+        if type(list) == "table" then
+            local t = {}
+            if #list > 0 then
+                for _, v in ipairs(list) do
+                    table.insert(t, GAC:_(v) or v)
+                end
+            else
+                local hasElements = false
+                local sortedKeys = {}
+                for k in pairs(list) do table.insert(sortedKeys, k) end
+                table.sort(sortedKeys)
+                for _, k in ipairs(sortedKeys) do
+                    local v = list[k]
+                    hasElements = true
+                    local sign = v > 0 and "+" or ""
+                    table.insert(t, sign .. v .. " " .. (GAC:_(k) or k))
+                end
+                if not hasElements then return "Ninguna" end
+            end
+            return table.concat(t, ", ")
+        end
+        return "Ninguna"
+    end
 
     local function UpdateProgressionInfo(cat, lvl)
         catValue:SetText(GAC:_(cat))
@@ -288,6 +376,33 @@ function GAC:CreateInspectionMenuContent(parent)
         end
         
         UpdateProgressionInfo(p.category, p.level)
+        
+        -- Update Características Tab
+        local r1 = p.race1 or "Ninguna"
+        local r2 = p.race2 or "Ninguna"
+        local raceString = ""
+        if r1 ~= "Ninguna" and r2 ~= "Ninguna" then
+            raceString = string.format("Mestizo (%s y %s)", GAC:_(r1) or r1, GAC:_(r2) or r2)
+        elseif r1 ~= "Ninguna" then
+            raceString = GAC:_(r1) or r1
+        else
+            raceString = "Ninguna"
+        end
+        readRaceValue:SetText(raceString)
+        
+        local adv = p.advantages and FormatStatList(p.advantages) or "Ninguna"
+        local dis = p.disadvantages and FormatStatList(p.disadvantages) or "Ninguna"
+        local spc = p.special and FormatStatList(p.special) or "Ninguna"
+        
+        raceAdvText:SetText("|cFFa3f5a3Ventajas:|r " .. adv)
+        raceDisText:SetText("|cFFf5a3a3Desventajas:|r " .. dis)
+        raceSpcText:SetText("|cFFd1a3f5Especial:|r " .. spc)
+        
+        if p.worgenCurse then
+            readWorgenValue:SetText("|cFFa3f5a3Sí|r")
+        else
+            readWorgenValue:SetText("|cFFf5a3a3No|r")
+        end
         
         if UnitIsGroupLeader("player") or not IsInGroup() then
             btnExperiencia:Show()

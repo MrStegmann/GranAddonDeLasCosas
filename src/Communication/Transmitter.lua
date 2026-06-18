@@ -214,10 +214,46 @@ function GAC:SendInspectionData(requesterName)
     end
     if talStr ~= "" then
         C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSP:TAL:" .. talStr, "WHISPER", requesterName)
-    else
-        -- If no talents, we just send empty TAL so the receiver knows the inspection transmission is done
-        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSP:TAL:", "WHISPER", requesterName)
     end
+    
+    -- 4. ADV PACKET: INSP:ADV:key=val;key=val;
+    local advantages = self.characterData.characteristics and self.characterData.characteristics.activeAdvantages or {}
+    local advStr = ""
+    for k, v in pairs(advantages) do
+        advStr = advStr .. tostring(k) .. "=" .. tostring(v) .. ";"
+    end
+    if advStr ~= "" then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSP:ADV:" .. advStr, "WHISPER", requesterName)
+    end
+    
+    -- 5. DIS PACKET: INSP:DIS:key=val;key=val;
+    local disadvantages = self.characterData.characteristics and self.characterData.characteristics.activeDisadvantages or {}
+    local disStr = ""
+    for k, v in pairs(disadvantages) do
+        disStr = disStr .. tostring(k) .. "=" .. tostring(v) .. ";"
+    end
+    if disStr ~= "" then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSP:DIS:" .. disStr, "WHISPER", requesterName)
+    end
+    
+    -- 6. SPC PACKET: INSP:SPC:val;val;
+    local special = self.characterData.characteristics and self.characterData.characteristics.activeSpecial or {}
+    local spcStr = ""
+    for _, v in ipairs(special) do
+        spcStr = spcStr .. tostring(v) .. ";"
+    end
+    if spcStr ~= "" then
+        C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSP:SPC:" .. spcStr, "WHISPER", requesterName)
+    end
+    
+    -- 7. RAC PACKET: INSP:RAC:race1:race2:worgenCurse
+    local chars = self.characterData.characteristics or {}
+    local r1 = chars.race1 or "Ninguna"
+    local r2 = chars.race2 or "Ninguna"
+    local worgen = chars.worgenCurse and "1" or "0"
+    C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, string.format("INSP:RAC:%s:%s:%s", tostring(r1), tostring(r2), worgen), "WHISPER", requesterName)
+    
+    C_ChatInfo.SendAddonMessage(self.COMM_PREFIX, "INSP:END", "WHISPER", requesterName)
 
 end
 

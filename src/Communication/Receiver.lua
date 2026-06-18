@@ -138,7 +138,47 @@ function GAC:InitializeReceiver()
                             GAC.inspectedPlayer.talents[k] = tonumber(v) or 0
                         end
                     end
-                    -- TAL is the last packet, open the menu!
+                end
+            elseif string.sub(text, 1, 9) == "INSP:ADV:" then
+                local data = string.sub(text, 10)
+                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == shortSender then
+                    GAC.inspectedPlayer.advantages = GAC.inspectedPlayer.advantages or {}
+                    for pair in string.gmatch(data, "([^;]+)") do
+                        local k, v = strsplit("=", pair)
+                        if k and v then
+                            GAC.inspectedPlayer.advantages[k] = tonumber(v) or 0
+                        end
+                    end
+                end
+            elseif string.sub(text, 1, 9) == "INSP:DIS:" then
+                local data = string.sub(text, 10)
+                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == shortSender then
+                    GAC.inspectedPlayer.disadvantages = GAC.inspectedPlayer.disadvantages or {}
+                    for pair in string.gmatch(data, "([^;]+)") do
+                        local k, v = strsplit("=", pair)
+                        if k and v then
+                            GAC.inspectedPlayer.disadvantages[k] = tonumber(v) or 0
+                        end
+                    end
+                end
+            elseif string.sub(text, 1, 9) == "INSP:SPC:" then
+                local data = string.sub(text, 10)
+                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == shortSender then
+                    GAC.inspectedPlayer.special = GAC.inspectedPlayer.special or {}
+                    for spc in string.gmatch(data, "([^;]+)") do
+                        table.insert(GAC.inspectedPlayer.special, spc)
+                    end
+                end
+            elseif string.sub(text, 1, 9) == "INSP:RAC:" then
+                local data = string.sub(text, 10)
+                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == shortSender then
+                    local r1, r2, worgen = strsplit(":", data)
+                    GAC.inspectedPlayer.race1 = r1 or "Ninguna"
+                    GAC.inspectedPlayer.race2 = r2 or "Ninguna"
+                    GAC.inspectedPlayer.worgenCurse = (worgen == "1")
+                end
+            elseif text == "INSP:END" then
+                if GAC.inspectedPlayer and GAC.inspectedPlayer.name == shortSender then
                     if GAC.OpenInspectionMenu then
                         GAC:OpenInspectionMenu()
                     end

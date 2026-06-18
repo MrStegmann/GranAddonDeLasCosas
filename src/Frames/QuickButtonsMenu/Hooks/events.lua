@@ -10,6 +10,7 @@ function GAC:StartTalentRoll(attributeName, talentName)
 
     local attributeValue = self.characterData.attributes and self.characterData.attributes[attributeName] and tonumber(self.characterData.attributes[attributeName]) or 0
     local talentValue = self.characterData.talents and self.characterData.talents[talentName] and tonumber(self.characterData.talents[talentName]) or 0
+    talentValue = talentValue + self:GetRacialTalentModifier(talentName)
 
     local mod, hasMod = self:GetQuickModifierValue()
     
@@ -193,6 +194,7 @@ function GAC:StartAttackRoll(dice, talentKey, talentLabel)
     end
 
     local talentValue = self.characterData.talents and self.characterData.talents[talentKey] and tonumber(self.characterData.talents[talentKey]) or 0
+    talentValue = talentValue + self:GetRacialTalentModifier(talentKey)
 
     local mod, hasMod = self:GetQuickModifierValue()
 
@@ -235,14 +237,14 @@ function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier)
     
     if type(rollData.talent) == "table" then
         for _, t in ipairs(rollData.talent) do
-            local val = (tonumber(playerAttrs[t]) or 0) + (tonumber(playerTalents[t]) or 0)
+            local val = (tonumber(playerAttrs[t]) or 0) + (tonumber(playerTalents[t]) or 0) + self:GetRacialTalentModifier(t)
             if val > maxTalentVal or usedTalentKey == "" then
                 maxTalentVal = val
                 usedTalentKey = t
             end
         end
     elseif type(rollData.talent) == "string" then
-        maxTalentVal = (tonumber(playerAttrs[rollData.talent]) or 0) + (tonumber(playerTalents[rollData.talent]) or 0)
+        maxTalentVal = (tonumber(playerAttrs[rollData.talent]) or 0) + (tonumber(playerTalents[rollData.talent]) or 0) + self:GetRacialTalentModifier(rollData.talent)
         usedTalentKey = rollData.talent
     end
     
