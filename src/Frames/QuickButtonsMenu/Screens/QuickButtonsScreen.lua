@@ -121,9 +121,25 @@ function GAC.Screens.QuickButtonsMenu:CreateMainFrame()
                 
                 GAC:SetupQuickTooltip(btn, "Atacar con " .. itemData[1].itemName, "Click para tirar daño del arma", {"Este es tu " .. btn.slotLabel .. ".", 0.7, 0.7, 1})
             else
-                btn:Hide()
-                btn.weaponKey = nil
-                btn.weaponName = nil
+                if btn.slotID == 16 or btn.slotID == 17 then
+                    btn:Show()
+                    btn.weaponKey = nil
+                    btn.weaponName = "Desarmado"
+                    btn.damageModifier = 0
+                    
+                    local iconPath = (btn.slotID == 16) and "Interface\\Icons\\INV_Gauntlets_04" or "Interface\\Icons\\INV_Gauntlets_05"
+                    btn.icon:SetTexture(iconPath)
+                    
+                    btn:ClearAllPoints()
+                    btn:SetPoint("LEFT", currentLast, "RIGHT", c.BUTTON_SPACING + 2, 0)
+                    currentLast = btn
+                    
+                    GAC:SetupQuickTooltip(btn, "Ataque Desarmado (" .. btn.slotLabel .. ")", "Click para tirar daño desarmado", {"Golpe sin armas: 1d4 + MAX(Acrobacia, Brutalidad)", 0.7, 0.7, 1})
+                else
+                    btn:Hide()
+                    btn.weaponKey = nil
+                    btn.weaponName = nil
+                end
             end
         end
     end

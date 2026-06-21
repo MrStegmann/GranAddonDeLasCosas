@@ -274,3 +274,44 @@ function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier)
         RandomRoll(1, self.pendingWeaponRoll.damage)
     end
 end
+function GAC:StartUnarmedDamageRoll(slotLabel)
+    if not self.characterData or not GAC:CanTriggerRoll() then return end
+    
+    local playerAttrs = self.characterData.attributes or {}
+    local playerTalents = self.characterData.talents or {}
+    
+    local valBrutality = (tonumber(playerAttrs["brutality"]) or 0) + (tonumber(playerTalents["brutality"]) or 0) + self:GetRacialTalentModifier("brutality")
+    local valAcrobatics = (tonumber(playerAttrs["acrobatics"]) or 0) + (tonumber(playerTalents["acrobatics"]) or 0) + self:GetRacialTalentModifier("acrobatics")
+    
+    local maxTalentVal = valBrutality
+    local usedTalentKey = "brutality"
+    
+    if valAcrobatics > valBrutality then
+        maxTalentVal = valAcrobatics
+        usedTalentKey = "acrobatics"
+    end
+    
+    local mod, hasMod = self:GetQuickModifierValue()
+    
+    self.pendingWeaponRoll = {
+        weaponKey = "unarmed",
+        weaponName = "Desarmado (" .. (slotLabel or "") .. ")",
+        modeLabel = "Normal",
+        diceNumber = 1,
+        damage = 4,
+        talentValue = maxTalentVal,
+        talentKey = usedTalentKey,
+        hasModifier = hasMod,
+        modifierValue = mod,
+        weaponModifier = 0,
+        currentTotal = 0,
+        rolls = {},
+        quantity = 1,
+        damageType = "Contundente"
+    }
+    
+    self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
+    self.rollType = "weapon"
+    
+    RandomRoll(1, 4)
+end

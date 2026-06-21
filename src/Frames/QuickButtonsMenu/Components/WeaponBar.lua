@@ -47,6 +47,12 @@ function GAC.Components.QuickButtonsMenu:CreateWeaponBar(frame, anchorBtn)
                 else
                     GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName, self.damageModifier)
                 end
+            else
+                if self.slotID == 16 or self.slotID == 17 then
+                    if GAC.StartUnarmedDamageRoll then
+                        GAC:StartUnarmedDamageRoll(self.slotLabel)
+                    end
+                end
             end
         end)
         btn:Hide()
