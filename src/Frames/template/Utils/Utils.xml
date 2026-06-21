@@ -1,6 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
-    <Script file="InventoryContent.lua"/>
-    <Script file="ExperienceConfigurator.lua"/>
-    <Script file="CharSheetScreen.lua"/>
+    <!-- Contendrá todos los archivos de esta carpeta que serán cargados: <Script file="NameOfUtil.lua"/>-->
+    
 </Ui>

@@ -1,16 +1,12 @@
 local addonName, GAC = ...
 
-function GAC:CreateCharSheetProgressionTab(tab, mainFrame)
-    local progBg = CreateFrame("Frame", nil, tab, "BackdropTemplate")
-    progBg:SetAllPoints()
-    progBg:SetBackdrop({
-        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12,
-    })
-    progBg:SetBackdropColor(0, 0, 0, 0.3)
-    progBg:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
+GAC.Components = GAC.Components or {}
+GAC.Components.MainMenu = GAC.Components.MainMenu or {}
 
-    local progTitle = GAC:CreateFontString(progBg, "Información de Nivel Disponible", "GameFontNormalLarge", { "TOPLEFT", 15, -15 }, { 0.25, 0.78, 0.94 })
+function GAC.Components.MainMenu:CreateProgressionTab(tab, mainFrame)
+    local progBg = GAC.Components.MainMenu:CreateDarkTabBackground(tab)
+
+    local progTitle = GAC:CreateFontString(progBg, "Información de Nivel Disponible", "GameFontNormalLarge", { "TOPLEFT", 15, -15 }, GAC.Stores.MainMenu.Constants.TITLE_COLOR)
 
     local _, hpText = GAC:CreateInfoBox(progBg, "Salud Máxima", 20, -50)
     local _, expText = GAC:CreateInfoBox(progBg, "Exp para Nivel", 190, -50)

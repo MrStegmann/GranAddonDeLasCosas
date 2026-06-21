@@ -1,0 +1,1 @@
+Esta carpeta contendrá toda la funcionalidad necesaria para que el frame funcione, siempre siguiendo la arquitectura establecida. Contendrá toda la lógica.

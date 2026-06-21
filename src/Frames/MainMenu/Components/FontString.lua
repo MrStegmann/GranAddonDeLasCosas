@@ -10,7 +10,11 @@ function GAC:CreateFontString(parent, text, fontType, point, color)
     fs:SetText(text)
     
     if type(color) == "table" then
-        fs:SetTextColor(unpack(color))
+        if color.r then
+            fs:SetTextColor(color.r, color.g, color.b, color.a)
+        else
+            fs:SetTextColor(unpack(color))
+        end
     end
     
     return fs

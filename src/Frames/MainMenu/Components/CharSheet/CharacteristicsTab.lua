@@ -1,26 +1,11 @@
 local addonName, GAC = ...
 
-function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
-    local characteristicsScroll = CreateFrame("ScrollFrame", "GAC_CharacteristicsScroll", tab, "UIPanelScrollFrameTemplate")
-    characteristicsScroll:SetPoint("TOPLEFT", tab, "TOPLEFT", 4, -4)
-    characteristicsScroll:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -28, 4)
+GAC.Components = GAC.Components or {}
+GAC.Components.MainMenu = GAC.Components.MainMenu or {}
 
-    local characteristicsBg = CreateFrame("Frame", nil, characteristicsScroll, "BackdropTemplate")
-    characteristicsBg:SetSize(400, 500)
-    characteristicsScroll:SetScrollChild(characteristicsBg)
-
-    characteristicsScroll:SetScript("OnSizeChanged", function(self, width, height)
-        characteristicsBg:SetWidth(width)
-    end)
-
-    characteristicsBg:SetBackdrop({
-        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 12,
-        insets = { left = 3, right = 3, top = 3, bottom = 3 },
-    })
-    characteristicsBg:SetBackdropColor(0, 0, 0, 0.3)
-    characteristicsBg:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
+function GAC.Components.MainMenu:CreateCharacteristicsTab(tab, mainFrame)
+    local characteristicsScroll, characteristicsBg = GAC.Components.MainMenu:CreateScrollableTab(tab, 400, 500)
+    local consts = GAC.Stores.MainMenu.Constants
 
     local raceLabel1 = GAC:CreateFontString(characteristicsBg, "Raza Principal:", "GameFontNormal", { "TOPLEFT", 15, -20 }, {1, 1, 1})
     local raceDrop1 = CreateFrame("Frame", "GAC_CharSheetRaceDrop1", characteristicsBg, "UIDropDownMenuTemplate")
@@ -36,9 +21,9 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
     local currentRace1 = GAC.characterData.characteristics.race1 or "Ninguna"
     local currentRace2 = GAC.characterData.characteristics.race2 or "Ninguna"
 
-    local saveCharBtn = CreateFrame("Button", nil, characteristicsBg, "UIPanelButtonTemplate")
+    local saveCharBtn = CreateFrame("Button", nil, tab, "UIPanelButtonTemplate")
     saveCharBtn:SetSize(140, 26)
-    saveCharBtn:SetPoint("BOTTOMRIGHT", -10, 10)
+    saveCharBtn:SetPoint("BOTTOMRIGHT", characteristicsScroll, "BOTTOMRIGHT", -10, -35)
     saveCharBtn:SetText("Guardar Cambios")
     saveCharBtn:Hide()
 
@@ -47,19 +32,19 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
         f:SetSize(190, 80)
         f:SetPoint("TOPLEFT", anchorFrame, "BOTTOMLEFT", 15, -15)
         
-        f.advLabel = GAC:CreateFontString(f, "Ventajas", "GameFontNormalSmall", { "TOPLEFT", 0, 0 }, {0.2, 1, 0.2})
+        f.advLabel = GAC:CreateFontString(f, "Ventajas", "GameFontNormalSmall", { "TOPLEFT", 0, 0 }, consts.COLOR_ADVANTAGE)
         f.advText = GAC:CreateFontString(f, "", "GameFontHighlightSmall", { "TOPLEFT", f.advLabel, "BOTTOMLEFT", 0, -2 }, {1, 1, 1})
         f.advText:SetWidth(90)
         f.advText:SetJustifyH("LEFT")
         f.advText:SetJustifyV("TOP")
         
-        f.disLabel = GAC:CreateFontString(f, "Desventajas", "GameFontNormalSmall", { "TOPLEFT", 100, 0 }, {1, 0.2, 0.2})
+        f.disLabel = GAC:CreateFontString(f, "Desventajas", "GameFontNormalSmall", { "TOPLEFT", 100, 0 }, consts.COLOR_DISADVANTAGE)
         f.disText = GAC:CreateFontString(f, "", "GameFontHighlightSmall", { "TOPLEFT", f.disLabel, "BOTTOMLEFT", 0, -2 }, {1, 1, 1})
         f.disText:SetWidth(90)
         f.disText:SetJustifyH("LEFT")
         f.disText:SetJustifyV("TOP")
         
-        f.specLabel = GAC:CreateFontString(f, "Especial", "GameFontNormalSmall", { "TOPLEFT", 0, -60 }, {1, 0.8, 0})
+        f.specLabel = GAC:CreateFontString(f, "Especial", "GameFontNormalSmall", { "TOPLEFT", 0, -60 }, consts.COLOR_SPECIAL)
         f.specText = GAC:CreateFontString(f, "", "GameFontHighlightSmall", { "TOPLEFT", f.specLabel, "BOTTOMLEFT", 0, -2 }, {1, 1, 1})
         f.specText:SetWidth(190)
         f.specText:SetJustifyH("LEFT")
@@ -78,8 +63,8 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
     mestizoBuilderFrame:SetHeight(150)
     mestizoBuilderFrame:Hide()
 
-    local mestizoAdvTitle = GAC:CreateFontString(mestizoBuilderFrame, "Ventajas (0/3)", "GameFontNormalSmall", { "TOPLEFT", 0, 0 }, {0.2, 1, 0.2})
-    local mestizoDisTitle = GAC:CreateFontString(mestizoBuilderFrame, "Desventajas (0/3)", "GameFontNormalSmall", { "TOPLEFT", 190, 0 }, {1, 0.2, 0.2})
+    local mestizoAdvTitle = GAC:CreateFontString(mestizoBuilderFrame, "Ventajas (0/3)", "GameFontNormalSmall", { "TOPLEFT", 0, 0 }, consts.COLOR_ADVANTAGE)
+    local mestizoDisTitle = GAC:CreateFontString(mestizoBuilderFrame, "Desventajas (0/3)", "GameFontNormalSmall", { "TOPLEFT", 190, 0 }, consts.COLOR_DISADVANTAGE)
     
     local mestizoAdvContainer = CreateFrame("Frame", nil, mestizoBuilderFrame)
     mestizoAdvContainer:SetPoint("TOPLEFT", mestizoAdvTitle, "BOTTOMLEFT", 0, -10)
@@ -89,7 +74,7 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
     mestizoDisContainer:SetPoint("TOPLEFT", mestizoDisTitle, "BOTTOMLEFT", 0, -10)
     mestizoDisContainer:SetSize(180, 100)
     
-    local mestizoSpecLabel = GAC:CreateFontString(mestizoBuilderFrame, "Especial Combinado", "GameFontNormalSmall", { "TOPLEFT", mestizoAdvContainer, "BOTTOMLEFT", 0, -15 }, {1, 0.8, 0})
+    local mestizoSpecLabel = GAC:CreateFontString(mestizoBuilderFrame, "Especial Combinado", "GameFontNormalSmall", { "TOPLEFT", mestizoAdvContainer, "BOTTOMLEFT", 0, -15 }, consts.COLOR_SPECIAL)
     local mestizoSpecText = GAC:CreateFontString(mestizoBuilderFrame, "", "GameFontHighlightSmall", { "TOPLEFT", mestizoSpecLabel, "BOTTOMLEFT", 0, -2 }, {1, 1, 1})
     mestizoSpecText:SetWidth(380)
     mestizoSpecText:SetJustifyH("LEFT")
@@ -116,9 +101,7 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
         if type(list) == "table" then
             local t = {}
             if #list > 0 then
-                for _, v in ipairs(list) do
-                    table.insert(t, GAC:_(v) or v)
-                end
+                for _, v in ipairs(list) do table.insert(t, GAC:_(v) or v) end
             else
                 local hasElements = false
                 local sortedKeys = {}
@@ -185,7 +168,6 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
 
     local worgenCurseCheckbox = CreateFrame("CheckButton", nil, characteristicsBg, "UICheckButtonTemplate")
     worgenCurseCheckbox:SetPoint("TOPLEFT", characteristicsBg, "TOPLEFT", 20, -210)
-    
     local worgenCurseLabel = GAC:CreateFontString(characteristicsBg, "Maldición Huargen", "GameFontHighlight", { "LEFT", worgenCurseCheckbox, "RIGHT", 5, 0 }, {1, 1, 1})
 
     worgenCurseCheckbox:SetScript("OnClick", function(self)
@@ -196,55 +178,21 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
     local function RefreshMestizoBuilder()
         for _, cb in pairs(mestizoCheckboxes) do cb:Hide() end
         if currentRace1 == "Ninguna" or currentRace2 == "Ninguna" then return end
-        
-        local data1 = GAC:GetRaceData(currentRace1)
-        local data2 = GAC:GetRaceData(currentRace2)
-        if not data1 or not data2 then return end
 
-        local allAdv = {}
-        local allDis = {}
-        local allSpec = {}
-        
-        local function AddToDict(targetDict, sourceDict)
-            if not sourceDict then return end
-            for k, v in pairs(sourceDict) do
-                targetDict[k] = v
-            end
-        end
-        
-        local function AddToList(targetList, sourceList)
-            if not sourceList then return end
-            for _, v in ipairs(sourceList) do
-                if not tContains(targetList, v) then table.insert(targetList, v) end
-            end
-        end
-
-        AddToDict(allAdv, data1.advantages)
-        AddToDict(allAdv, data2.advantages)
-        AddToDict(allDis, data1.disadvantages)
-        AddToDict(allDis, data2.disadvantages)
-        AddToList(allSpec, data1.special)
-        AddToList(allSpec, data2.special)
+        local allAdv, allDis, allSpec = GAC.Utils.MainMenu:MergeRaceTraits(currentRace1, currentRace2)
         
         GAC.characterData.characteristics.mestizoTraits = GAC.characterData.characteristics.mestizoTraits or {}
-        -- Limpiar traits que ya no estén en allAdv o allDis
-        for k in pairs(GAC.characterData.characteristics.mestizoTraits) do
-            if not allAdv[k] and not allDis[k] then
-                GAC.characterData.characteristics.mestizoTraits[k] = nil
-            end
-        end
-        
         local mestizoTraits = GAC.characterData.characteristics.mestizoTraits
         
-        local currentAdvSum = 0
-        local currentDisSum = 0
+        -- Clean old traits
+        for k in pairs(mestizoTraits) do
+            if not allAdv[k] and not allDis[k] then mestizoTraits[k] = nil end
+        end
         
+        local currentAdvSum, currentDisSum = 0, 0
         for k, v in pairs(mestizoTraits) do
-            if allAdv[k] then
-                currentAdvSum = currentAdvSum + math.abs(v)
-            elseif allDis[k] then
-                currentDisSum = currentDisSum + math.abs(v)
-            end
+            if allAdv[k] then currentAdvSum = currentAdvSum + math.abs(v)
+            elseif allDis[k] then currentDisSum = currentDisSum + math.abs(v) end
         end
         
         mestizoAdvTitle:SetText(string.format("Ventajas (%d/3)", currentAdvSum))
@@ -280,11 +228,7 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
                 end
                 
                 cb:SetScript("OnClick", function(self)
-                    if self:GetChecked() then
-                        mestizoTraits[k] = v
-                    else
-                        mestizoTraits[k] = nil
-                    end
+                    if self:GetChecked() then mestizoTraits[k] = v else mestizoTraits[k] = nil end
                     saveCharBtn:Show()
                     RefreshMestizoBuilder()
                 end)
@@ -295,11 +239,10 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
         
         local advHeight = math.abs(RenderDict(allAdv, mestizoAdvContainer, currentAdvSum))
         local disHeight = math.abs(RenderDict(allDis, mestizoDisContainer, currentDisSum))
-        
         local maxListHeight = math.max(advHeight, disHeight)
+        
         mestizoAdvContainer:SetHeight(maxListHeight)
         mestizoDisContainer:SetHeight(maxListHeight)
-        
         mestizoSpecLabel:SetPoint("TOPLEFT", mestizoAdvContainer, "BOTTOMLEFT", 0, -15)
         
         if #allSpec > 0 then
@@ -353,126 +296,76 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
         UpdateScrollHeight()
     end
 
+    local function ProcessDynamicBonus(isMatch, drop, label, isMin, lockedKey, targetKey)
+        if not isMatch then
+            label:Hide()
+            drop:Hide()
+            GAC.characterData.characteristics[targetKey] = nil
+            GAC.characterData.characteristics[lockedKey] = false
+            return
+        end
+        
+        if GAC.characterData.characteristics[lockedKey] and GAC.characterData.characteristics[targetKey] then
+            label:Hide()
+            drop:Hide()
+            return
+        end
+        
+        local talents = GAC.characterData.talents or {}
+        local targetVal = isMin and math.huge or -1
+        local candidates = {}
+        
+        for k, v in pairs(talents) do
+            local val = tonumber(v) or 0
+            if (isMin and val > 0 and val < targetVal) or (not isMin and val > targetVal) then
+                targetVal = val
+                candidates = {k}
+            elseif val == targetVal then
+                table.insert(candidates, k)
+            end
+        end
+        
+        if isMin and #candidates == 0 then
+            for k, _ in pairs(talents) do table.insert(candidates, k) end
+        end
+        
+        if #candidates == 1 then
+            GAC.characterData.characteristics[targetKey] = candidates[1]
+            label:Hide()
+            drop:Hide()
+        else
+            label:Show()
+            drop:Show()
+            UIDropDownMenu_Initialize(drop, function(self, level, menuList)
+                for _, cand in ipairs(candidates) do
+                    local info = UIDropDownMenu_CreateInfo()
+                    info.text = GAC:_(cand) or cand
+                    info.func = function()
+                        GAC.characterData.characteristics[targetKey] = cand
+                        UIDropDownMenu_SetText(drop, info.text)
+                        saveCharBtn:Show()
+                        UpdateRaceSummary(summary1, currentRace1)
+                        UpdateRaceSummary(summary2, currentRace2)
+                    end
+                    UIDropDownMenu_AddButton(info)
+                end
+            end)
+            local currentTarget = GAC.characterData.characteristics[targetKey]
+            if currentTarget and tContains(candidates, currentTarget) then
+                UIDropDownMenu_SetText(drop, GAC:_(currentTarget) or currentTarget)
+            else
+                UIDropDownMenu_SetText(drop, "Elige un talento...")
+            end
+        end
+    end
+
     local function EvaluateDynamicRacialBonuses()
         if not GAC.characterData then return end
         local isHuman = (currentRace1 == "human" or currentRace2 == "human")
         local isGnome = (currentRace1 == "gnome" or currentRace2 == "gnome")
         
-        local talents = GAC.characterData.talents or {}
-        
-        if isHuman then
-            if GAC.characterData.characteristics.adaptLocked and GAC.characterData.characteristics.adaptTarget then
-                adaptLabel:Hide()
-                adaptDrop:Hide()
-            else
-                local minVal = math.huge
-                local adaptCandidates = {}
-                for k, v in pairs(talents) do
-                    local val = tonumber(v) or 0
-                    if val > 0 then
-                        if val < minVal then
-                            minVal = val
-                            adaptCandidates = {k}
-                        elseif val == minVal then
-                            table.insert(adaptCandidates, k)
-                        end
-                    end
-                end
-                if #adaptCandidates == 0 then
-                    for k, v in pairs(talents) do
-                        table.insert(adaptCandidates, k)
-                    end
-                end
-                
-                if #adaptCandidates == 1 then
-                    GAC.characterData.characteristics.adaptTarget = adaptCandidates[1]
-                    adaptLabel:Hide()
-                    adaptDrop:Hide()
-                else
-                    adaptLabel:Show()
-                    adaptDrop:Show()
-                    UIDropDownMenu_Initialize(adaptDrop, function(self, level, menuList)
-                        for _, cand in ipairs(adaptCandidates) do
-                            local info = UIDropDownMenu_CreateInfo()
-                            info.text = GAC:_(cand) or cand
-                            info.func = function()
-                                GAC.characterData.characteristics.adaptTarget = cand
-                                UIDropDownMenu_SetText(adaptDrop, info.text)
-                                saveCharBtn:Show()
-                                UpdateRaceSummary(summary1, currentRace1)
-                                UpdateRaceSummary(summary2, currentRace2)
-                            end
-                            UIDropDownMenu_AddButton(info)
-                        end
-                    end)
-                    local currentTarget = GAC.characterData.characteristics.adaptTarget
-                    if currentTarget and tContains(adaptCandidates, currentTarget) then
-                        UIDropDownMenu_SetText(adaptDrop, GAC:_(currentTarget) or currentTarget)
-                    else
-                        UIDropDownMenu_SetText(adaptDrop, "Elige un talento...")
-                    end
-                end
-            end
-        else
-            adaptLabel:Hide()
-            adaptDrop:Hide()
-            GAC.characterData.characteristics.adaptTarget = nil
-            GAC.characterData.characteristics.adaptLocked = false
-        end
-
-        if isGnome then
-            if GAC.characterData.characteristics.perfLocked and GAC.characterData.characteristics.perfTarget then
-                perfLabel:Hide()
-                perfDrop:Hide()
-            else
-                local maxVal = -1
-                local perfCandidates = {}
-                for k, v in pairs(talents) do
-                    local val = tonumber(v) or 0
-                    if val > maxVal then
-                        maxVal = val
-                        perfCandidates = {k}
-                    elseif val == maxVal then
-                        table.insert(perfCandidates, k)
-                    end
-                end
-                
-                if #perfCandidates == 1 then
-                    GAC.characterData.characteristics.perfTarget = perfCandidates[1]
-                    perfLabel:Hide()
-                    perfDrop:Hide()
-                else
-                    perfLabel:Show()
-                    perfDrop:Show()
-                    UIDropDownMenu_Initialize(perfDrop, function(self, level, menuList)
-                        for _, cand in ipairs(perfCandidates) do
-                            local info = UIDropDownMenu_CreateInfo()
-                            info.text = GAC:_(cand) or cand
-                            info.func = function()
-                                GAC.characterData.characteristics.perfTarget = cand
-                                UIDropDownMenu_SetText(perfDrop, info.text)
-                                saveCharBtn:Show()
-                                UpdateRaceSummary(summary1, currentRace1)
-                                UpdateRaceSummary(summary2, currentRace2)
-                            end
-                            UIDropDownMenu_AddButton(info)
-                        end
-                    end)
-                    local currentTarget = GAC.characterData.characteristics.perfTarget
-                    if currentTarget and tContains(perfCandidates, currentTarget) then
-                        UIDropDownMenu_SetText(perfDrop, GAC:_(currentTarget) or currentTarget)
-                    else
-                        UIDropDownMenu_SetText(perfDrop, "Elige un talento...")
-                    end
-                end
-            end
-        else
-            perfLabel:Hide()
-            perfDrop:Hide()
-            GAC.characterData.characteristics.perfTarget = nil
-            GAC.characterData.characteristics.perfLocked = false
-        end
-        
+        ProcessDynamicBonus(isHuman, adaptDrop, adaptLabel, true, "adaptLocked", "adaptTarget")
+        ProcessDynamicBonus(isGnome, perfDrop, perfLabel, false, "perfLocked", "perfTarget")
         UpdateDynamicLayout()
     end
 
@@ -480,11 +373,10 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
         saveCharBtn:Hide()
         GAC.characterData.characteristics.race1 = currentRace1
         GAC.characterData.characteristics.race2 = currentRace2
-        
         GAC.characterData.characteristics.adaptLocked = true
         GAC.characterData.characteristics.perfLocked = true
         
-        local success, err = pcall(function()
+        GAC.Utils.MainMenu:SafeCall(function()
             if currentRace2 == "Ninguna" and currentRace1 ~= "Ninguna" then
                 local data = GAC:GetRaceData(currentRace1)
                 if data then
@@ -493,26 +385,10 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
                     GAC.characterData.characteristics.activeSpecial = data.special
                 end
             elseif currentRace1 ~= "Ninguna" and currentRace2 ~= "Ninguna" then
-                local data1 = GAC:GetRaceData(currentRace1)
-                local data2 = GAC:GetRaceData(currentRace2)
-                local allSpec = {}
-                if data1 and data1.special then for _,v in ipairs(data1.special) do table.insert(allSpec, v) end end
-                if data2 and data2.special then for _,v in ipairs(data2.special) do if not tContains(allSpec, v) then table.insert(allSpec, v) end end end
-                
+                local allAdv, allDis, allSpec = GAC.Utils.MainMenu:MergeRaceTraits(currentRace1, currentRace2)
                 local mestizoTraits = GAC.characterData.characteristics.mestizoTraits or {}
-                local allAdv = {}
-                local allDis = {}
-                if data1 then
-                    if data1.advantages then for k, v in pairs(data1.advantages) do allAdv[k] = v end end
-                    if data1.disadvantages then for k, v in pairs(data1.disadvantages) do allDis[k] = v end end
-                end
-                if data2 then
-                    if data2.advantages then for k, v in pairs(data2.advantages) do allAdv[k] = v end end
-                    if data2.disadvantages then for k, v in pairs(data2.disadvantages) do allDis[k] = v end end
-                end
                 
-                local activeAdv = {}
-                local activeDis = {}
+                local activeAdv, activeDis = {}, {}
                 for k, v in pairs(mestizoTraits) do
                     if allAdv[k] then activeAdv[k] = v end
                     if allDis[k] then activeDis[k] = v end
@@ -533,24 +409,15 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
         print("|cFF40C7EB[GAC]|r: Características guardadas correctamente.")
     end)
 
-    local function InitializeRaceDropdown(dropdown, isSecond)
+    local function InitializeRaceDropdown(dropdown, currentValue, isSecondary, onChange)
         UIDropDownMenu_Initialize(dropdown, function(self, level, menuList)
             local info = UIDropDownMenu_CreateInfo()
             info.text = "Ninguna"
             info.func = function()
-                if isSecond then
-                    if currentRace2 ~= "Ninguna" then saveCharBtn:Show() end
-                    currentRace2 = "Ninguna"
-                    UpdateDynamicLayout()
-                else
-                    if currentRace1 ~= "Ninguna" then saveCharBtn:Show() end
-                    currentRace1 = "Ninguna"
-                    currentRace2 = "Ninguna"
-                    UIDropDownMenu_SetText(raceDrop2, "Ninguna")
-                    UIDropDownMenu_DisableDropDown(raceDrop2)
-                    UpdateDynamicLayout()
-                end
+                if currentValue() ~= "Ninguna" then saveCharBtn:Show() end
+                onChange("Ninguna")
                 UIDropDownMenu_SetText(dropdown, info.text)
+                UpdateDynamicLayout()
             end
             UIDropDownMenu_AddButton(info)
 
@@ -559,29 +426,32 @@ function GAC:CreateCharSheetCharacteristicsTab(tab, mainFrame)
                 local infoRace = UIDropDownMenu_CreateInfo()
                 infoRace.text = GAC:_(raceName) or raceName
                 infoRace.func = function()
-                    if isSecond then
-                        if currentRace2 ~= raceName then saveCharBtn:Show() end
-                        currentRace2 = raceName
-                        UpdateDynamicLayout()
-                    else
-                        if currentRace1 ~= raceName then saveCharBtn:Show() end
-                        currentRace1 = raceName
-                        UIDropDownMenu_EnableDropDown(raceDrop2)
-                        UpdateDynamicLayout()
-                    end
+                    if currentValue() ~= raceName then saveCharBtn:Show() end
+                    onChange(raceName)
                     UIDropDownMenu_SetText(dropdown, infoRace.text)
-                    
                     EvaluateDynamicRacialBonuses()
+                    UpdateDynamicLayout()
                 end
                 UIDropDownMenu_AddButton(infoRace)
             end
         end)
     end
 
-    InitializeRaceDropdown(raceDrop1, false)
+    InitializeRaceDropdown(raceDrop1, function() return currentRace1 end, false, function(newVal)
+        currentRace1 = newVal
+        if newVal == "Ninguna" then
+            currentRace2 = "Ninguna"
+            UIDropDownMenu_SetText(raceDrop2, "Ninguna")
+            UIDropDownMenu_DisableDropDown(raceDrop2)
+        else
+            UIDropDownMenu_EnableDropDown(raceDrop2)
+        end
+    end)
     UIDropDownMenu_SetText(raceDrop1, GAC:_(currentRace1) or currentRace1)
     
-    InitializeRaceDropdown(raceDrop2, true)
+    InitializeRaceDropdown(raceDrop2, function() return currentRace2 end, true, function(newVal)
+        currentRace2 = newVal
+    end)
     UIDropDownMenu_SetText(raceDrop2, GAC:_(currentRace2) or currentRace2)
     
     UpdateDynamicLayout()

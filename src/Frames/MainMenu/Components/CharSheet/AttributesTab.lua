@@ -1,32 +1,16 @@
 local addonName, GAC = ...
 
-function GAC:CreateCharSheetAttributesTab(tab, mainFrame)
-    local attBg = CreateFrame("Frame", nil, tab, "BackdropTemplate")
-    attBg:SetAllPoints()
-    attBg:SetBackdrop({
-        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12,
-    })
-    attBg:SetBackdropColor(0, 0, 0, 0.3)
-    attBg:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
+GAC.Components = GAC.Components or {}
+GAC.Components.MainMenu = GAC.Components.MainMenu or {}
 
-    local scrollFrameAtt = CreateFrame("ScrollFrame", nil, attBg, "UIPanelScrollFrameTemplate")
-    scrollFrameAtt:SetPoint("TOPLEFT", 8, -8)
-    scrollFrameAtt:SetPoint("BOTTOMRIGHT", -28, 45)
-
-    local contentContainer = CreateFrame("Frame", nil, scrollFrameAtt)
-    contentContainer:SetSize(400, 10)
-    scrollFrameAtt:SetScrollChild(contentContainer)
-
-    scrollFrameAtt:SetScript("OnSizeChanged", function(self, width)
-        contentContainer:SetWidth(width)
-    end)
+function GAC.Components.MainMenu:CreateCharSheetAttributesTab(tab, mainFrame)
+    local scrollFrameAtt, contentContainer = GAC.Components.MainMenu:CreateScrollableTab(tab, 400, 10)
 
     local statInputs = {}
 
-    local saveStatsBtn = CreateFrame("Button", nil, attBg, "UIPanelButtonTemplate")
+    local saveStatsBtn = CreateFrame("Button", nil, tab, "UIPanelButtonTemplate")
     saveStatsBtn:SetSize(140, 26)
-    saveStatsBtn:SetPoint("BOTTOM", 0, 10)
+    saveStatsBtn:SetPoint("BOTTOM", scrollFrameAtt, "BOTTOM", 0, -35)
     saveStatsBtn:SetText("Guardar Cambios")
     saveStatsBtn:Hide()
 

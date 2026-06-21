@@ -92,7 +92,11 @@ function GAC:CreateMinimapButton()
             
             EasyMenu(menuOptions, GAC.minimapContextMenu, "cursor", 0, 0, "MENU", 2)
         else
-            self:ToggleMainMenu()
+            GAC:SafeCall(function()
+                if GAC.Screens and GAC.Screens.MainMenu then
+                    GAC.Screens.MainMenu:Toggle()
+                end
+            end)
         end
     end)
     button:SetScript("OnEnter", function(s)

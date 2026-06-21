@@ -1,6 +1,9 @@
 local addonName, GAC = ...
 
-function GAC:CreateCharSheetContent(parent)
+GAC.Screens = GAC.Screens or {}
+GAC.Screens.MainMenu = GAC.Screens.MainMenu or {}
+
+function GAC.Screens.MainMenu:CreateCharSheetScreen(parent)
     local frame = CreateFrame("Frame", nil, parent, "BackdropTemplate")
     frame:SetAllPoints()
 
@@ -106,9 +109,9 @@ function GAC:CreateCharSheetContent(parent)
     btnAtributos:SetScript("OnClick", function() SelectSubTab(3) end)
 
     -- Inicializar Sub-Módulos
-    GAC:CreateCharSheetCharacteristicsTab(tab1, frame)
-    GAC:CreateCharSheetProgressionTab(tab2, frame)
-    GAC:CreateCharSheetAttributesTab(tab3, frame)
+    GAC.Components.MainMenu:CreateCharacteristicsTab(tab1, frame)
+    GAC.Components.MainMenu:CreateProgressionTab(tab2, frame)
+    GAC.Components.MainMenu:CreateCharSheetAttributesTab(tab3, frame)
 
     -- Inicializar Tab 1
     SelectSubTab(1)
