@@ -114,6 +114,9 @@ local function BuildRaceDropdowns(ctx)
                 onChange("Ninguna")
                 UIDropDownMenu_SetText(dropdown, info.text)
                 ctx.UpdateDynamicLayout()
+                if ctx.mainFrame.UpdateHeaderInfoText then
+                    ctx.mainFrame:UpdateHeaderInfoText(ctx.currentRace1, ctx.currentRace2)
+                end
             end
             UIDropDownMenu_AddButton(info)
 
@@ -127,6 +130,9 @@ local function BuildRaceDropdowns(ctx)
                     UIDropDownMenu_SetText(dropdown, infoRace.text)
                     ctx.EvaluateDynamicRacialBonuses()
                     ctx.UpdateDynamicLayout()
+                    if ctx.mainFrame.UpdateHeaderInfoText then
+                        ctx.mainFrame:UpdateHeaderInfoText(ctx.currentRace1, ctx.currentRace2)
+                    end
                 end
                 UIDropDownMenu_AddButton(infoRace)
             end

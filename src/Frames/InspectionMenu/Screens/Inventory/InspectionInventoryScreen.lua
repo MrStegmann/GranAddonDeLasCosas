@@ -1,156 +1,11 @@
 local addonName, GAC = ...
 
-function GAC:CreateInspectionInventoryContent(parent)
+GAC.Screens = GAC.Screens or {}
+GAC.Screens.InspectionMenu = GAC.Screens.InspectionMenu or {}
+
+function GAC.Screens.InspectionMenu:CreateInventoryScreen(parent)
     local frame = CreateFrame("Frame", nil, parent, "BackdropTemplate")
     frame:SetAllPoints()
-
-    local function DrawTooltip(tooltipFrame, itemData, isNotAllowed)
-        tooltipFrame:ClearLines()
-        local r, g, b = 1, 1, 1
-        if itemData.itemQuality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[itemData.itemQuality] then
-            local color = ITEM_QUALITY_COLORS[itemData.itemQuality]
-            r, g, b = color.r, color.g, color.b
-        end
-        
-        tooltipFrame:AddLine(itemData.itemName, r, g, b)
-        
-        if itemData.armorData then
-            local data = itemData.armorData
-            local leftText = data.baseStr
-            if data.hasReinforcement then
-                leftText = leftText .. ": Reforzado con " .. data.reinforcementStr
-            end
-            tooltipFrame:AddDoubleLine(leftText, data.slotStr, 1, 1, 1, 1, 1, 1)
-            
-            tooltipFrame:AddLine("Reducción física: " .. data.physRed, 1, 1, 1)
-            tooltipFrame:AddLine("Reducción mágica: " .. data.magRed, 1, 1, 1)
-            
-            local statNames = {
-                brutality = "Brutalidad", agileDefense = "Defensa Ágil", movement = "Movimiento",
-                perception = "Percepción", stealth = "Sigilo", acrobatics = "Acrobacias", sleightOfHand = "Juego de Manos"
-            }
-            
-            local hasReqs = false
-            for stat, val in pairs(data.requirements) do
-                if not hasReqs then
-                    tooltipFrame:AddLine(" ")
-                    hasReqs = true
-                end
-                tooltipFrame:AddLine((statNames[stat] or stat) .. " " .. val, 0, 1, 0)
-            end
-            
-            local hasPens = false
-            for stat, val in pairs(data.penalties) do
-                if not hasPens then
-                    if not hasReqs then tooltipFrame:AddLine(" ") end
-                    hasPens = true
-                end
-                tooltipFrame:AddLine((statNames[stat] or stat) .. " " .. val, 1, 0, 0)
-            end
-            
-            tooltipFrame:AddLine(" ")
-            tooltipFrame:AddLine(data.currentDurability, 1, 1, 1)
-            
-            if isNotAllowed then
-                tooltipFrame:AddLine(" ")
-                tooltipFrame:AddLine("* " .. string.upper(tostring(isNotAllowed)) .. " *", 1, 0, 0, true)
-            elseif data.meetsRequirements == false then
-                tooltipFrame:AddLine(" ")
-                tooltipFrame:AddLine("* No cumple con los requisitos *", 1, 0.2, 0.2)
-            end
-        elseif itemData.weaponData then
-            local data = itemData.weaponData
-            local wInfo = GAC:GetWeaponInfo(data.weaponKey) or GAC:GetShieldInfo(data.weaponKey)
-            
-            tooltipFrame:AddDoubleLine(data.baseStr, "Arma", 1, 1, 1, 1, 1, 1)
-            
-            if wInfo then
-                local dmgTypeES = { piercing = "Perforante", crushing = "Contundente", slashing = "Cortante" }
-                
-                local playerAttrs = GAC.inspectedPlayer and GAC.inspectedPlayer.attributes or {}
-                local playerTalents = GAC.inspectedPlayer and GAC.inspectedPlayer.talents or {}
-                
-                local function FormatDamage(info, isTwoHanded)
-                    local baseMinDmg = info.diceNumber
-                    local baseMaxDmg = info.diceNumber * info.damage
-                    
-                    local talentVal = 0
-                    if type(info.talent) == "table" then
-                        for _, t in ipairs(info.talent) do
-                            local val = (playerAttrs[t] or 0) + (playerTalents[t] or 0)
-                            if val > talentVal then talentVal = val end
-                        end
-                    elseif type(info.talent) == "string" then
-                        talentVal = (playerAttrs[info.talent] or 0) + (playerTalents[info.talent] or 0)
-                    end
-                    
-                    local minDmg = baseMinDmg + talentVal + (data.damageModifier or 0)
-                    local maxDmg = baseMaxDmg + talentVal + (data.damageModifier or 0)
-                    
-                    local str = minDmg .. " - " .. maxDmg
-                    if isTwoHanded then str = "(" .. str .. ")" end
-                    return str
-                end
-                
-                local function FormatDice(info, isTwoHanded)
-                    local str = info.diceNumber .. "D" .. info.damage
-                    if isTwoHanded then str = "(" .. str .. ")" end
-                    return str
-                end
-                
-                local dmgLine = "Daño: " .. FormatDamage(wInfo)
-                local diceLine = FormatDice(wInfo)
-                if wInfo.twoHanded then
-                    dmgLine = dmgLine .. " " .. FormatDamage(wInfo.twoHanded, true)
-                    diceLine = diceLine .. " " .. FormatDice(wInfo.twoHanded, true)
-                end
-                
-                tooltipFrame:AddLine(" ")
-                tooltipFrame:AddLine(dmgLine, 1, 1, 1)
-                tooltipFrame:AddLine(diceLine, 1, 0.82, 0)
-                
-                if itemData.tooltipLeft and itemData.tooltipLeft ~= "" then
-                    tooltipFrame:AddLine("Mejora: " .. itemData.tooltipLeft, 0, 1, 0)
-                end
-                
-                local typeLine = "Tipo de daño: " .. (dmgTypeES[wInfo.damageType] or wInfo.damageType)
-                if wInfo.twoHanded and wInfo.twoHanded.damageType and wInfo.twoHanded.damageType ~= wInfo.damageType then
-                    typeLine = typeLine .. " (" .. (dmgTypeES[wInfo.twoHanded.damageType] or wInfo.twoHanded.damageType) .. ")"
-                end
-                tooltipFrame:AddLine(typeLine, 1, 1, 1)
-                
-                if wInfo.throwable then
-                    tooltipFrame:AddLine(" ")
-                    tooltipFrame:AddLine("Arrojadiza:", 0, 1, 0)
-                    local thr = wInfo.throwable
-                    tooltipFrame:AddLine("Daño: " .. FormatDamage(thr), 1, 1, 1)
-                    tooltipFrame:AddLine(FormatDice(thr), 1, 0.82, 0)
-                    tooltipFrame:AddLine("Tipo de daño: " .. (dmgTypeES[thr.damageType] or thr.damageType), 1, 1, 1)
-                end
-                
-                if wInfo.twoHanded then
-                    tooltipFrame:AddLine(" ")
-                    tooltipFrame:AddLine("* Los valores entre paréntesis son empuñando el arma a dos manos.", 0.5, 0.5, 0.5)
-                end
-            end
-            
-            if itemData.itemDescription and itemData.itemDescription ~= "" then
-                tooltipFrame:AddLine(" ")
-                tooltipFrame:AddLine(itemData.itemDescription, 1, 0.82, 0, true)
-            end
-        else
-            if itemData.itemDescription and itemData.itemDescription ~= "" then
-                tooltipFrame:AddLine(itemData.itemDescription, 1, 0.82, 0, true)
-            end
-        end
-        
-        if isNotAllowed and tooltipFrame.SetBackdropBorderColor then
-            tooltipFrame.originalBorderR, tooltipFrame.originalBorderG, tooltipFrame.originalBorderB, tooltipFrame.originalBorderA = tooltipFrame:GetBackdropBorderColor()
-            tooltipFrame:SetBackdropBorderColor(1, 0, 0, 1)
-        end
-        
-        tooltipFrame:Show()
-    end
 
     local header = GAC:CreateFontString(frame, "Inventario del Objetivo", "GameFontNormalLarge", { "TOPLEFT", 15, -15 }, { 0.25, 0.78, 0.94 })
 
@@ -179,64 +34,9 @@ function GAC:CreateInspectionInventoryContent(parent)
     local startY = -70
     local yOffset = -60
 
-    local function CreateInspectSlotButton(slotData, x, y)
-        local slotButton = CreateFrame("Button", "GAC_InspectInventorySlot" .. slotData.id, frame)
-        slotButton:SetSize(37, 37)
-        slotButton:SetPoint("TOPLEFT", x, y)
-        
-        local icon = slotButton:CreateTexture(nil, "BACKGROUND")
-        icon:SetAllPoints()
-        slotButton.icon = icon
-        
-        local border = slotButton:CreateTexture(nil, "OVERLAY")
-        border:SetTexture("Interface\\Buttons\\UI-Quickslot2")
-        border:SetSize(60, 60)
-        border:SetPoint("CENTER", 0, 0)
-        slotButton.customBorder = border
-        
-        slotButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
-        slotButton:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-
-        slotButton.icon:SetTexture(slotData.icon)
-        local label = GAC:CreateFontString(frame, slotData.label, "GameFontNormal", { "LEFT", slotButton, "RIGHT", 15, 0 }, { 0.5, 0.5, 0.5 })
-        
-        slotButton.slotID = slotData.id
-        slotButton.slotName = slotData.name
-        slotButton.emptyIcon = slotData.icon
-        slotButton.emptyLabel = slotData.label
-        slotButton.label = label
-        slotButton:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            if self.itemDataList and #self.itemDataList > 0 then
-                DrawTooltip(GameTooltip, self.itemDataList[1], self.itemDataList.notAllowed)
-                if self.itemDataList[2] then
-                    ShoppingTooltip1:SetOwner(GameTooltip, "ANCHOR_NONE")
-                    ShoppingTooltip1:ClearAllPoints()
-                    ShoppingTooltip1:SetPoint("TOPLEFT", GameTooltip, "TOPRIGHT", 5, 0)
-                    DrawTooltip(ShoppingTooltip1, self.itemDataList[2], self.itemDataList.notAllowed)
-                end
-            else
-                GameTooltip:SetText(self.emptyLabel)
-                GameTooltip:Show()
-            end
-        end)
-        slotButton:SetScript("OnLeave", function(self)
-            if GameTooltip.originalBorderR then
-                GameTooltip:SetBackdropBorderColor(GameTooltip.originalBorderR, GameTooltip.originalBorderG, GameTooltip.originalBorderB, GameTooltip.originalBorderA)
-                GameTooltip.originalBorderR = nil
-            end
-            GameTooltip:Hide()
-            if ShoppingTooltip1.originalBorderR then
-                ShoppingTooltip1:SetBackdropBorderColor(ShoppingTooltip1.originalBorderR, ShoppingTooltip1.originalBorderG, ShoppingTooltip1.originalBorderB, ShoppingTooltip1.originalBorderA)
-                ShoppingTooltip1.originalBorderR = nil
-            end
-            ShoppingTooltip1:Hide()
-        end)
-        slotFrames[#slotFrames + 1] = slotButton
-    end
-
     for i, slotData in ipairs(slots) do
-        CreateInspectSlotButton(slotData, startX, startY + (i - 1) * yOffset)
+        local btn = GAC.Components.InspectionMenu:CreateSlotButton(frame, slotData, startX, startY + (i - 1) * yOffset, false)
+        table.insert(slotFrames, btn)
     end
     
     local wStartX = 40
@@ -246,65 +46,8 @@ function GAC:CreateInspectionInventoryContent(parent)
     for i, slotData in ipairs(weaponSlots) do
         local x = wStartX + (i - 1) * wXOffset
         local y = wStartY
-        local slotButton = CreateFrame("Button", "GAC_InspectInventorySlot" .. slotData.id, frame)
-        slotButton:SetSize(37, 37)
-        slotButton:SetPoint("TOPLEFT", x, y)
-        
-        local icon = slotButton:CreateTexture(nil, "BACKGROUND")
-        icon:SetAllPoints()
-        slotButton.icon = icon
-        
-        local border = slotButton:CreateTexture(nil, "OVERLAY")
-        border:SetTexture("Interface\\Buttons\\UI-Quickslot2")
-        border:SetSize(60, 60)
-        border:SetPoint("CENTER", 0, 0)
-        slotButton.customBorder = border
-        
-        slotButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
-        slotButton:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-
-        slotButton.icon:SetTexture(slotData.icon)
-        local label = GAC:CreateFontString(frame, slotData.label, "GameFontNormal", { "BOTTOM", slotButton, "TOP", 0, 5 }, { 0.5, 0.5, 0.5 })
-        
-        slotButton.slotID = slotData.id
-        slotButton.slotName = slotData.name
-        slotButton.emptyIcon = slotData.icon
-        slotButton.emptyLabel = slotData.label
-        slotButton.label = label
-        
-        local itemLabel = GAC:CreateFontString(frame, "", "GameFontNormalSmall", { "TOP", slotButton, "BOTTOM", 0, -5 }, { 0.5, 0.5, 0.5 })
-        itemLabel:SetWidth(wXOffset - 10)
-        itemLabel:SetWordWrap(false)
-        slotButton.itemLabel = itemLabel
-        
-        slotButton:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            if self.itemDataList and #self.itemDataList > 0 then
-                DrawTooltip(GameTooltip, self.itemDataList[1], self.itemDataList.notAllowed)
-                if self.itemDataList[2] then
-                    ShoppingTooltip1:SetOwner(GameTooltip, "ANCHOR_NONE")
-                    ShoppingTooltip1:ClearAllPoints()
-                    ShoppingTooltip1:SetPoint("TOPLEFT", GameTooltip, "TOPRIGHT", 5, 0)
-                    DrawTooltip(ShoppingTooltip1, self.itemDataList[2], self.itemDataList.notAllowed)
-                end
-            else
-                GameTooltip:SetText(self.emptyLabel)
-                GameTooltip:Show()
-            end
-        end)
-        slotButton:SetScript("OnLeave", function(self)
-            if GameTooltip.originalBorderR then
-                GameTooltip:SetBackdropBorderColor(GameTooltip.originalBorderR, GameTooltip.originalBorderG, GameTooltip.originalBorderB, GameTooltip.originalBorderA)
-                GameTooltip.originalBorderR = nil
-            end
-            GameTooltip:Hide()
-            if ShoppingTooltip1.originalBorderR then
-                ShoppingTooltip1:SetBackdropBorderColor(ShoppingTooltip1.originalBorderR, ShoppingTooltip1.originalBorderG, ShoppingTooltip1.originalBorderB, ShoppingTooltip1.originalBorderA)
-                ShoppingTooltip1.originalBorderR = nil
-            end
-            ShoppingTooltip1:Hide()
-        end)
-        slotFrames[#slotFrames + 1] = slotButton
+        local btn = GAC.Components.InspectionMenu:CreateSlotButton(frame, slotData, x, y, true, wXOffset)
+        table.insert(slotFrames, btn)
     end
 
     local summaryFrame = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -437,7 +180,6 @@ function GAC:CreateInspectionInventoryContent(parent)
                 end
                 
                 if currentIndex > #equippedKeys then
-                    -- Step 2: Finalize Summary
                     pcall(function() self:FinalizeSummary(groupedBySlot, parsedItemsInfo, equippedItems) end)
                     self.isProcessing = false
                     return
@@ -727,19 +469,9 @@ function GAC:CreateInspectionInventoryContent(parent)
                 if wInfo then
                     local playerAttrs = GAC.inspectedPlayer and GAC.inspectedPlayer.attributes or {}
                     local playerTalents = GAC.inspectedPlayer and GAC.inspectedPlayer.talents or {}
-                    local talentVal = 0
-                    if type(wInfo.talent) == "table" then
-                        for _, t in ipairs(wInfo.talent) do
-                            local val = (playerAttrs[t] or 0) + (playerTalents[t] or 0)
-                            if val > talentVal then talentVal = val end
-                        end
-                    elseif type(wInfo.talent) == "string" then
-                        talentVal = (playerAttrs[wInfo.talent] or 0) + (playerTalents[wInfo.talent] or 0)
-                    end
                     local wMod = slotList[1].weaponData.damageModifier or 0
-                    local minDmg = wInfo.diceNumber + talentVal + wMod
-                    local maxDmg = (wInfo.diceNumber * wInfo.damage) + talentVal + wMod
-                    return "- " .. label .. ": " .. minDmg .. " - " .. maxDmg .. "\n"
+                    local dmg = GAC.Utils.InspectionInventory:FormatDamage(wInfo, playerAttrs, playerTalents, wMod)
+                    return "- " .. label .. ": " .. dmg .. "\n"
                 end
             end
             return ""

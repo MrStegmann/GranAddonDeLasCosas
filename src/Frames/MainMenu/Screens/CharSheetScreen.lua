@@ -39,7 +39,7 @@ function GAC.Screens.MainMenu:CreateCharSheetScreen(parent)
 
     local infoText = GAC:CreateFontString(frame, "", "GameFontHighlight", { "TOPLEFT", nameText, "BOTTOMLEFT", 0, -5 }, {1, 1, 1}) 
     
-    local function UpdateHeaderInfoText()
+    local function UpdateHeaderInfoText(previewRace1, previewRace2)
         if not GAC.characterData then return end
         
         local prog = GAC.characterData.progress or {}
@@ -53,15 +53,13 @@ function GAC.Screens.MainMenu:CreateCharSheetScreen(parent)
         local raceStr = GAC:GetActiveTRP3ProfileRace() or "Desconocida"
         
         local chars = GAC.characterData.characteristics
-        if chars then
-            local r1 = chars.race1 or "Ninguna"
-            local r2 = chars.race2 or "Ninguna"
-            
-            if r1 ~= "Ninguna" and r2 ~= "Ninguna" then
-                raceStr = string.format("Mestizo (%s y %s)", GAC:_(r1) or r1, GAC:_(r2) or r2)
-            elseif r1 ~= "Ninguna" then
-                raceStr = GAC:_(r1) or r1
-            end
+        local r1 = previewRace1 or (chars and chars.race1) or "Ninguna"
+        local r2 = previewRace2 or (chars and chars.race2) or "Ninguna"
+        
+        if r1 ~= "Ninguna" and r2 ~= "Ninguna" then
+            raceStr = string.format("Mestizo (%s y %s)", GAC:_(r1) or r1, GAC:_(r2) or r2)
+        elseif r1 ~= "Ninguna" then
+            raceStr = GAC:_(r1) or r1
         end
         
         local cl = RAID_CLASS_COLORS[select(2, UnitClass("player"))] or {r=1, g=1, b=1}
