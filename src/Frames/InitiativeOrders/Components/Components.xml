@@ -1,5 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
-	<Include file="InitiativeRow.lua"/>
-	<Include file="IconButton.lua"/>
+	<Script file="IconButton.lua"/>
+	<Script file="InitiativeRow.lua"/>
+	<Script file="InitiativeDropdowns.lua"/>
+	<Script file="InitiativeButtons.lua"/>
 </Ui>
