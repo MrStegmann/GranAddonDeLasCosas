@@ -64,8 +64,25 @@ function GAC:CreateAttackOptions()
                 text = talentOption.label,
                 notCheckable = true,
                 func = function() 
-                    GAC:StartAttackRoll(attack, talentOption.key, talentOption.label) 
-                    injectModifier(GAC.pendingAttackRoll)
+                    GAC:ShowHitZonePopup(function(zoneLabel, zoneSlotId)
+                        local physicalTalents = {
+                            agileCombat = true,
+                            precision = true,
+                            oneHandedCombat = true,
+                            twoHandedCombat = true,
+                            brutality = true,
+                            acrobatics = true
+                        }
+                        if physicalTalents[talentOption.key] then
+                            GAC:ShowDamageTypePopup(function(dmgLabel, dmgKey)
+                                GAC:StartAttackRoll(attack, talentOption.key, talentOption.label, zoneLabel, zoneSlotId, dmgKey, dmgLabel) 
+                                injectModifier(GAC.pendingAttackRoll)
+                            end)
+                        else
+                            GAC:StartAttackRoll(attack, talentOption.key, talentOption.label, zoneLabel, zoneSlotId) 
+                            injectModifier(GAC.pendingAttackRoll)
+                        end
+                    end)
                 end,
             })
         end

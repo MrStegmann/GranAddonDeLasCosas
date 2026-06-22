@@ -177,12 +177,30 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 or displayAddonName
             local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue) or tostring(rollValue)
 
-            finalMessage = displayName .. " tira "
+            if self.pendingAttackRoll.targetZone then
+                finalMessage = displayName .. " ataca a " .. self.pendingAttackRoll.targetZone .. ": "
+            else
+                finalMessage = displayName .. " tira Ataque: "
+            end
+
+            local dmgSuffix = ""
+            if self.pendingAttackRoll.damageLabel then
+                dmgSuffix = " (" .. self.pendingAttackRoll.damageLabel .. ")"
+            end
+            
+            finalMessage = finalMessage
                 .. " 1D" .. self.pendingAttackRoll.max .. " (" .. formattedRoll .. ") + "
                 .. self.pendingAttackRoll.talentName .. " (" .. self.pendingAttackRoll.talentValue .. ")"
                 .. modStr
                 .. armorModStr
-                .. " = " .. total
+                .. " = " .. total .. dmgSuffix
+
+            if self.pendingAttackRoll.targetZone and self.pendingAttackRoll.damageType and UnitExists("target") and UnitIsPlayer("target") then
+                local targetName = GetUnitName("target", true)
+                local shortTargetName = Ambiguate(targetName, "none")
+                local payload = "ARMOR_HIT:" .. tostring(self.pendingAttackRoll.targetZoneId) .. ":" .. tostring(self.pendingAttackRoll.damageType) .. ":" .. tostring(total)
+                C_ChatInfo.SendAddonMessage(GAC.COMM_PREFIX or "GAC_Sync", payload, "WHISPER", shortTargetName)
+            end
 
             self.pendingAttackRoll = nil
             self.rollType = nil
@@ -237,8 +255,14 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 local dmgTypeES = { piercing = "Perforante", crushing = "Contundente", slashing = "Cortante" }
                 local dtLoc = dmgTypeES[self.pendingWeaponRoll.damageType] or self.pendingWeaponRoll.damageType
                 
-                local rollMessage = displayName .. " tira Daño (" .. self.pendingWeaponRoll.weaponName .. "): "
-                    .. diceFormula .. " (" .. rollsStr .. ") + "
+                local rollMessage = displayName
+                if self.pendingWeaponRoll.targetZone then
+                    rollMessage = rollMessage .. " ataca a " .. self.pendingWeaponRoll.targetZone .. " [con " .. self.pendingWeaponRoll.weaponName .. "]: "
+                else
+                    rollMessage = rollMessage .. " tira Daño (" .. self.pendingWeaponRoll.weaponName .. "): "
+                end
+                
+                rollMessage = rollMessage .. diceFormula .. " (" .. rollsStr .. ") + "
                     .. talentKeyLoc .. " (" .. self.pendingWeaponRoll.talentValue .. ")"
                     .. wModStr
                     .. modStr
@@ -247,6 +271,13 @@ function GAC:CHAT_MSG_SYSTEM(message)
 
                 print(rollMessage)
                 if self.BroadcastRollMessage then self:BroadcastRollMessage(rollMessage) end
+
+                if self.pendingWeaponRoll.targetZone and UnitExists("target") and UnitIsPlayer("target") then
+                    local targetName = GetUnitName("target", true)
+                    local shortTargetName = Ambiguate(targetName, "none")
+                    local payload = "ARMOR_HIT:" .. tostring(self.pendingWeaponRoll.targetZoneId) .. ":" .. tostring(self.pendingWeaponRoll.damageType) .. ":" .. tostring(total)
+                    C_ChatInfo.SendAddonMessage(GAC.COMM_PREFIX or "GAC_Sync", payload, "WHISPER", shortTargetName)
+                end
 
                 self.pendingWeaponRoll = nil
                 self.rollType = nil

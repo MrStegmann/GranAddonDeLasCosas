@@ -927,6 +927,7 @@ function GAC:UpdateEquippedArmor()
                     end
                     
                     item.armorData = {
+                        baseKey = pInfo.baseKey,
                         baseStr = pInfo.itemTypeStr,
                         hasReinforcement = pInfo.hasReinforcement or false,
                         reinforcementStr = pInfo.reinforcementStr or "",

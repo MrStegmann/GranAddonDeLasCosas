@@ -69,73 +69,7 @@ function GAC:StartCustomDiceRoll(quantity, faces)
     end
 end
 
-function GAC:ModifyPlayerLife(amount)
-    if type(amount) ~= "number" or amount == 0 then return end
-    if not self.characterData then return end
-    
-    local progress = self.characterData.progress or {}
-    local currentLevel = progress.level or 1
-    local category = progress.category or "normal"
-    local levelEntry = self:GetLevelEntry(category, currentLevel)
-    local baseHealth = levelEntry and levelEntry.maxHealth or 10
-    
-    local attributes = self.characterData.attributes or {}
-    local constitution = attributes["constitution"] or 0
-    local maxHealth = baseHealth + constitution
-    if maxHealth < 1 then maxHealth = 1 end
-    
-    -- Inicializamos la vida si nunca se ha tocado
-    if self.characterData.currentHealth == nil then
-        self.characterData.currentHealth = maxHealth
-    end
-    
-    self.characterData.currentHealth = self.characterData.currentHealth + amount
-    
-    -- Clamp entre -maxHealth y el máximo
-    if self.characterData.currentHealth < -maxHealth then
-        self.characterData.currentHealth = -maxHealth
-    elseif self.characterData.currentHealth > maxHealth then
-        self.characterData.currentHealth = maxHealth
-    end
-    
-    -- Forzamos la actualización del marco de jugador
-    if PlayerFrameHealthBar then
-        UnitFrameHealthBar_Update(PlayerFrameHealthBar, "player")
-        if TextStatusBar_UpdateTextString then
-            TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
-        end
-    end
-    
-    -- Notificar a todos los que nos tengan en target (han hecho REQ en los últimos 5 mins)
-    if self.BroadcastPlayerData then
-        self:BroadcastPlayerData()
-    end
-end
 
-function GAC:ModifyPlayerShield(amount)
-    if type(amount) ~= "number" or amount == 0 then return end
-    if not self.characterData then return end
-    
-    if self.characterData.currentShield == nil then
-        self.characterData.currentShield = 0
-    end
-    
-    self.characterData.currentShield = self.characterData.currentShield + amount
-    if self.characterData.currentShield < 0 then
-        self.characterData.currentShield = 0
-    end
-    
-    if PlayerFrameHealthBar then
-        UnitFrameHealthBar_Update(PlayerFrameHealthBar, "player")
-        if TextStatusBar_UpdateTextString then
-            TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
-        end
-    end
-    
-    if self.BroadcastPlayerData then
-        self:BroadcastPlayerData()
-    end
-end
 
 function GAC:StartAttributeRoll(attributeName)
     if not self.characterData then
@@ -185,7 +119,7 @@ function GAC:StartInitiativeRoll()
 
 end
 
-function GAC:StartAttackRoll(dice, talentKey, talentLabel)
+function GAC:StartAttackRoll(dice, talentKey, talentLabel, targetZone, targetZoneId, damageType, damageLabel)
     if not self.characterData then
         return
     end
@@ -206,15 +140,19 @@ function GAC:StartAttackRoll(dice, talentKey, talentLabel)
         max = dice,
         hasModifier = hasMod,
         modifierValue = mod,
+        targetZone = targetZone,
+        targetZoneId = targetZoneId,
+        damageType = damageType,
+        damageLabel = damageLabel
     }
 
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
     self.rollType = "attack"
-    self.lastAttackRolled = { dice = dice, talentKey = talentKey, talentLabel = talentLabel }
+    self.lastAttackRolled = { dice = dice, talentKey = talentKey, talentLabel = talentLabel, targetZone = targetZone, targetZoneId = targetZoneId, damageType = damageType, damageLabel = damageLabel }
     RandomRoll(1, dice)
 end
 
-function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier)
+function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier, targetZone, targetZoneId)
     if not self.characterData or not GAC:CanTriggerRoll() then return end
     
     local wInfo = GAC:GetWeaponInfo(weaponKey) or GAC:GetShieldInfo(weaponKey)
@@ -264,7 +202,9 @@ function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier)
         currentTotal = 0,
         rolls = {},
         quantity = rollData.diceNumber or 1,
-        damageType = rollData.damageType or "Desconocido"
+        damageType = rollData.damageType or "Desconocido",
+        targetZone = targetZone,
+        targetZoneId = targetZoneId
     }
     
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()
@@ -274,7 +214,7 @@ function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier)
         RandomRoll(1, self.pendingWeaponRoll.damage)
     end
 end
-function GAC:StartUnarmedDamageRoll(slotLabel)
+function GAC:StartUnarmedDamageRoll(slotLabel, targetZone, targetZoneId)
     if not self.characterData or not GAC:CanTriggerRoll() then return end
     
     local playerAttrs = self.characterData.attributes or {}
@@ -307,7 +247,9 @@ function GAC:StartUnarmedDamageRoll(slotLabel)
         currentTotal = 0,
         rolls = {},
         quantity = 1,
-        damageType = "Contundente"
+        damageType = "Contundente",
+        targetZone = targetZone,
+        targetZoneId = targetZoneId
     }
     
     self.randomRollPattern = self.randomRollPattern or GAC:BuildRandomRollPattern()

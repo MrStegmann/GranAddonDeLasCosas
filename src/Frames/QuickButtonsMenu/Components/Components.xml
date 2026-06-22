@@ -3,6 +3,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Script file="QuickButton.lua"/>
 	<Script file="Tooltip.lua"/>
 	<Script file="ModifyValuePopup.lua"/>
+	<Script file="HitZonePopup.lua"/>
 	<Script file="UtilitiesBar.lua"/>
 	<Script file="ActionsBar.lua"/>
 	<Script file="WeaponBar.lua"/>

@@ -86,7 +86,7 @@ function GAC.Components.QuickButtonsMenu:CreateActionsBar(frame)
     attackButton:SetScript("OnClick", function(_, btn)
         if btn == "RightButton" then
             if GAC.lastAttackRolled then
-                GAC:StartAttackRoll(GAC.lastAttackRolled.dice, GAC.lastAttackRolled.talentKey, GAC.lastAttackRolled.talentLabel)
+                GAC:StartAttackRoll(GAC.lastAttackRolled.dice, GAC.lastAttackRolled.talentKey, GAC.lastAttackRolled.talentLabel, GAC.lastAttackRolled.targetZone, GAC.lastAttackRolled.targetZoneId, GAC.lastAttackRolled.damageType, GAC.lastAttackRolled.damageLabel)
             else
                 print("No has lanzado ningún dado de ataque.")
             end

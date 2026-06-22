@@ -34,23 +34,39 @@ function GAC.Components.QuickButtonsMenu:CreateWeaponBar(frame, anchorBtn)
                     
                     local menuOptions = {}
                     table.insert(menuOptions, { text = "Daño " .. self.slotLabel, isTitle = true, notCheckable = true })
-                    table.insert(menuOptions, { text = "Ataque Normal", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName, self.damageModifier) end, notCheckable = true })
+                    table.insert(menuOptions, { text = "Ataque Normal", func = function()
+                        GAC:ShowHitZonePopup(function(zoneLabel, zoneSlotId)
+                            GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName, self.damageModifier, zoneLabel, zoneSlotId)
+                        end)
+                    end, notCheckable = true })
                     if hasTwoHanded then
-                        table.insert(menuOptions, { text = "Ataque a Dos Manos", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "twoHanded", self.weaponName, self.damageModifier) end, notCheckable = true })
+                        table.insert(menuOptions, { text = "Ataque a Dos Manos", func = function()
+                            GAC:ShowHitZonePopup(function(zoneLabel, zoneSlotId)
+                                GAC:StartWeaponDamageRoll(self.weaponKey, "twoHanded", self.weaponName, self.damageModifier, zoneLabel, zoneSlotId)
+                            end)
+                        end, notCheckable = true })
                     end
                     if hasThrowable then
-                        table.insert(menuOptions, { text = "Lanzar Arma", func = function() GAC:StartWeaponDamageRoll(self.weaponKey, "throwable", self.weaponName, self.damageModifier) end, notCheckable = true })
+                        table.insert(menuOptions, { text = "Lanzar Arma", func = function()
+                            GAC:ShowHitZonePopup(function(zoneLabel, zoneSlotId)
+                                GAC:StartWeaponDamageRoll(self.weaponKey, "throwable", self.weaponName, self.damageModifier, zoneLabel, zoneSlotId)
+                            end)
+                        end, notCheckable = true })
                     end
                     table.insert(menuOptions, { text = "Cancelar", notCheckable = true })
                     
                     EasyMenu(menuOptions, GAC.weaponActionsMenuFrame, self, 0, 0, "MENU", 2)
                 else
-                    GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName, self.damageModifier)
+                    GAC:ShowHitZonePopup(function(zoneLabel, zoneSlotId)
+                        GAC:StartWeaponDamageRoll(self.weaponKey, "normal", self.weaponName, self.damageModifier, zoneLabel, zoneSlotId)
+                    end)
                 end
             else
                 if self.slotID == 16 or self.slotID == 17 then
                     if GAC.StartUnarmedDamageRoll then
-                        GAC:StartUnarmedDamageRoll(self.slotLabel)
+                        GAC:ShowHitZonePopup(function(zoneLabel, zoneSlotId)
+                            GAC:StartUnarmedDamageRoll(self.slotLabel, zoneLabel, zoneSlotId)
+                        end)
                     end
                 end
             end
