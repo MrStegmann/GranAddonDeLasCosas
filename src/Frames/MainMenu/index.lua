@@ -90,6 +90,15 @@ function GAC.Screens.MainMenu:Create()
     end
 
     GAC.Utils.MainMenu:SelectTab("CharSheet")
+
+    -- Botón Importar (anclado al fondo del sidebar, alineación "end")
+    local importBtn = CreateFrame("Button", nil, sidebar, "UIPanelButtonTemplate")
+    importBtn:SetSize(sidebar:GetWidth() - 8, 26)
+    importBtn:SetPoint("BOTTOMRIGHT", sidebar, "BOTTOMRIGHT", -4, 8)
+    importBtn:SetText("Importar")
+    importBtn:SetScript("OnClick", function()
+        GAC.Components.MainMenu:OpenImportDialog()
+    end)
 end
 
 function GAC.Screens.MainMenu:Toggle()

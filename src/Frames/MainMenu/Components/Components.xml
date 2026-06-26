@@ -12,4 +12,5 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
     <Script file="CharSheet\AttributesTab.lua"/>
     <Script file="CharSheet\CharacteristicsTab.lua"/>
     <Script file="CharSheet\ProgressionTab.lua"/>
+    <Script file="ImportDialog.lua"/>
 </Ui>
