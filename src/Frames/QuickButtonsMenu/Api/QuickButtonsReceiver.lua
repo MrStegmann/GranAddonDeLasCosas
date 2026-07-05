@@ -18,10 +18,14 @@ GAC.Receiver:OnEvent(GAC.Enums.Events.ARMOR_HIT, function(sender, channel, slotI
     local slotID = tonumber(slotIDStr)
     local rawDmg = tonumber(rawDmgStr) or 0
     
-    if slotID and GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor then
+    if slotID and GAC.playerCharacter then
         local slotIDToKey = { [1] = "head", [5] = "chest", [10] = "hands", [7] = "legs" }
         local slotKey = slotIDToKey[slotID] or slotID
-        local slotList = GAC.characterData.inventory.equippedArmor[slotKey]
+        local equippedItem = GAC.playerCharacter:GetEquippedItems()[slotKey]
+        local slotList = nil
+        if type(equippedItem) == "table" and equippedItem.GetVariable then
+            slotList = equippedItem:GetVariable().slotList
+        end
         
         local hasArmor = slotList and slotList[1] and slotList[1].armorData
         local finalDmg = rawDmg
@@ -128,7 +132,8 @@ GAC.Receiver:OnEvent(GAC.Enums.Events.ARMOR_HIT, function(sender, channel, slotI
         
         if finalDmg > 0 then
             local remainingDmg = finalDmg
-            local currentShield = GAC.characterData.currentShield or 0
+            local sp = GAC.playerCharacter:GetShieldPoints()
+            local currentShield = sp and sp.current or 0
             
             if currentShield > 0 then
                 if currentShield >= remainingDmg then

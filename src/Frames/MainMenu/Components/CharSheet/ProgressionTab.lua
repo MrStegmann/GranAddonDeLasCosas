@@ -45,27 +45,9 @@ function GAC.Components.MainMenu:CreateProgressionTab(tab, mainFrame)
         GAC:SetExperienceLevel(currentLvl)
         GAC:SetCurrentExperience(0)
         
-        if GAC.characterData then
-            local levelEntry = GAC.GetLevelEntry and GAC:GetLevelEntry(currentCat, currentLvl)
-            local baseHealth = 10
-            if levelEntry and levelEntry.maxHealth then
-                baseHealth = levelEntry.maxHealth
-            elseif GAC.levelsTable and GAC.levelsTable[currentCat] and GAC.levelsTable[currentCat][currentLvl] then
-                baseHealth = GAC.levelsTable[currentCat][currentLvl].maxHealth or 10
-            end
-            
-            local constitution = (GAC.characterData.attributes and GAC.characterData.attributes["constitution"]) or 0
-            local maxHealth = baseHealth + constitution
-            if maxHealth < 1 then maxHealth = 1 end
-            
-            GAC.characterData.currentHealth = maxHealth
-            
-            if PlayerFrameHealthBar then
-                UnitFrameHealthBar_Update(PlayerFrameHealthBar, "player")
-                if TextStatusBar_UpdateTextString then
-                    TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
-                end
-            end
+        if GAC.playerCharacter then
+            GAC.playerCharacter:IncrementVersion()
+            GAC.characterData.modelData = GAC.playerCharacter:Serialize()
         end
 
         GAC:UpdateGameExpBar()

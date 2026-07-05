@@ -49,10 +49,12 @@ function GAC.Components.InspectionMenu:CreateAttributesTab(parent)
         InitCards()
         if GAC.inspectedPlayer then
             for key, data in pairs(statLabels) do
+                local tval = GAC.inspectedPlayer.talents and GAC.inspectedPlayer.talents[key] or 0
+                local aval = GAC.inspectedPlayer.attributes and GAC.inspectedPlayer.attributes[key] or 0
                 if data.isTalent then
-                    data.val:SetText(tostring(GAC.inspectedPlayer.talents[key] or 0))
+                    data.val:SetText(tostring(tval))
                 else
-                    data.val:SetText(tostring(GAC.inspectedPlayer.attributes[key] or 0))
+                    data.val:SetText(tostring(aval))
                 end
             end
         end

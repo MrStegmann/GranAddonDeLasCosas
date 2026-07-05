@@ -19,19 +19,29 @@ function GAC.Components.MainMenu:CreateCharSheetAttributesTab(tab, mainFrame)
         print("|cFF40C7EB[GAC]|r: Atributos y talentos guardados correctamente.")
         for key, data in pairs(statInputs) do
             local v = tonumber(data.input:GetText()) or 0
-            if GAC.characterData then
-                if data.isTalent then GAC.characterData.talents[key] = v
-                else GAC.characterData.attributes[key] = v end
+            if GAC.playerCharacter then
+                if data.isTalent then 
+                    GAC.playerCharacter:SetTalent(key, v)
+                else 
+                    GAC.playerCharacter:SetAttribute(key, v)
+                end
             end
+        end
+        if GAC.playerCharacter then
+            GAC.playerCharacter:IncrementVersion()
+            GAC.characterData.modelData = GAC.playerCharacter:Serialize()
         end
     end)
 
     local function RefreshStats()
         saveStatsBtn:Hide()
-        if not GAC.characterData then return end
+        local attributes = {}
+        local talents = {}
         
-        local attributes = (type(GAC.characterData) == "table" and GAC.characterData.attributes) or {}
-        local talents = (type(GAC.characterData) == "table" and GAC.characterData.talents) or {}
+        if GAC.playerCharacter then
+            attributes = GAC.playerCharacter:GetAttributes() or {}
+            talents = GAC.playerCharacter:GetTalents() or {}
+        end
 
         for key, data in pairs(statInputs) do
             if data.isTalent then

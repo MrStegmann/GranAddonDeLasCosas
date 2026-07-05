@@ -16,24 +16,19 @@ GAC.Transmitter:AddEvent(GAC.Enums.Events.REQ, function(targetName, isGroup)
 end)
 
 GAC.Transmitter:AddEvent(GAC.Enums.Events.RES, function(targetName, isBroadcast)
-    local progress = GAC.characterData and GAC.characterData.progress or {}
-    local currentLevel = progress.level or 1
-    local category = progress.category or "normal"
+    if not GAC.playerCharacter then return end
     
-    local levelEntry = GAC:GetLevelEntry(category, currentLevel)
-    local baseHealth = levelEntry and levelEntry.maxHealth or 10
+    local currentLevel = GAC.playerCharacter:GetLevel()
+    local category = GAC.playerCharacter:GetCategory()
     
-    local attributes = GAC.characterData and GAC.characterData.attributes or {}
-    local constitution = attributes["constitution"] or 0
-    local maxHealth = baseHealth + constitution
-    if maxHealth < 1 then maxHealth = 1 end
+    local hp = GAC.playerCharacter:GetHealthPoints()
+    local sp = GAC.playerCharacter:GetShieldPoints()
     
-    local currentHealth = GAC.characterData and GAC.characterData.currentHealth
-    if currentHealth == nil then currentHealth = maxHealth end
+    local maxHealth = hp.max
+    local currentHealth = hp.current
+    local currentShield = sp and sp.current or 0
     
-    local currentShield = GAC.characterData and GAC.characterData.currentShield or 0
-    
-    local payload = string.format("%s:%s:%s:%s:%s:%s", GAC.Enums.Events.RES, tostring(currentLevel), tostring(category), tostring(maxHealth), tostring(currentHealth), tostring(currentShield))
+    local payload = string.format("%s:%s:%s:%s:%s:%s:%s", GAC.Enums.Events.RES, UnitGUID("player") or "UNKNOWN", tostring(currentLevel), tostring(category), tostring(maxHealth), tostring(currentHealth), tostring(currentShield))
     
     if isBroadcast then
         if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then

@@ -6,8 +6,10 @@ function GAC:InitializePlayerPlate()
     
     if PlayerFrame_UpdateLevel then
         hooksecurefunc("PlayerFrame_UpdateLevel", function()
-            local progress = GAC.characterData and GAC.characterData.progress or {}
-            local currentLevel = progress.level or 1
+            local currentLevel = 1
+            if GAC.playerCharacter then
+                currentLevel = GAC.playerCharacter:GetLevel()
+            end
             if PlayerLevelText then
                 PlayerLevelText:SetText(currentLevel)
                 PlayerLevelText:SetVertexColor(1, 0.82, 0)
@@ -19,21 +21,28 @@ function GAC:InitializePlayerPlate()
     if UnitFrameHealthBar_Update then
         hooksecurefunc("UnitFrameHealthBar_Update", function(statusbar, unit)
             if unit == "player" and statusbar == PlayerFrameHealthBar then
-                local progress = GAC.characterData and GAC.characterData.progress or {}
-                local currentLevel = progress.level or 1
-                local category = progress.category or "normal"
+                local currentLevel = 1
+                local category = "normal"
+                local constitution = 0
+                local currentHealth = nil
+                local currentShield = 0
+                
+                if GAC.playerCharacter then
+                    currentLevel = GAC.playerCharacter:GetLevel()
+                    category = GAC.playerCharacter:GetCategory()
+                    local attributes = GAC.playerCharacter:GetAttributes()
+                    constitution = attributes["constitution"] or 0
+                    local hp = GAC.playerCharacter:GetHealthPoints()
+                    currentHealth = hp.current
+                    local sp = GAC.playerCharacter:GetShieldPoints()
+                    currentShield = sp and sp.current or 0
+                end
+                
                 local levelEntry = GAC:GetLevelEntry(category, currentLevel)
                 local baseHealth = levelEntry and levelEntry.maxHealth or 10
-                
-                local attributes = GAC.characterData and GAC.characterData.attributes or {}
-                local constitution = attributes["constitution"] or 0
                 local maxHealth = baseHealth + constitution
                 if maxHealth < 1 then maxHealth = 1 end
-                
-                local currentHealth = GAC.characterData and GAC.characterData.currentHealth
                 if currentHealth == nil then currentHealth = maxHealth end
-                
-                local currentShield = GAC.characterData and GAC.characterData.currentShield or 0
                 
                 local displayHealth = math.max(0, currentHealth)
                 statusbar:SetMinMaxValues(0, maxHealth)
@@ -125,21 +134,28 @@ function GAC:InitializePlayerPlate()
     if TextStatusBar_UpdateTextString then
         hooksecurefunc("TextStatusBar_UpdateTextString", function(textStatusBar)
             if textStatusBar == PlayerFrameHealthBar then
-                local progress = GAC.characterData and GAC.characterData.progress or {}
-                local currentLevel = progress.level or 1
-                local category = progress.category or "normal"
+                local currentLevel = 1
+                local category = "normal"
+                local constitution = 0
+                local currentHealth = nil
+                local currentShield = 0
+                
+                if GAC.playerCharacter then
+                    currentLevel = GAC.playerCharacter:GetLevel()
+                    category = GAC.playerCharacter:GetCategory()
+                    local attributes = GAC.playerCharacter:GetAttributes()
+                    constitution = attributes["constitution"] or 0
+                    local hp = GAC.playerCharacter:GetHealthPoints()
+                    currentHealth = hp.current
+                    local sp = GAC.playerCharacter:GetShieldPoints()
+                    currentShield = sp and sp.current or 0
+                end
+                
                 local levelEntry = GAC:GetLevelEntry(category, currentLevel)
                 local baseHealth = levelEntry and levelEntry.maxHealth or 10
-                
-                local attributes = GAC.characterData and GAC.characterData.attributes or {}
-                local constitution = attributes["constitution"] or 0
                 local maxHealth = baseHealth + constitution
                 if maxHealth < 1 then maxHealth = 1 end
-                
-                local currentHealth = GAC.characterData and GAC.characterData.currentHealth
                 if currentHealth == nil then currentHealth = maxHealth end
-                
-                local currentShield = GAC.characterData and GAC.characterData.currentShield or 0
                 
                 if textStatusBar.TextString then
                     if currentShield > 0 then

@@ -96,8 +96,8 @@ function GAC.Screens.InspectionMenu:CreateCharSheetScreen(parent)
         
         nameText:SetText(Ambiguate(p.name, "none"))
         
-        local r1 = p.race1 or "Ninguna"
-        local r2 = p.race2 or "Ninguna"
+        local r1 = (p.race and p.race[1]) or "Ninguna"
+        local r2 = (p.race and p.race[2]) or "Ninguna"
         local raceString = "Desconocida"
         if r1 ~= "Ninguna" and r2 ~= "Ninguna" then
             raceString = string.format("Mestizo (%s y %s)", GAC:_(r1) or r1, GAC:_(r2) or r2)

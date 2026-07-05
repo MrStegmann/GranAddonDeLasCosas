@@ -29,8 +29,8 @@ function GAC.Utils.QuickButtonsMenu:UpdateTargetInspectButtonVisibility()
     local canShow = false
     local currentTarget = UnitName("target")
     if currentTarget and UnitExists("target") and UnitIsPlayer("target") and not UnitIsUnit("target", "player") then
-        local targetClean = Ambiguate(currentTarget, "none")
-        if GAC.targetDataCache and GAC.targetDataCache[targetClean] then
+        local targetGUID = UnitGUID("target")
+        if GAC.targetDataCache and GAC.targetDataCache[targetGUID] then
             canShow = true
         end
     end
@@ -48,7 +48,11 @@ function GAC.Utils.QuickButtonsMenu:SaveFramePosition(frame)
 end
 
 function GAC.Utils.QuickButtonsMenu:DrawArmorTooltip(btn, slotData)
-    local itemData = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor and (GAC.characterData.inventory.equippedArmor[slotData.id] or GAC.characterData.inventory.equippedArmor[slotData.numId] or GAC.characterData.inventory.equippedArmor[tostring(slotData.numId)])
+    local equippedItems = GAC.playerCharacter and GAC.playerCharacter:GetEquippedItems()
+    if not equippedItems then return end
+    local itemInstance = equippedItems[slotData.id] or equippedItems[slotData.numId] or equippedItems[tostring(slotData.numId)]
+    local itemData = itemInstance and type(itemInstance) == "table" and itemInstance.GetVariable and itemInstance:GetVariable().slotList
+    
     if not itemData or #itemData == 0 then return end
     local item = itemData[1]
     if not item or not item.armorData then return end
@@ -88,11 +92,11 @@ end
 
 function GAC.Utils.QuickButtonsMenu:HandleArmorClick(buttonClicked, slotData)
     local correctKey = nil
-    local equippedArmor = GAC.characterData and GAC.characterData.inventory and GAC.characterData.inventory.equippedArmor
-    if equippedArmor then
-        if equippedArmor[slotData.id] then correctKey = slotData.id
-        elseif equippedArmor[slotData.numId] then correctKey = slotData.numId
-        elseif equippedArmor[tostring(slotData.numId)] then correctKey = tostring(slotData.numId) end
+    local equippedItems = GAC.playerCharacter and GAC.playerCharacter:GetEquippedItems()
+    if equippedItems then
+        if equippedItems[slotData.id] then correctKey = slotData.id
+        elseif equippedItems[slotData.numId] then correctKey = slotData.numId
+        elseif equippedItems[tostring(slotData.numId)] then correctKey = tostring(slotData.numId) end
     end
     if not correctKey then return end
     if buttonClicked == "LeftButton" then

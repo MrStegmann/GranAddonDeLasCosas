@@ -69,7 +69,7 @@ function GAC.Utils.MainMenu:AddTab(id, label, createFunc, sidebar, contentArea)
     store.TabCount = store.TabCount + 1
 end
 
-function GAC.Utils.MainMenu:MergeRaceTraits(race1, race2)
+function GAC.Utils.MainMenu:MergeRaceTraits(racesArray)
     local allAdv = {}
     local allDis = {}
     local allSpec = {}
@@ -86,19 +86,17 @@ function GAC.Utils.MainMenu:MergeRaceTraits(race1, race2)
         end
     end
 
-    local data1 = race1 and race1 ~= "Ninguna" and GAC:GetRaceData(race1) or nil
-    local data2 = race2 and race2 ~= "Ninguna" and GAC:GetRaceData(race2) or nil
-
-    if data1 then
-        AddToDict(allAdv, data1.advantages)
-        AddToDict(allDis, data1.disadvantages)
-        AddToList(allSpec, data1.special)
-    end
-    
-    if data2 then
-        AddToDict(allAdv, data2.advantages)
-        AddToDict(allDis, data2.disadvantages)
-        AddToList(allSpec, data2.special)
+    if type(racesArray) == "table" then
+        for _, raceName in ipairs(racesArray) do
+            if raceName and raceName ~= "Ninguna" then
+                local data = GAC:GetRaceData(raceName)
+                if data then
+                    AddToDict(allAdv, data.advantages)
+                    AddToDict(allDis, data.disadvantages)
+                    AddToList(allSpec, data.special)
+                end
+            end
+        end
     end
     
     return allAdv, allDis, allSpec

@@ -110,8 +110,9 @@ function GAC:InitializeAttributeSystem()
         end
     end
     for oldKey, newKey in pairs(oldAttrKeys) do
-        -- Solo sobrescribimos si no existe un valor nuevo pre-existente o combinamos (aquí nos quedamos con el antiguo si migra por primera vez)
-        GranAddonDeLasCosasCharDB.attributes[newKey] = GranAddonDeLasCosasCharDB.attributes[newKey] or GranAddonDeLasCosasCharDB.attributes[oldKey]
+        if GranAddonDeLasCosasCharDB.attributes[newKey] == nil or GranAddonDeLasCosasCharDB.attributes[newKey] == 0 then
+            GranAddonDeLasCosasCharDB.attributes[newKey] = GranAddonDeLasCosasCharDB.attributes[oldKey]
+        end
         GranAddonDeLasCosasCharDB.attributes[oldKey] = nil
     end
 
@@ -123,7 +124,9 @@ function GAC:InitializeAttributeSystem()
         end
     end
     for oldKey, newKey in pairs(oldTalentKeys) do
-        GranAddonDeLasCosasCharDB.talents[newKey] = GranAddonDeLasCosasCharDB.talents[newKey] or GranAddonDeLasCosasCharDB.talents[oldKey]
+        if GranAddonDeLasCosasCharDB.talents[newKey] == nil or GranAddonDeLasCosasCharDB.talents[newKey] == 0 then
+            GranAddonDeLasCosasCharDB.talents[newKey] = GranAddonDeLasCosasCharDB.talents[oldKey]
+        end
         GranAddonDeLasCosasCharDB.talents[oldKey] = nil
     end
 

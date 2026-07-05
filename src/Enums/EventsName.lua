@@ -22,6 +22,8 @@ GAC.Enums.Events = {
     INSP_DIS = "INSP:DIS",
     INSP_SPC = "INSP:SPC",
     INSP_RAC = "INSP:RAC",
+    INSP_EQP = "INSP:EQP",
+    INSP_VOL = "INSP:VOL",
     INSP_END = "INSP:END",
     ADD_EXP = "ADD_EXP",
     

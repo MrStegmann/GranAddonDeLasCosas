@@ -37,31 +37,12 @@ end)
 
 GAC.Transmitter:AddEvent(GAC.Enums.Events.MODIFY_LIFE, function(amount)
     if type(amount) ~= "number" or amount == 0 then return end
-    if not GAC.characterData then return end
+    if not GAC.playerCharacter then return end
     
-    local progress = GAC.characterData.progress or {}
-    local currentLevel = progress.level or 1
-    local category = progress.category or "normal"
-    local levelEntry = GAC:GetLevelEntry(category, currentLevel)
-    local baseHealth = levelEntry and levelEntry.maxHealth or 10
-    
-    local attributes = GAC.characterData.attributes or {}
-    local constitution = attributes["constitution"] or 0
-    local maxHealth = baseHealth + constitution
-    if maxHealth < 1 then maxHealth = 1 end
-    
-    -- Inicializamos la vida si nunca se ha tocado
-    if GAC.characterData.currentHealth == nil then
-        GAC.characterData.currentHealth = maxHealth
-    end
-    
-    GAC.characterData.currentHealth = GAC.characterData.currentHealth + amount
-    
-    -- Clamp entre -maxHealth y el máximo
-    if GAC.characterData.currentHealth < -maxHealth then
-        GAC.characterData.currentHealth = -maxHealth
-    elseif GAC.characterData.currentHealth > maxHealth then
-        GAC.characterData.currentHealth = maxHealth
+    if amount > 0 then
+        GAC.playerCharacter:Heal(amount)
+    else
+        GAC.playerCharacter:TakeDamage(-amount)
     end
     
     -- Forzamos la actualización del marco de jugador
@@ -80,16 +61,10 @@ end)
 
 GAC.Transmitter:AddEvent(GAC.Enums.Events.MODIFY_SHIELD, function(amount)
     if type(amount) ~= "number" or amount == 0 then return end
-    if not GAC.characterData then return end
+    if not GAC.playerCharacter then return end
     
-    if GAC.characterData.currentShield == nil then
-        GAC.characterData.currentShield = 0
-    end
-    
-    GAC.characterData.currentShield = GAC.characterData.currentShield + amount
-    if GAC.characterData.currentShield < 0 then
-        GAC.characterData.currentShield = 0
-    end
+    local currentShield = GAC.playerCharacter:GetShieldPoints().current
+    GAC.playerCharacter:SetShieldPoints(currentShield + amount)
     
     if PlayerFrameHealthBar then
         UnitFrameHealthBar_Update(PlayerFrameHealthBar, "player")

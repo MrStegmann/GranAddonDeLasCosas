@@ -52,38 +52,46 @@ local function BuildSaveButton(ctx)
 
     btn:SetScript("OnClick", function()
         btn:Hide()
-        GAC.characterData.characteristics.race1 = ctx.currentRace1
-        GAC.characterData.characteristics.race2 = ctx.currentRace2
-        GAC.characterData.characteristics.adaptLocked = true
-        GAC.characterData.characteristics.perfLocked = true
         
-        GAC.Utils.MainMenu:SafeCall(function()
-            if ctx.currentRace2 == "Ninguna" and ctx.currentRace1 ~= "Ninguna" then
-                local data = GAC:GetRaceData(ctx.currentRace1)
+        if GAC.playerCharacter then
+            local newRaces = {}
+            if ctx.currentRaces[1] ~= "Ninguna" then table.insert(newRaces, ctx.currentRaces[1]) end
+            if ctx.currentRaces[2] ~= "Ninguna" then table.insert(newRaces, ctx.currentRaces[2]) end
+            if #newRaces == 0 then table.insert(newRaces, "human") end
+            GAC.playerCharacter:SetRace(newRaces)
+            
+            local raceTalents = {}
+            
+            -- Dynamic traits (Adaptability/Perfectionism)
+            if ctx.adaptTarget then raceTalents.adaptTarget = ctx.adaptTarget end
+            if ctx.perfTarget then raceTalents.perfTarget = ctx.perfTarget end
+            
+            if ctx.currentRaces[2] == "Ninguna" and ctx.currentRaces[1] ~= "Ninguna" then
+                local data = GAC:GetRaceData(ctx.currentRaces[1])
                 if data then
-                    GAC.characterData.characteristics.activeAdvantages = data.advantages
-                    GAC.characterData.characteristics.activeDisadvantages = data.disadvantages
-                    GAC.characterData.characteristics.activeSpecial = data.special
+                    if data.advantages then for k, v in pairs(data.advantages) do raceTalents[k] = v end end
+                    if data.disadvantages then for k, v in pairs(data.disadvantages) do raceTalents[k] = v end end
+                    if data.special then for k, v in pairs(data.special) do raceTalents[k] = v end end
                 end
-            elseif ctx.currentRace1 ~= "Ninguna" and ctx.currentRace2 ~= "Ninguna" then
-                local allAdv, allDis, allSpec = GAC.Utils.MainMenu:MergeRaceTraits(ctx.currentRace1, ctx.currentRace2)
-                local mestizoTraits = GAC.characterData.characteristics.mestizoTraits or {}
+            elseif ctx.currentRaces[1] ~= "Ninguna" and ctx.currentRaces[2] ~= "Ninguna" then
+                local allAdv, allDis, allSpec = GAC.Utils.MainMenu:MergeRaceTraits(ctx.currentRaces)
                 
                 local activeAdv, activeDis = {}, {}
-                for k, v in pairs(mestizoTraits) do
-                    if allAdv[k] then activeAdv[k] = v end
-                    if allDis[k] then activeDis[k] = v end
+                for k, v in pairs(ctx.mestizoTraits or {}) do
+                    if allAdv[k] then raceTalents[k] = v end
+                    if allDis[k] then raceTalents[k] = v end
                 end
                 
-                GAC.characterData.characteristics.activeAdvantages = activeAdv
-                GAC.characterData.characteristics.activeDisadvantages = activeDis
-                GAC.characterData.characteristics.activeSpecial = allSpec
-            else
-                GAC.characterData.characteristics.activeAdvantages = nil
-                GAC.characterData.characteristics.activeDisadvantages = nil
-                GAC.characterData.characteristics.activeSpecial = nil
+                for k, v in pairs(allSpec) do
+                    raceTalents[v] = true
+                end
             end
-        end)
+            
+            GAC.playerCharacter._data.raceTalents = raceTalents
+            
+            GAC.playerCharacter:IncrementVersion()
+            GAC.characterData.modelData = GAC.playerCharacter:Serialize()
+        end
         
         if ctx.mainFrame.UpdateHeaderInfoText then ctx.mainFrame:UpdateHeaderInfoText() end
         ctx.EvaluateDynamicRacialBonuses()
@@ -105,33 +113,33 @@ local function BuildRaceDropdowns(ctx)
     ctx.ui.raceDrop1 = raceDrop1
     ctx.ui.raceDrop2 = raceDrop2
 
-    local function InitializeRaceDropdown(dropdown, getValue, isSecondary, onChange)
+    local function InitializeRaceDropdown(dropdown, getIndex, isSecondary, onChange)
         UIDropDownMenu_Initialize(dropdown, function(self, level, menuList)
             local info = UIDropDownMenu_CreateInfo()
             info.text = "Ninguna"
             info.func = function()
-                if getValue() ~= "Ninguna" then ctx.ui.saveCharBtn:Show() end
+                if ctx.currentRaces[getIndex] ~= "Ninguna" then ctx.ui.saveCharBtn:Show() end
                 onChange("Ninguna")
                 UIDropDownMenu_SetText(dropdown, info.text)
                 ctx.UpdateDynamicLayout()
                 if ctx.mainFrame.UpdateHeaderInfoText then
-                    ctx.mainFrame:UpdateHeaderInfoText(ctx.currentRace1, ctx.currentRace2)
+                    ctx.mainFrame:UpdateHeaderInfoText(ctx.currentRaces[1], ctx.currentRaces[2])
                 end
             end
             UIDropDownMenu_AddButton(info)
 
-            local currentRaces = GAC:GetFlatRaces()
-            for _, raceName in ipairs(currentRaces) do
+            local currentAvailableRaces = GAC:GetFlatRaces()
+            for _, raceName in ipairs(currentAvailableRaces) do
                 local infoRace = UIDropDownMenu_CreateInfo()
                 infoRace.text = GAC:_(raceName) or raceName
                 infoRace.func = function()
-                    if getValue() ~= raceName then ctx.ui.saveCharBtn:Show() end
+                    if ctx.currentRaces[getIndex] ~= raceName then ctx.ui.saveCharBtn:Show() end
                     onChange(raceName)
                     UIDropDownMenu_SetText(dropdown, infoRace.text)
                     ctx.EvaluateDynamicRacialBonuses()
                     ctx.UpdateDynamicLayout()
                     if ctx.mainFrame.UpdateHeaderInfoText then
-                        ctx.mainFrame:UpdateHeaderInfoText(ctx.currentRace1, ctx.currentRace2)
+                        ctx.mainFrame:UpdateHeaderInfoText(ctx.currentRaces[1], ctx.currentRaces[2])
                     end
                 end
                 UIDropDownMenu_AddButton(infoRace)
@@ -139,22 +147,22 @@ local function BuildRaceDropdowns(ctx)
         end)
     end
 
-    InitializeRaceDropdown(raceDrop1, function() return ctx.currentRace1 end, false, function(newVal)
-        ctx.currentRace1 = newVal
+    InitializeRaceDropdown(raceDrop1, 1, false, function(newVal)
+        ctx.currentRaces[1] = newVal
         if newVal == "Ninguna" then
-            ctx.currentRace2 = "Ninguna"
+            ctx.currentRaces[2] = "Ninguna"
             UIDropDownMenu_SetText(raceDrop2, "Ninguna")
             UIDropDownMenu_DisableDropDown(raceDrop2)
         else
             UIDropDownMenu_EnableDropDown(raceDrop2)
         end
     end)
-    UIDropDownMenu_SetText(raceDrop1, GAC:_(ctx.currentRace1) or ctx.currentRace1)
+    UIDropDownMenu_SetText(raceDrop1, GAC:_(ctx.currentRaces[1]) or ctx.currentRaces[1])
     
-    InitializeRaceDropdown(raceDrop2, function() return ctx.currentRace2 end, true, function(newVal)
-        ctx.currentRace2 = newVal
+    InitializeRaceDropdown(raceDrop2, 2, true, function(newVal)
+        ctx.currentRaces[2] = newVal
     end)
-    UIDropDownMenu_SetText(raceDrop2, GAC:_(ctx.currentRace2) or ctx.currentRace2)
+    UIDropDownMenu_SetText(raceDrop2, GAC:_(ctx.currentRaces[2]) or ctx.currentRaces[2])
 end
 
 local function BuildRaceSummaries(ctx)
@@ -264,12 +272,12 @@ local function BuildMestizoBuilder(ctx)
 
     ctx.RefreshMestizoBuilder = function()
         for _, cb in pairs(checkboxes) do cb:Hide() end
-        if ctx.currentRace1 == "Ninguna" or ctx.currentRace2 == "Ninguna" then return end
+        if ctx.currentRaces[1] == "Ninguna" or ctx.currentRaces[2] == "Ninguna" then return end
 
-        local allAdv, allDis, allSpec = GAC.Utils.MainMenu:MergeRaceTraits(ctx.currentRace1, ctx.currentRace2)
+        local allAdv, allDis, allSpec = GAC.Utils.MainMenu:MergeRaceTraits(ctx.currentRaces)
         
-        GAC.characterData.characteristics.mestizoTraits = GAC.characterData.characteristics.mestizoTraits or {}
-        local mestizoTraits = GAC.characterData.characteristics.mestizoTraits
+        ctx.mestizoTraits = ctx.mestizoTraits or {}
+        local mestizoTraits = ctx.mestizoTraits
         
         -- Clean old traits
         for k in pairs(mestizoTraits) do
@@ -368,7 +376,12 @@ local function BuildDynamicBonuses(ctx)
 
     worgenCurseCheckbox:SetScript("OnClick", function(self)
         if not GAC.characterData then return end
-        GAC.characterData.isWorgenCurse = self:GetChecked()
+        local isChecked = self:GetChecked()
+        GAC.characterData.isWorgenCurse = isChecked
+        if GAC.playerCharacter then
+            GAC.playerCharacter:SetWorgenCurse(isChecked)
+        end
+        ctx.ui.saveCharBtn:Show()
     end)
 
     ctx.ui.adaptLabel = adaptLabel
@@ -422,11 +435,13 @@ local function BuildDynamicBonuses(ctx)
                     local info = UIDropDownMenu_CreateInfo()
                     info.text = GAC:_(cand) or cand
                     info.func = function()
-                        GAC.characterData.characteristics[targetKey] = cand
+                        ctx.adaptTarget = ctx.adaptTarget -- update references just in case, wait, this is setting it
+                        if targetKey == "adaptTarget" then ctx.adaptTarget = cand end
+                        if targetKey == "perfTarget" then ctx.perfTarget = cand end
                         UIDropDownMenu_SetText(drop, info.text)
                         ctx.ui.saveCharBtn:Show()
-                        ctx.UpdateRaceSummary(ctx.ui.summary1, ctx.currentRace1)
-                        ctx.UpdateRaceSummary(ctx.ui.summary2, ctx.currentRace2)
+                        ctx.UpdateRaceSummary(ctx.ui.summary1, ctx.currentRaces[1])
+                        ctx.UpdateRaceSummary(ctx.ui.summary2, ctx.currentRaces[2])
                     end
                     UIDropDownMenu_AddButton(info)
                 end
@@ -442,8 +457,8 @@ local function BuildDynamicBonuses(ctx)
 
     ctx.EvaluateDynamicRacialBonuses = function()
         if not GAC.characterData then return end
-        local isHuman = (ctx.currentRace1 == "human" or ctx.currentRace2 == "human")
-        local isGnome = (ctx.currentRace1 == "gnome" or ctx.currentRace2 == "gnome")
+        local isHuman = (ctx.currentRaces[1] == "human" or ctx.currentRaces[2] == "human")
+        local isGnome = (ctx.currentRaces[1] == "gnome" or ctx.currentRaces[2] == "gnome")
         
         ProcessDynamicBonus(isHuman, adaptDrop, adaptLabel, true, "adaptLocked", "adaptTarget")
         ProcessDynamicBonus(isGnome, perfDrop, perfLabel, false, "perfLocked", "perfTarget")
@@ -455,7 +470,7 @@ local function SetupLayoutManager(ctx)
     ctx.UpdateDynamicLayout = function()
         local relativeFrame
         local baseOffset = -20
-        if ctx.currentRace2 ~= "Ninguna" then
+        if ctx.currentRaces[2] ~= "Ninguna" then
             ctx.ui.summary1:Hide()
             ctx.ui.summary2:Hide()
             ctx.ui.mestizoBuilderFrame:Show()
@@ -463,8 +478,8 @@ local function SetupLayoutManager(ctx)
             relativeFrame = ctx.ui.mestizoBuilderFrame
         else
             ctx.ui.mestizoBuilderFrame:Hide()
-            if ctx.currentRace1 ~= "Ninguna" then
-                ctx.UpdateRaceSummary(ctx.ui.summary1, ctx.currentRace1)
+            if ctx.currentRaces[1] ~= "Ninguna" then
+                ctx.UpdateRaceSummary(ctx.ui.summary1, ctx.currentRaces[1])
                 relativeFrame = ctx.ui.summary1
             else
                 ctx.UpdateRaceSummary(ctx.ui.summary1, "Ninguna")
@@ -497,13 +512,37 @@ function GAC.Components.MainMenu:CreateCharacteristicsTab(tab, mainFrame)
     local scroll, bg = GAC.Components.MainMenu:CreateScrollableTab(tab, 450, 500)
     GAC.characterData.characteristics = GAC.characterData.characteristics or {}
     
+    local currentRaces = { "human", "Ninguna" }
+    local mestizoTraits = {}
+    local adaptTarget, perfTarget = nil, nil
+    
+    if GAC.playerCharacter then
+        local r = GAC.playerCharacter:GetRace()
+        if r and #r > 0 then
+            currentRaces[1] = r[1] or "Ninguna"
+            currentRaces[2] = r[2] or "Ninguna"
+        end
+        local rt = GAC.playerCharacter:GetRaceTalents() or {}
+        adaptTarget = rt.adaptTarget
+        perfTarget = rt.perfTarget
+        
+        -- Copy other traits as mestizoTraits for the UI builder
+        for k, v in pairs(rt) do
+            if k ~= "adaptTarget" and k ~= "perfTarget" then
+                mestizoTraits[k] = v
+            end
+        end
+    end
+    
     local ctx = {
         tab = tab,
         mainFrame = mainFrame,
         scroll = scroll,
         bg = bg,
-        currentRace1 = GAC.characterData.characteristics.race1 or "Ninguna",
-        currentRace2 = GAC.characterData.characteristics.race2 or "Ninguna",
+        currentRaces = currentRaces,
+        mestizoTraits = mestizoTraits,
+        adaptTarget = adaptTarget,
+        perfTarget = perfTarget,
         ui = {}
     }
 
@@ -516,7 +555,7 @@ function GAC.Components.MainMenu:CreateCharacteristicsTab(tab, mainFrame)
     
     ctx.UpdateDynamicLayout()
 
-    if ctx.currentRace1 == "Ninguna" then
+    if ctx.currentRaces[1] == "Ninguna" then
         UIDropDownMenu_DisableDropDown(ctx.ui.raceDrop2)
     end
     

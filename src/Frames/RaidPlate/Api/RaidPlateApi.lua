@@ -14,28 +14,28 @@ function GAC:UpdateRaidPlate(frame)
     local shortName = Ambiguate(unitName, "none")
     local isPlayer = UnitIsUnit(frame.unit, "player")
     
+    local unitGUID = UnitGUID(frame.unit)
     local unitData = nil
     
     if isPlayer then
-        local progress = self.characterData and self.characterData.progress or {}
-        local currentLevel = progress.level or 1
-        local category = progress.category or "normal"
-        local levelEntry = self:GetLevelEntry(category, currentLevel)
-        local baseHealth = levelEntry and levelEntry.maxHealth or 10
-        local attributes = self.characterData and self.characterData.attributes or {}
-        local maxHealth = baseHealth + (attributes["constitution"] or 0)
-        
-        local currentHealth = self.characterData and self.characterData.currentHealth
-        if currentHealth == nil then currentHealth = maxHealth end
-        local currentShield = self.characterData and self.characterData.currentShield or 0
-        
+        if self.playerCharacter then
+            local hp = self.playerCharacter:GetHealthPoints()
+            local sp = self.playerCharacter:GetShieldPoints()
+            unitData = {
+                maxHealth = math.max(1, hp.max),
+                currentHealth = hp.current,
+                currentShield = sp and sp.current or 0
+            }
+        end
+    elseif unitGUID and self.targetDataCache and self.targetDataCache[unitGUID] then
+        local char = self.targetDataCache[unitGUID]
+        local hp = char:GetHealthPoints()
+        local sp = char:GetShieldPoints()
         unitData = {
-            maxHealth = math.max(1, maxHealth),
-            currentHealth = currentHealth,
-            currentShield = currentShield
+            maxHealth = math.max(1, hp.max),
+            currentHealth = hp.current,
+            currentShield = sp and sp.current or 0
         }
-    elseif self.targetDataCache and self.targetDataCache[shortName] then
-        unitData = self.targetDataCache[shortName]
     end
 
     if unitData then
@@ -143,8 +143,8 @@ function GAC:UpdateRaidPlate(frame)
         if not isPlayer and UnitIsConnected(frame.unit) and UnitIsPlayer(frame.unit) then
             GAC.pendingTargetRequests = GAC.pendingTargetRequests or {}
             local now = GetTime()
-            if not GAC.pendingTargetRequests[shortName] or (now - GAC.pendingTargetRequests[shortName]) > 10 then
-                GAC.pendingTargetRequests[shortName] = now
+            if not GAC.pendingTargetRequests[unitGUID] or (now - GAC.pendingTargetRequests[unitGUID]) > 10 then
+                GAC.pendingTargetRequests[unitGUID] = now
                 if GAC.Transmitter then
                     GAC.Transmitter:Trigger(GAC.Enums.Events.REQ, shortName, false)
                 end

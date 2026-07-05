@@ -258,7 +258,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 
                 local rollMessage = displayName
                 if self.pendingWeaponRoll.targetZone then
-                    rollMessage = rollMessage .. " ataca a " .. self.pendingWeaponRoll.targetZone .. " [con " .. self.pendingWeaponRoll.weaponName .. "]: "
+                    rollMessage = rollMessage .. " ataca a " .. self.pendingWeaponRoll.targetZone .. " [con " .. self.pendingWeaponRoll.weaponName .. "] "
                 else
                     rollMessage = rollMessage .. " tira Daño (" .. self.pendingWeaponRoll.weaponName .. ") "
                 end

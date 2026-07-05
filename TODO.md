@@ -1,3 +1,9 @@
+Bugs:
+    - Al cambiar de categoría y/o nivel, la vida máxima no se modifica.
+    - Al cambiar de raza, no se actualiza la información de Raza dentro de mainmenu.
+
+
+
 Features:
 1. Extender QuickActionMenu para añadir opciones de master.
     - Crear sesión de log de dados.

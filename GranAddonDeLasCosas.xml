@@ -5,6 +5,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
     <Include file="src\Locales\Locales.xml"/>
     <Include file="src\Communication\Communication.xml"/>
     <Include file="src\Utils\Utils.xml"/>
+    <Include file="src\Models\Models.xml"/>
     <Include file="src\Data\Data.xml"/>
     <Include file="src\Frames\Frames.xml"/>
 </Ui>

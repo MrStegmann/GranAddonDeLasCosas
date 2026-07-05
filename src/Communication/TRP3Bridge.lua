@@ -945,8 +945,36 @@ function GAC:UpdateEquippedArmor()
             table.insert(slotList, item)
         end
         self.characterData.inventory.equippedArmor[slot] = slotList
+        
+        if self.playerCharacter then
+            if #itemsInSlot > 0 then
+                local item = itemsInSlot[1]
+                local pInfo = parsedItemsInfo[item.slotID]
+                local data = {
+                    id = item.id or item.slotID or slot,
+                    name = item.itemName or "Objeto",
+                    icon = item.icon or item.itemIcon,
+                    quality = item.itemQuality or 1,
+                    description = "",
+                    variable = { slotList = slotList }
+                }
+                
+                if pInfo and (pInfo.isArmor or pInfo.isShield) then
+                    data.slot = item.tooltipRight or ""
+                    data.material = item.tooltipLeft or ""
+                    self.playerCharacter:SetEquippedItem(slot, GAC.Armor:new(data))
+                elseif pInfo and pInfo.isWeapon then
+                    data.type = item.tooltipRight or ""
+                    data.modificator = item.tooltipLeft or ""
+                    self.playerCharacter:SetEquippedItem(slot, GAC.Weapon:new(data))
+                else
+                    self.playerCharacter:SetEquippedItem(slot, GAC.Item:new(data))
+                end
+            else
+                self.playerCharacter:SetEquippedItem(slot, "")
+            end
+        end
     end
-    
     if self.quickActionsFrame and self.quickActionsFrame.UpdateArmorIcons then
         self.quickActionsFrame:UpdateArmorIcons()
     end

@@ -110,26 +110,29 @@ local function ImportFichaString(importStr)
     GAC.characterData.progress = GAC.characterData.progress or {}
 
     -- Importar raza
-    GAC.characterData.characteristics.race1 = race1
-    GAC.characterData.characteristics.race2 = race2
+    local newRaces = {}
+    if race1 and race1 ~= "void" and race1 ~= "Ninguna" then table.insert(newRaces, race1) end
+    if race2 and race2 ~= "void" and race2 ~= "Ninguna" then table.insert(newRaces, race2) end
+    if #newRaces == 0 then table.insert(newRaces, "human") end
 
-    -- Actualizar los datos raciales activos
-    if race2 == "void" and race1 ~= "void" then
-        local data = GAC:GetRaceData(race1)
-        if data then
-            GAC.characterData.characteristics.activeAdvantages = data.advantages
-            GAC.characterData.characteristics.activeDisadvantages = data.disadvantages
-            GAC.characterData.characteristics.activeSpecial = data.special
+    if GAC.playerCharacter then
+        GAC.playerCharacter:SetRace(newRaces)
+        
+        local raceTalents = {}
+        if race2 == "void" and race1 ~= "void" then
+            local data = GAC:GetRaceData(race1)
+            if data then
+                if data.advantages then for k, v in pairs(data.advantages) do raceTalents[k] = v end end
+                if data.disadvantages then for k, v in pairs(data.disadvantages) do raceTalents[k] = v end end
+                if data.special then for k, v in pairs(data.special) do raceTalents[k] = v end end
+            end
+        elseif race1 ~= "void" and race2 ~= "void" then
+            local allAdv, allDis, allSpec = GAC.Utils.MainMenu:MergeRaceTraits(newRaces)
+            -- For imports, we just inherit everything since we don't know the selected ones (mestizos have to re-select)
+            -- Or wait! Import format doesn't save selected mestizo traits? It seems it didn't save them.
+            -- We'll just leave them empty for now so the player has to select them again.
         end
-    elseif race1 ~= "void" and race2 ~= "void" then
-        local allAdv, allDis, allSpec = GAC.Utils.MainMenu:MergeRaceTraits(race1, race2)
-        GAC.characterData.characteristics.activeAdvantages = allAdv
-        GAC.characterData.characteristics.activeDisadvantages = allDis
-        GAC.characterData.characteristics.activeSpecial = allSpec
-    else
-        GAC.characterData.characteristics.activeAdvantages = nil
-        GAC.characterData.characteristics.activeDisadvantages = nil
-        GAC.characterData.characteristics.activeSpecial = nil
+        GAC.playerCharacter._data.raceTalents = raceTalents
     end
 
     -- Importar progresión
@@ -149,6 +152,9 @@ local function ImportFichaString(importStr)
     end
 
     -- Importar maldición Worgen
+    if GAC.playerCharacter then
+        GAC.playerCharacter:SetWorgenCurse(worgenCurseStr == "true")
+    end
     GAC.characterData.isWorgenCurse = (worgenCurseStr == "true")
 
     -- Importar rasgos positivos
@@ -160,6 +166,11 @@ local function ImportFichaString(importStr)
     -- TODO: Implementar lógica de importación de rasgos negativos
     local _rasgNegValues = ParseKVPairs(rasgNegStr)
     -- TODO: Aplicar _rasgNegValues a GAC.characterData
+    
+    if GAC.playerCharacter then
+        GAC.playerCharacter:IncrementVersion()
+        GAC.characterData.modelData = GAC.playerCharacter:Serialize()
+    end
 
     -- Propagar cambios si la API lo permite
     SafeCall(function()

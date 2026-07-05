@@ -8,24 +8,34 @@ function GAC:UpdateTargetPlate()
     local targetName = UnitName("target")
     if not targetName then return end
 
-    local shortName = Ambiguate(targetName, "none")
+    local targetGUID = UnitGUID("target")
     local isPlayer = UnitIsPlayer("target")
     
     local targetData = nil
     
     if UnitIsUnit("target", "player") then
-        local progress = self.characterData and self.characterData.progress or {}
-        local currentLevel = progress.level or 1
-        local category = progress.category or "normal"
+        local currentLevel = 1
+        local category = "normal"
+        local constitution = 0
+        local currentHealth = nil
+        local currentShield = 0
+        
+        if self.playerCharacter then
+            currentLevel = self.playerCharacter:GetLevel()
+            category = self.playerCharacter:GetCategory()
+            local attributes = self.playerCharacter:GetAttributes()
+            constitution = attributes["constitution"] or 0
+            local hp = self.playerCharacter:GetHealthPoints()
+            currentHealth = hp.current
+            local sp = self.playerCharacter:GetShieldPoints()
+            currentShield = sp and sp.current or 0
+        end
+        
         local levelEntry = self:GetLevelEntry(category, currentLevel)
         local baseHealth = levelEntry and levelEntry.maxHealth or 10
-        local attributes = self.characterData and self.characterData.attributes or {}
-        local maxHealth = baseHealth + (attributes["constitution"] or 0)
-        
-        local currentHealth = self.characterData and self.characterData.currentHealth
+        local maxHealth = baseHealth + constitution
+        if maxHealth < 1 then maxHealth = 1 end
         if currentHealth == nil then currentHealth = maxHealth end
-        
-        local currentShield = self.characterData and self.characterData.currentShield or 0
         
         targetData = {
             level = currentLevel,
@@ -34,8 +44,17 @@ function GAC:UpdateTargetPlate()
             currentHealth = currentHealth,
             currentShield = currentShield
         }
-    elseif isPlayer and self.targetDataCache and self.targetDataCache[shortName] then
-        targetData = self.targetDataCache[shortName]
+    elseif isPlayer and self.targetDataCache and self.targetDataCache[targetGUID] then
+        local char = self.targetDataCache[targetGUID]
+        local hp = char:GetHealthPoints()
+        local sp = char:GetShieldPoints()
+        targetData = {
+            level = char:GetLevel(),
+            category = char:GetCategory(),
+            maxHealth = math.max(1, hp.max),
+            currentHealth = hp.current,
+            currentShield = sp and sp.current or 0
+        }
     end
 
     if targetData then

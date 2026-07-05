@@ -1,15 +1,17 @@
 local _, GAC = ...
 
 function GAC:StartTalentRoll(attributeName, talentName)
-    if not self.characterData then
+    if not self.playerCharacter then
         return
     end
     if not GAC:CanTriggerRoll() then
         return
     end
 
-    local attributeValue = self.characterData.attributes and self.characterData.attributes[attributeName] and tonumber(self.characterData.attributes[attributeName]) or 0
-    local talentValue = self.characterData.talents and self.characterData.talents[talentName] and tonumber(self.characterData.talents[talentName]) or 0
+    local attributes = self.playerCharacter:GetAttributes()
+    local talents = self.playerCharacter:GetTalents()
+    local attributeValue = attributes[attributeName] and tonumber(attributes[attributeName]) or 0
+    local talentValue = talents[talentName] and tonumber(talents[talentName]) or 0
     talentValue = talentValue + self:GetRacialTalentModifier(talentName)
 
     local mod, hasMod = self:GetQuickModifierValue()
@@ -72,14 +74,15 @@ end
 
 
 function GAC:StartAttributeRoll(attributeName)
-    if not self.characterData then
+    if not self.playerCharacter then
         return
     end
     if not GAC:CanTriggerRoll() then
         return
     end
 
-    local attributeValue = self.characterData.attributes and self.characterData.attributes[attributeName] and tonumber(self.characterData.attributes[attributeName]) or 0
+    local attributes = self.playerCharacter:GetAttributes()
+    local attributeValue = attributes[attributeName] and tonumber(attributes[attributeName]) or 0
 
     local mod, hasMod = self:GetQuickModifierValue()
 
@@ -120,14 +123,15 @@ function GAC:StartInitiativeRoll()
 end
 
 function GAC:StartAttackRoll(dice, talentKey, talentLabel, targetZone, targetZoneId, damageType, damageLabel)
-    if not self.characterData then
+    if not self.playerCharacter then
         return
     end
     if not GAC:CanTriggerRoll() then
         return
     end
 
-    local talentValue = self.characterData.talents and self.characterData.talents[talentKey] and tonumber(self.characterData.talents[talentKey]) or 0
+    local talents = self.playerCharacter:GetTalents()
+    local talentValue = talents[talentKey] and tonumber(talents[talentKey]) or 0
     talentValue = talentValue + self:GetRacialTalentModifier(talentKey)
 
     local mod, hasMod = self:GetQuickModifierValue()
@@ -153,7 +157,7 @@ function GAC:StartAttackRoll(dice, talentKey, talentLabel, targetZone, targetZon
 end
 
 function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier, targetZone, targetZoneId)
-    if not self.characterData or not GAC:CanTriggerRoll() then return end
+    if not self.playerCharacter or not GAC:CanTriggerRoll() then return end
     
     local wInfo = GAC:GetWeaponInfo(weaponKey) or GAC:GetShieldInfo(weaponKey)
     if not wInfo then return end
@@ -168,8 +172,8 @@ function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier, 
         modeLabel = "Lanzar"
     end
     
-    local playerAttrs = self.characterData.attributes or {}
-    local playerTalents = self.characterData.talents or {}
+    local playerAttrs = self.playerCharacter:GetAttributes()
+    local playerTalents = self.playerCharacter:GetTalents()
     local maxTalentVal = 0
     local usedTalentKey = ""
     
@@ -215,10 +219,10 @@ function GAC:StartWeaponDamageRoll(weaponKey, mode, weaponName, damageModifier, 
     end
 end
 function GAC:StartUnarmedDamageRoll(slotLabel, targetZone, targetZoneId)
-    if not self.characterData or not GAC:CanTriggerRoll() then return end
+    if not self.playerCharacter or not GAC:CanTriggerRoll() then return end
     
-    local playerAttrs = self.characterData.attributes or {}
-    local playerTalents = self.characterData.talents or {}
+    local playerAttrs = self.playerCharacter:GetAttributes()
+    local playerTalents = self.playerCharacter:GetTalents()
     
     local valBrutality = (tonumber(playerAttrs["brutality"]) or 0) + (tonumber(playerTalents["brutality"]) or 0) + self:GetRacialTalentModifier("brutality")
     local valAcrobatics = (tonumber(playerAttrs["acrobatics"]) or 0) + (tonumber(playerTalents["acrobatics"]) or 0) + self:GetRacialTalentModifier("acrobatics")

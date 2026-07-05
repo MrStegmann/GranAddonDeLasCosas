@@ -26,6 +26,7 @@ eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
 eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+eventFrame:RegisterEvent("PLAYER_LOGOUT")
 
 function GAC:ADDON_LOADED(loadedAddonName)
     if loadedAddonName == self.name then
@@ -36,6 +37,18 @@ function GAC:ADDON_LOADED(loadedAddonName)
         self.characterData = GranAddonDeLasCosasCharDB
         self.characterData.progress = self.characterData.progress or {}
         self.characterData.ui = self.characterData.ui or {}
+
+        if self.MigrateToModelData then
+            self:MigrateToModelData()
+        end
+
+        if self.Character then
+            self.playerCharacter = self.Character:new(self.characterData.modelData)
+        end
+
+        self.inspectedPlayersCache = {}
+        self.tempInsp = {}
+        self.targetDataCache = self.inspectedPlayersCache
 
         if self.InitializeAttributeSystem then self:InitializeAttributeSystem() end
         if self.CreateQuickActionsFrame then self:CreateQuickActionsFrame() end
@@ -61,4 +74,10 @@ function GAC:PLAYER_ENTERING_WORLD(isInitialLogin, isReloadingUi)
             GAC:UpdateEquippedArmor()
         end
     end)
+end
+
+function GAC:PLAYER_LOGOUT()
+    if self.playerCharacter then
+        self.characterData.modelData = self.playerCharacter:Serialize()
+    end
 end

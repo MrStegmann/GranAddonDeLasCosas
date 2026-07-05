@@ -39,22 +39,38 @@ function GAC.Screens.MainMenu:CreateCharSheetScreen(parent)
 
     local infoText = GAC:CreateFontString(frame, "", "GameFontHighlight", { "TOPLEFT", nameText, "BOTTOMLEFT", 0, -5 }, {1, 1, 1}) 
     
-    local function UpdateHeaderInfoText(previewRace1, previewRace2)
-        if not GAC.characterData then return end
+    local function UpdateHeaderInfoText(self, previewRace1, previewRace2)
+        local levelStr = 1
+        local rawCat = "normal"
+        local r1, r2 = "Ninguna", "Ninguna"
         
-        local prog = GAC.characterData.progress or {}
-        local levelStr = prog.level or 1
+        if GAC.playerCharacter then
+            levelStr = GAC.playerCharacter:GetLevel()
+            rawCat = GAC.playerCharacter:GetCategory()
+            local races = GAC.playerCharacter:GetRace()
+            if races and #races > 0 then
+                r1 = races[1] or "Ninguna"
+                r2 = races[2] or "Ninguna"
+            end
+        elseif GAC.characterData then
+            local prog = GAC.characterData.progress or {}
+            levelStr = prog.level or 1
+            rawCat = prog.category or "normal"
+            local chars = GAC.characterData.characteristics
+            r1 = chars and chars.race1 or "Ninguna"
+            r2 = chars and chars.race2 or "Ninguna"
+        end
+        
         if type(levelStr) ~= "number" or levelStr < 1 then levelStr = 1 end
         
-        local rawCat = prog.category or "normal"
-        local catStr = GAC:_(rawCat) or rawCat:gsub("^%l", string.upper)
+        if previewRace1 then
+            r1 = previewRace1
+            r2 = previewRace2 or "Ninguna"
+        end
         
+        local catStr = GAC:_(rawCat) or rawCat:gsub("^%l", string.upper)
         local classStr = GAC:GetActiveTRP3ProfileClass() or "Desconocida"
         local raceStr = GAC:GetActiveTRP3ProfileRace() or "Desconocida"
-        
-        local chars = GAC.characterData.characteristics
-        local r1 = previewRace1 or (chars and chars.race1) or "Ninguna"
-        local r2 = previewRace2 or (chars and chars.race2) or "Ninguna"
         
         if r1 ~= "Ninguna" and r2 ~= "Ninguna" then
             raceStr = string.format("Mestizo (%s y %s)", GAC:_(r1) or r1, GAC:_(r2) or r2)
@@ -67,7 +83,7 @@ function GAC.Screens.MainMenu:CreateCharSheetScreen(parent)
         infoText:SetText(string.format("Nivel %d (%s) - %s - %s", levelStr, catStr, raceStr, classStr))
     end
     frame.UpdateHeaderInfoText = UpdateHeaderInfoText
-    UpdateHeaderInfoText()
+    frame:UpdateHeaderInfoText()
 
     -- Contenedor principal de pestañas interiores
     local contentArea = CreateFrame("Frame", nil, frame)
@@ -121,7 +137,7 @@ function GAC.Screens.MainMenu:CreateCharSheetScreen(parent)
             portrait:RefreshUnit()
             portrait:SetPortraitZoom(1)
         end
-        UpdateHeaderInfoText()
+        frame:UpdateHeaderInfoText()
         nameText:SetText(GAC:GetRollDisplayName())
 
         -- Update progression dropdowns to reflect current actual progress, 

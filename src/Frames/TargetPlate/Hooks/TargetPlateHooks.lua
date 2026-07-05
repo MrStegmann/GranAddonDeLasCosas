@@ -9,9 +9,11 @@ function GAC:InitializeTargetPlate()
     f:SetScript("OnEvent", function()
         if UnitExists("target") and UnitIsPlayer("target") and not UnitIsUnit("target", "player") then
             local shortName = Ambiguate(UnitName("target"), "none")
+            local targetGUID = UnitGUID("target")
             
-            local cached = GAC.targetDataCache and GAC.targetDataCache[shortName]
-            if not cached or (GetTime() - (cached.timestamp or 0) > 300) then
+            local cached = GAC.targetDataCache and targetGUID and GAC.targetDataCache[targetGUID]
+            -- If we only have the minimal Character from RES, it's fine. We check timestamp if it's there.
+            if not cached or (GetTime() - (cached._data and cached._data.timestamp or 0) > 300) then
                 if GAC.Transmitter then
                     GAC.Transmitter:Trigger(GAC.Enums.Events.REQ, shortName, false)
                 end

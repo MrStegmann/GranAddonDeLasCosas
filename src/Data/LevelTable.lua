@@ -181,6 +181,12 @@ function GAC:SetExperienceCategory(category)
     self.characterData.progress.level = clamp(currentLevel, 1, maxLevel)
     self.characterData.progress.currentExperience = 0
 
+    if GAC.playerCharacter then
+        GAC.playerCharacter:SetCategory(category)
+        GAC.playerCharacter:SetLevel(clamp(currentLevel, 1, maxLevel))
+        GAC.playerCharacter:SetHealthPoints(GAC.playerCharacter:GetMaxHealth())
+    end
+
     self:NormalizeExperienceProgressData()
 end
 
@@ -198,6 +204,11 @@ function GAC:SetExperienceLevel(level)
 
     local maxLevel = self:GetMaxLevelForCategory(category)
     self.characterData.progress.level = clamp(level, 1, maxLevel)
+    
+    if GAC.playerCharacter then
+        GAC.playerCharacter:SetLevel(clamp(level, 1, maxLevel))
+        GAC.playerCharacter:SetHealthPoints(GAC.playerCharacter:GetMaxHealth())
+    end
     self.characterData.progress.currentExperience = 0
 
     self:NormalizeExperienceProgressData()
