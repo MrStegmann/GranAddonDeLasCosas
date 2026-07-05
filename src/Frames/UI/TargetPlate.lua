@@ -222,8 +222,8 @@ function GAC:InitializeTargetPlate()
             -- Si la caché tiene más de 5 minutos, la refrescamos
             local cached = GAC.targetDataCache and GAC.targetDataCache[shortName]
             if not cached or (GetTime() - (cached.timestamp or 0) > 300) then
-                if GAC.RequestTargetData then
-                    GAC:RequestTargetData(shortName)
+                if GAC.Transmitter then
+                    GAC.Transmitter:Trigger(GAC.Enums.Events.REQ, shortName, false)
                 end
             end
         end

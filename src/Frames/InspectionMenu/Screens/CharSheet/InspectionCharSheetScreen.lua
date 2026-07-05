@@ -119,7 +119,10 @@ function GAC.Screens.InspectionMenu:CreateCharSheetScreen(parent)
         tabAtributos:Update(p)
         tabExperiencia:Update(p)
 
-        if UnitIsGroupLeader("player") or not IsInGroup() then
+        local shortName = Ambiguate(p.name, "none")
+        local isSameGroup = UnitInParty(shortName) or UnitInRaid(shortName)
+
+        if IsInGroup() and UnitIsGroupLeader("player") and isSameGroup then
             btnExperiencia:Show()
         else
             btnExperiencia:Hide()

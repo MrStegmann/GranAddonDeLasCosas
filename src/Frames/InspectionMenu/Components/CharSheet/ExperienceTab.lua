@@ -51,13 +51,13 @@ function GAC.Components.InspectionMenu:CreateExperienceTab(parent)
     giveExpBtn:SetScript("OnClick", function()
         local val = tonumber(giveExpInput:GetText())
         if val and val > 0 and GAC.inspectedPlayer then
-            if GAC.SendExperienceToTarget then
-                GAC:SendExperienceToTarget(GAC.inspectedPlayer.name, val)
+            if GAC.Transmitter then
+                GAC.Transmitter:Trigger(GAC.Enums.Events.ADD_EXP, GAC.inspectedPlayer.name, val)
                 giveExpInput:SetText("")
                 print("|cff00ccff[GAC]|r Has otorgado " .. val .. " de experiencia a " .. Ambiguate(GAC.inspectedPlayer.name, "none"))
                 
-                if GAC.RequestInspection then
-                    GAC:RequestInspection(GAC.inspectedPlayer.name)
+                if GAC.Transmitter then
+                    GAC.Transmitter:Trigger(GAC.Enums.Events.INSPECT_REQ, GAC.inspectedPlayer.name)
                 end
             end
         end

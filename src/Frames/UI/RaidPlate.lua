@@ -150,8 +150,8 @@ function GAC:UpdateRaidPlate(frame)
             local now = GetTime()
             if not GAC.pendingTargetRequests[shortName] or (now - GAC.pendingTargetRequests[shortName]) > 10 then
                 GAC.pendingTargetRequests[shortName] = now
-                if GAC.RequestTargetData then
-                    GAC:RequestTargetData(shortName)
+                if GAC.Transmitter then
+                    GAC.Transmitter:Trigger(GAC.Enums.Events.REQ, shortName, false)
                 end
             end
         end

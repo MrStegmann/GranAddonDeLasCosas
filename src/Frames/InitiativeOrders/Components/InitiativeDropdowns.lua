@@ -70,8 +70,8 @@ function GAC.Components.InitiativeOrders:InitContextMenu(contextMenu)
             if menuList == "MOVE" then
                 local function MoveAction(targetIdx)
                     GAC:MoveInitiativeIndex(index, targetIdx)
-                    if GAC.BroadcastInitiativeMove then
-                        GAC:BroadcastInitiativeMove(index, targetIdx)
+                    if GAC.Transmitter then
+                        GAC.Transmitter:Trigger(GAC.Enums.Events.INIT_MOVE, index, targetIdx)
                     end
                     CloseDropDownMenus()
                 end
@@ -118,8 +118,8 @@ function GAC.Components.InitiativeOrders:InitContextMenu(contextMenu)
                 
                 local function SetIconAction(iconID)
                     GAC:SetInitiativeIcon(index, iconID)
-                    if GAC.BroadcastInitiativeIcon then
-                        GAC:BroadcastInitiativeIcon(index, iconID)
+                    if GAC.Transmitter then
+                        GAC.Transmitter:Trigger(GAC.Enums.Events.INIT_ICON, index, iconID)
                     end
                 end
                 

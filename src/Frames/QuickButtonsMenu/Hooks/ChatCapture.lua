@@ -129,7 +129,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 or displayAddonName
             local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue) or tostring(rollValue)
 
-            finalMessage = displayName .. " tira por Iniciativa: "
+            finalMessage = displayName .. " tira por Iniciativa"
                 .. " 1D100 (" .. formattedRoll .. ")"
                 .. modStr
                 .. " = " .. total
@@ -140,8 +140,8 @@ function GAC:CHAT_MSG_SYSTEM(message)
             if GAC.AddInitiativeRoll then
                 local shortName = Ambiguate(UnitName("player"), "none")
                 GAC:AddInitiativeRoll(shortName, total)
-                if GAC.BroadcastInitiativeAdd then
-                    GAC:BroadcastInitiativeAdd(shortName, total)
+                if GAC.Transmitter then
+                    GAC.Transmitter:Trigger(GAC.Enums.Events.INIT_ADD, shortName, total)
                 end
             end
         end
@@ -178,9 +178,9 @@ function GAC:CHAT_MSG_SYSTEM(message)
             local formattedRoll = self.FormatRollValue and self:FormatRollValue(rollValue) or tostring(rollValue)
 
             if self.pendingAttackRoll.targetZone then
-                finalMessage = displayName .. " ataca a " .. self.pendingAttackRoll.targetZone .. ": "
+                finalMessage = displayName .. " ataca a " .. self.pendingAttackRoll.targetZone .. " "
             else
-                finalMessage = displayName .. " tira Ataque: "
+                finalMessage = displayName .. " tira Ataque  "
             end
 
             local dmgSuffix = ""
@@ -198,8 +198,9 @@ function GAC:CHAT_MSG_SYSTEM(message)
             if self.pendingAttackRoll.targetZone and self.pendingAttackRoll.damageType and UnitExists("target") and UnitIsPlayer("target") then
                 local targetName = GetUnitName("target", true)
                 local shortTargetName = Ambiguate(targetName, "none")
-                local payload = "ARMOR_HIT:" .. tostring(self.pendingAttackRoll.targetZoneId) .. ":" .. tostring(self.pendingAttackRoll.damageType) .. ":" .. tostring(total)
-                C_ChatInfo.SendAddonMessage(GAC.COMM_PREFIX or "GAC_Sync", payload, "WHISPER", shortTargetName)
+                if GAC.Transmitter then
+                    GAC.Transmitter:Trigger(GAC.Enums.Events.ARMOR_HIT, shortTargetName, self.pendingAttackRoll.targetZoneId, self.pendingAttackRoll.damageType, total)
+                end
             end
 
             self.pendingAttackRoll = nil
@@ -259,7 +260,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 if self.pendingWeaponRoll.targetZone then
                     rollMessage = rollMessage .. " ataca a " .. self.pendingWeaponRoll.targetZone .. " [con " .. self.pendingWeaponRoll.weaponName .. "]: "
                 else
-                    rollMessage = rollMessage .. " tira Daño (" .. self.pendingWeaponRoll.weaponName .. "): "
+                    rollMessage = rollMessage .. " tira Daño (" .. self.pendingWeaponRoll.weaponName .. ") "
                 end
                 
                 rollMessage = rollMessage .. diceFormula .. " (" .. rollsStr .. ") + "
@@ -270,13 +271,14 @@ function GAC:CHAT_MSG_SYSTEM(message)
                     .. " = " .. total .. " (" .. dtLoc .. ")"
 
                 print(rollMessage)
-                if self.BroadcastRollMessage then self:BroadcastRollMessage(rollMessage) end
+                if GAC.Transmitter then GAC.Transmitter:Trigger(GAC.Enums.Events.ROLL, rollMessage) end
 
                 if self.pendingWeaponRoll.targetZone and UnitExists("target") and UnitIsPlayer("target") then
                     local targetName = GetUnitName("target", true)
                     local shortTargetName = Ambiguate(targetName, "none")
-                    local payload = "ARMOR_HIT:" .. tostring(self.pendingWeaponRoll.targetZoneId) .. ":" .. tostring(self.pendingWeaponRoll.damageType) .. ":" .. tostring(total)
-                    C_ChatInfo.SendAddonMessage(GAC.COMM_PREFIX or "GAC_Sync", payload, "WHISPER", shortTargetName)
+                    if GAC.Transmitter then
+                        GAC.Transmitter:Trigger(GAC.Enums.Events.ARMOR_HIT, shortTargetName, self.pendingWeaponRoll.targetZoneId, self.pendingWeaponRoll.damageType, total)
+                    end
                 end
 
                 self.pendingWeaponRoll = nil
@@ -310,7 +312,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 .. " = " .. total
 
             print(rollMessage)
-            if self.BroadcastRollMessage then self:BroadcastRollMessage(rollMessage) end
+            if GAC.Transmitter then GAC.Transmitter:Trigger(GAC.Enums.Events.ROLL, rollMessage) end
 
             self.pendingCustomRoll.quantity = self.pendingCustomRoll.quantity - 1
             if self.pendingCustomRoll.quantity <= 0 then
@@ -325,7 +327,7 @@ function GAC:CHAT_MSG_SYSTEM(message)
 
         if finalMessage then
             print(finalMessage)
-            if self.BroadcastRollMessage then self:BroadcastRollMessage(finalMessage) end
+            if GAC.Transmitter then GAC.Transmitter:Trigger(GAC.Enums.Events.ROLL, finalMessage) end
         end
     end)
 end

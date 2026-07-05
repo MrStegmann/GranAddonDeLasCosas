@@ -19,10 +19,10 @@ function GAC.Components.QuickButtonsMenu:CreateUtilitiesBar(frame)
     lifeButton:SetScript("OnClick", function(_, b)
         if IsControlKeyDown() then
             GAC.Components.QuickButtonsMenu:ShowModifyValuePopup("Modificar Vida (Ej: 5 o -5)", function(val)
-                if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(val) end
+                if GAC.Transmitter then GAC.Transmitter:Trigger(GAC.Enums.Events.MODIFY_LIFE, val) end
             end)
         else
-            if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(b == "RightButton" and -1 or 1) end
+            if GAC.Transmitter then GAC.Transmitter:Trigger(GAC.Enums.Events.MODIFY_LIFE, b == "RightButton" and -1 or 1) end
         end
     end)
     GAC:SetupQuickTooltip(lifeButton, "Modificar vida ±1", 
@@ -44,10 +44,10 @@ function GAC.Components.QuickButtonsMenu:CreateUtilitiesBar(frame)
     shieldButton:SetScript("OnClick", function(_, b)
         if IsControlKeyDown() then
             GAC.Components.QuickButtonsMenu:ShowModifyValuePopup("Modificar Escudo (Ej: 5 o -5)", function(val)
-                if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(val) end
+                if GAC.Transmitter then GAC.Transmitter:Trigger(GAC.Enums.Events.MODIFY_SHIELD, val) end
             end)
         else
-            if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(b == "RightButton" and -1 or 1) end
+            if GAC.Transmitter then GAC.Transmitter:Trigger(GAC.Enums.Events.MODIFY_SHIELD, b == "RightButton" and -1 or 1) end
         end
     end)
     GAC:SetupQuickTooltip(shieldButton, "Modificar escudo ±1", 
@@ -89,7 +89,7 @@ function GAC.Components.QuickButtonsMenu:CreateUtilitiesBar(frame)
         local fullName = GetUnitName("target", true)
         if fullName then
             fullName = Ambiguate(fullName, "none")
-            if GAC.RequestInspection then GAC:RequestInspection(fullName) end
+            if GAC.Transmitter then GAC.Transmitter:Trigger(GAC.Enums.Events.INSPECT_REQ, fullName) end
             if GAC.OpenInspectionMenu then
                 GAC.inspectedPlayer = {
                     name = fullName, level = 0, category = "normal", race = "-", class = "-", maxHealth = 0, currentShield = 0, attributes = {}, talents = {}

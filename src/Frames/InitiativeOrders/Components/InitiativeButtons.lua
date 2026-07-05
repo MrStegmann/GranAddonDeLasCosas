@@ -7,8 +7,8 @@ function GAC.Components.InitiativeOrders:CreateSortButton(frame)
     local sortBtn = GAC:CreateIconButton(frame, 25, "Interface\\Icons\\INV_Misc_Book_08", "Ordenar", "Ordenar y guardar historial", function()
         if GAC.activeInitiativeView == "current" then
             GAC:SortInitiativeOrder()
-            if GAC.BroadcastInitiativeAction then
-                GAC:BroadcastInitiativeAction("SORT")
+            if GAC.Transmitter then
+                GAC.Transmitter:Trigger(GAC.Enums.Events.INIT_ACTION, "SORT")
             end
         end
     end)
@@ -20,8 +20,8 @@ function GAC.Components.InitiativeOrders:CreateLoadButton(frame, dropdown)
     local loadBtn = GAC:CreateIconButton(frame, 25, "Interface\\Icons\\INV_Misc_EngGizmos_18", "Cargar", "Cargar historial a toda la banda", function()
         if GAC.activeInitiativeView ~= "current" then
             GAC:ClearInitiativeOrder()
-            if GAC.BroadcastInitiativeAction then
-                GAC:BroadcastInitiativeAction("CLEAR")
+            if GAC.Transmitter then
+                GAC.Transmitter:Trigger(GAC.Enums.Events.INIT_ACTION, "CLEAR")
             end
             
             local hist = GAC.characterData.initiativeHistory[GAC.activeInitiativeView]
@@ -41,8 +41,8 @@ function GAC.Components.InitiativeOrders:CreateLoadButton(frame, dropdown)
                 for i, roll in ipairs(hist.rolls) do
                     if roll.icon and roll.icon > 0 then
                         GAC:SetInitiativeIcon(i, roll.icon)
-                        if GAC.BroadcastInitiativeIcon then
-                            GAC:BroadcastInitiativeIcon(i, roll.icon)
+                        if GAC.Transmitter then
+                            GAC.Transmitter:Trigger(GAC.Enums.Events.INIT_ICON, i, roll.icon)
                         end
                     end
                 end
@@ -64,8 +64,8 @@ function GAC.Components.InitiativeOrders:CreateClearButton(frame, dropdown)
     local clearBtn = GAC:CreateIconButton(frame, 25, "Interface\\Icons\\INV_Misc_Bag_08", "Limpiar", "Limpiar lista actual / Borrar historial", function()
         if GAC.activeInitiativeView == "current" then
             GAC:ClearInitiativeOrder()
-            if GAC.BroadcastInitiativeAction then
-                GAC:BroadcastInitiativeAction("CLEAR")
+            if GAC.Transmitter then
+                GAC.Transmitter:Trigger(GAC.Enums.Events.INIT_ACTION, "CLEAR")
             end
         else
             if GAC.characterData and GAC.characterData.initiativeHistory then
