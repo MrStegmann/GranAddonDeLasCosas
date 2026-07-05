@@ -5,5 +5,5 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
     <Include file="InitiativeOrders\InitiativeOrders.xml"/>
     <Include file="InspectionMenu\InspectionMenu.xml"/>
     <Include file="QuickButtonsMenu\QuickButtonsMenu.xml"/>
-    
+    <Include file="EconomyCalculator\EconomyCalculator.xml"/>
 </Ui>
