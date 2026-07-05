@@ -1,12 +1,11 @@
 local _, GAC = ...
 
-local isRaidPlateHooked = false
+GAC.isRaidPlateHooked = false
 GAC.activeRaidFrames = GAC.activeRaidFrames or {}
 
 function GAC:UpdateRaidPlate(frame)
     if not frame or not frame.unit or not frame.healthBar then return end
     
-    -- Almacenar referencia para el bucle de actualización
     GAC.activeRaidFrames[frame] = true
 
     local unitName = UnitName(frame.unit)
@@ -44,7 +43,6 @@ function GAC:UpdateRaidPlate(frame)
         local currentHealth = unitData.currentHealth or maxHealth
         local currentShield = unitData.currentShield or 0
         
-        -- Override Blizzard's min/max and value
         local displayHealth = math.max(0, currentHealth)
         frame.healthBar:SetMinMaxValues(0, maxHealth)
         frame.healthBar:SetValue(displayHealth)
@@ -77,7 +75,6 @@ function GAC:UpdateRaidPlate(frame)
             end
         end
         
-        -- Shield logic
         if not frame.healthBar.GAC_ShieldBar then
             frame.healthBar.GAC_ShieldBar = frame.healthBar:CreateTexture(nil, "BORDER")
             frame.healthBar.GAC_ShieldBar:SetTexture("Interface\\RaidFrame\\Shield-Fill")
@@ -131,7 +128,6 @@ function GAC:UpdateRaidPlate(frame)
             end
         end
         
-        -- Update text to show Addon Health
         if frame.statusText then
             frame.statusText:SetTextColor(1, 1, 1, 1)
             if not frame.statusText:IsShown() and UnitIsConnected(frame.unit) then
@@ -144,7 +140,6 @@ function GAC:UpdateRaidPlate(frame)
             end
         end
     else
-        -- Request data if missing and connected
         if not isPlayer and UnitIsConnected(frame.unit) and UnitIsPlayer(frame.unit) then
             GAC.pendingTargetRequests = GAC.pendingTargetRequests or {}
             local now = GetTime()
@@ -156,52 +151,9 @@ function GAC:UpdateRaidPlate(frame)
             end
         end
 
-        -- Hide custom UI if not an addon user
         if frame.healthBar and frame.healthBar.GAC_ShieldBar then
             frame.healthBar.GAC_ShieldBar:Hide()
             frame.healthBar.GAC_OverShieldGlow:Hide()
         end
-    end
-end
-
-function GAC:InitializeRaidPlate()
-    if isRaidPlateHooked then return end
-    isRaidPlateHooked = true
-    
-    -- Bucle para forzar actualizaciones cuando cambian los valores internos del addon
-    local f = CreateFrame("Frame")
-    local elapsed = 0
-    f:SetScript("OnUpdate", function(self, dt)
-        elapsed = elapsed + dt
-        if elapsed >= 0.5 then
-            elapsed = 0
-            for frame in pairs(GAC.activeRaidFrames) do
-                if frame and frame.IsVisible and frame:IsVisible() and frame.unit then
-                    if GAC.UpdateRaidPlate then
-                        GAC:UpdateRaidPlate(frame)
-                    end
-                elseif frame and (not frame.IsVisible or not frame:IsVisible()) then
-                    GAC.activeRaidFrames[frame] = nil
-                end
-            end
-        end
-    end)
-    
-    if CompactUnitFrame_UpdateHealth then
-        hooksecurefunc("CompactUnitFrame_UpdateHealth", function(frame)
-            if GAC.UpdateRaidPlate then GAC:UpdateRaidPlate(frame) end
-        end)
-    end
-    
-    if CompactUnitFrame_UpdateMaxHealth then
-        hooksecurefunc("CompactUnitFrame_UpdateMaxHealth", function(frame)
-            if GAC.UpdateRaidPlate then GAC:UpdateRaidPlate(frame) end
-        end)
-    end
-    
-    if CompactUnitFrame_UpdateStatusText then
-        hooksecurefunc("CompactUnitFrame_UpdateStatusText", function(frame)
-            if GAC.UpdateRaidPlate then GAC:UpdateRaidPlate(frame) end
-        end)
     end
 end

@@ -1,9 +1,9 @@
 local _, GAC = ...
 
-local isTargetPlateHooked = false
+GAC.isTargetPlateHooked = false
 
 function GAC:UpdateTargetPlate()
-    if not isTargetPlateHooked then return end
+    if not GAC.isTargetPlateHooked then return end
 
     local targetName = UnitName("target")
     if not targetName then return end
@@ -38,9 +38,7 @@ function GAC:UpdateTargetPlate()
         targetData = self.targetDataCache[shortName]
     end
 
-    -- Si tenemos datos (nuestros o de otro jugador con addon)
     if targetData then
-        -- 1. Nivel
         local levelText = TargetFrameTextureFrameLevelText or TargetLevelText
         if levelText then
             levelText:SetText(targetData.level)
@@ -48,7 +46,6 @@ function GAC:UpdateTargetPlate()
             levelText:SetDrawLayer("OVERLAY", 7)
         end
         
-        -- 2. Vida y Escudo
         if TargetFrameHealthBar then
             local maxHealth = targetData.maxHealth
             local currentHealth = targetData.currentHealth or maxHealth
@@ -86,7 +83,6 @@ function GAC:UpdateTargetPlate()
                 end
             end
             
-            -- Dibujar el escudo
             if not TargetFrameHealthBar.GAC_ShieldBar then
                 TargetFrameHealthBar.GAC_ShieldBar = TargetFrameHealthBar:CreateTexture(nil, "BORDER")
                 TargetFrameHealthBar.GAC_ShieldBar:SetTexture("Interface\\RaidFrame\\Shield-Fill")
@@ -148,13 +144,11 @@ function GAC:UpdateTargetPlate()
             end
         end
 
-        -- 3. Dragón y categoría
         local parentForOverlay = TargetFrameTextureFrame or TargetFrame
         
         if not parentForOverlay.GACDragonOverlay then
             local overlay = parentForOverlay:CreateTexture("GACTargetDragonOverlay", "OVERLAY")
             overlay:SetSize(256, 128)
-            -- En el TargetFrame, anclamos con un pequeño offset porque el retrato está a la derecha
             overlay:SetPoint("TOPLEFT", TargetFrame, "TOPLEFT", -25, 0)
             overlay:SetDrawLayer("BORDER")
             parentForOverlay.GACDragonOverlay = overlay
@@ -175,28 +169,25 @@ function GAC:UpdateTargetPlate()
             overlay:Hide()
         elseif category == "normal" then
             overlay:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
-            overlay:SetTexCoord(0, 1, 0, 1) -- NO voltear (nativo para target)
+            overlay:SetTexCoord(0, 1, 0, 1)
         elseif category == "élite" or category == "elite" then
             overlay:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
             overlay:SetTexCoord(0, 1, 0, 1)
         elseif category == "jefe" or category == "boss" then
             overlay:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Elite")
             overlay:SetTexCoord(0, 1, 0, 1)
-            overlay:SetVertexColor(1, 0.7, 0.7) -- Teñido de rojo
+            overlay:SetVertexColor(1, 0.7, 0.7)
         else
             overlay:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Rare")
             overlay:SetTexCoord(0, 1, 0, 1)
         end
         
     else
-        -- No es un jugador o no tiene el addon, limpiamos nuestra UI
         local levelText = TargetFrameTextureFrameLevelText or TargetLevelText
         if levelText then
-            -- El juego se encarga de rellenarlo nativamente si restauramos la opacidad y color
             levelText:SetVertexColor(1, 0.82, 0)
         end
         
-        -- Limpiamos el escudo visual si no es jugador o no tiene addon
         if TargetFrameHealthBar and TargetFrameHealthBar.GAC_ShieldBar then
             TargetFrameHealthBar.GAC_ShieldBar:Hide()
             TargetFrameHealthBar.GAC_OverShieldGlow:Hide()
@@ -206,63 +197,5 @@ function GAC:UpdateTargetPlate()
         if parentForOverlay.GACDragonOverlay then
             parentForOverlay.GACDragonOverlay:Hide()
         end
-    end
-end
-
-function GAC:InitializeTargetPlate()
-    if isTargetPlateHooked then return end
-    isTargetPlateHooked = true
-    
-    local f = CreateFrame("Frame")
-    f:RegisterEvent("PLAYER_TARGET_CHANGED")
-    f:SetScript("OnEvent", function()
-        if UnitExists("target") and UnitIsPlayer("target") and not UnitIsUnit("target", "player") then
-            local shortName = Ambiguate(UnitName("target"), "none")
-            
-            -- Si la caché tiene más de 5 minutos, la refrescamos
-            local cached = GAC.targetDataCache and GAC.targetDataCache[shortName]
-            if not cached or (GetTime() - (cached.timestamp or 0) > 300) then
-                if GAC.Transmitter then
-                    GAC.Transmitter:Trigger(GAC.Enums.Events.REQ, shortName, false)
-                end
-            end
-        end
-        
-        GAC:UpdateTargetPlate()
-    end)
-
-    local elapsed = 0
-    f:SetScript("OnUpdate", function(self, dt)
-        if not UnitExists("target") then return end
-        elapsed = elapsed + dt
-        if elapsed >= 0.5 then
-            elapsed = 0
-            if GAC.UpdateTargetPlate then
-                GAC:UpdateTargetPlate()
-            end
-        end
-    end)
-    
-    -- Hooks nativos para evitar que WoW sobrescriba nuestra UI
-    if TargetFrame_Update then
-        hooksecurefunc("TargetFrame_Update", function()
-            if GAC.UpdateTargetPlate then GAC:UpdateTargetPlate() end
-        end)
-    end
-    
-    if UnitFrameHealthBar_Update then
-        hooksecurefunc("UnitFrameHealthBar_Update", function(statusbar, unit)
-            if unit == "target" and statusbar == TargetFrameHealthBar then
-                if GAC.UpdateTargetPlate then GAC:UpdateTargetPlate() end
-            end
-        end)
-    end
-    
-    if TextStatusBar_UpdateTextString then
-        hooksecurefunc("TextStatusBar_UpdateTextString", function(textStatusBar)
-            if textStatusBar == TargetFrameHealthBar then
-                if GAC.UpdateTargetPlate then GAC:UpdateTargetPlate() end
-            end
-        end)
     end
 end
