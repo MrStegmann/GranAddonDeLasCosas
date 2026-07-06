@@ -32,6 +32,10 @@ function Character:new(savedData)
         shieldPoints = savedData.shieldPoints or { current = 0 },
         manapoints = savedData.manapoints or { current = 0, max = 0 },
         spiritPoints = savedData.spiritPoints or { current = 0, max = 0 },
+        movement = savedData.movement or 20,
+        combatActions = savedData.combatActions or 2,
+        criticalRange = savedData.criticalRange or 20,
+
         experience = savedData.experience or { current = 0, max = 100 },
         skills = savedData.skills or {},
         spells = savedData.spells or {}

@@ -62,6 +62,19 @@ function GAC:CHAT_MSG_SYSTEM(message)
                 .. armorModStr
                 .. " = " .. total
 
+            if self.pendingTalentRoll.talentName == "perception" then
+                --local earMod = GAC:GetRacialTalentModifier("perception-ears")
+                --local eyeMod = GAC:GetRacialTalentModifier("perception-eyes")
+                --local noseMod = GAC:GetRacialTalentModifier("perception-nose")
+                --local touchMod = GAC:GetRacialTalentModifier("perception-touch")
+
+                finalMessage = finalMessage .. "\n"
+                    .. "Auditivo (" .. (total + 0) .. ")\n"
+                    .. "Vista (" .. (total + 0) .. ")\n"
+                    .. "Olfato (" .. (total + 0) .. ")\n"
+                    .. "Tacto (" .. (total + 0) .. ")"
+            end
+
             self.pendingTalentRoll = nil
             self.rollType = nil
             

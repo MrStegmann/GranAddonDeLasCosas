@@ -8,4 +8,5 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="Weapons.lua" />
 	<Include file="Shield.lua" />
 	<Include file="Economi.lua"/>
+	<Script file="PositiveTraits.lua"/>
 </Ui>
