@@ -1,3 +1,6 @@
+--- @module index
+-- Entry point and initialization orchestrator for GAC_DEV.
+
 local addonName, GAC = ...
 
 GAC.name = addonName
@@ -28,29 +31,14 @@ eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 eventFrame:RegisterEvent("PLAYER_LOGOUT")
 
+--- Handles ADDON_LOADED event.
+-- @param loadedAddonName string Name of loaded addon
 function GAC:ADDON_LOADED(loadedAddonName)
     if loadedAddonName == self.name then
-        GranAddonDeLasCosasDB = GranAddonDeLasCosasDB or {}
-        GranAddonDeLasCosasCharDB = GranAddonDeLasCosasCharDB or {}
-
-        self.db = GranAddonDeLasCosasDB
-        self.characterData = GranAddonDeLasCosasCharDB
-        self.characterData.progress = self.characterData.progress or {}
-        self.characterData.ui = self.characterData.ui or {}
-
-        if self.MigrateToModelData then
-            self:MigrateToModelData()
+        if self.InitPersistence then
+            self:InitPersistence(loadedAddonName)
         end
 
-        if self.Character then
-            self.playerCharacter = self.Character:new(self.characterData.modelData)
-        end
-
-        self.inspectedPlayersCache = {}
-        self.tempInsp = {}
-        self.targetDataCache = self.inspectedPlayersCache
-
-        if self.InitializeAttributeSystem then self:InitializeAttributeSystem() end
         if self.CreateQuickActionsFrame then self:CreateQuickActionsFrame() end
         if self.CreateMinimapButton then self:CreateMinimapButton() end
         if self.InitializePlayerPlate then self:InitializePlayerPlate() end
@@ -61,13 +49,14 @@ function GAC:ADDON_LOADED(loadedAddonName)
         if self.InitializeReceiver then self:InitializeReceiver() end
         if self.InitTRP3ArmorHook then self:InitTRP3ArmorHook() end
 
-        print("¡|cFF00FF00[" .. self.name .. "]|r listo! Version: " .. self.version)
         self.eventFrame:UnregisterEvent("ADDON_LOADED")
     end
 end
 
+--- Handles PLAYER_ENTERING_WORLD event.
+-- @param isInitialLogin boolean
+-- @param isReloadingUi boolean
 function GAC:PLAYER_ENTERING_WORLD(isInitialLogin, isReloadingUi)
-    -- Le damos un margen de 1 segundo para que TRP3 Extended inicialice su inventario
     C_Timer.After(1.5, function()
         if GAC.InitTRP3ArmorHook then GAC:InitTRP3ArmorHook() end
         if GAC.UpdateEquippedArmor then
@@ -76,8 +65,9 @@ function GAC:PLAYER_ENTERING_WORLD(isInitialLogin, isReloadingUi)
     end)
 end
 
+--- Handles PLAYER_LOGOUT event.
 function GAC:PLAYER_LOGOUT()
-    if self.playerCharacter then
-        self.characterData.modelData = self.playerCharacter:Serialize()
+    if self.FlushPersistence then
+        self:FlushPersistence()
     end
 end

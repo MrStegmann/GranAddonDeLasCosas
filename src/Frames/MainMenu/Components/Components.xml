@@ -10,7 +10,11 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
     <Script file="TabButton.lua"/>
     <Script file="TabContainer.lua"/>
     <Script file="CharSheet\AttributesTab.lua"/>
+    <Script file="CharSheet\components\RaceSelectionComponent.lua"/>
+    <Script file="CharSheet\components\DynamicBonusesComponent.lua"/>
+    <Script file="CharSheet\components\TraitCardComponent.lua"/>
     <Script file="CharSheet\CharacteristicsTab.lua"/>
     <Script file="CharSheet\ProgressionTab.lua"/>
+    <Script file="CharSheet\TraitsTab.lua"/>
     <Script file="ImportDialog.lua"/>
 </Ui>

@@ -61,12 +61,22 @@ Modificaciones limpias a los marcos nativos de WoW (Player y Target):
 
 ## 📁 Estructura del Código
 El código está puramente construido en Lua, separado modularmente bajo la carpeta `src/`:
-- `src/Communication/`: Emisor y receptor del protocolo P2P invisible del addon.
-- `src/Data/`: Bases de datos internas (Tabla de niveles de experiencia, modificadores de Huargen, listado de atributos).
-- `src/Events/`: Controladores de auras y eventos que no están atados a UI gráfica.
-- `src/Frames/`: Toda la construcción de Interfaz (XML y Lua). Se divide en `MainMenu`, `InspectionMenu`, `QuickButtonsMenu` y modificaciones de `UI` nativa (PlayerPlate/TargetPlate).
-- `src/Locales/`: Archivos de traducción y localización (ej. `ES_es`).
-- `src/Utils/`: Funciones genéricas de apoyo (TRP3 Bridge, Helpers matemáticos).
+- `src/Communication/`: Carpeta contenedora de la API del addon y la comunicación P2P entre addons. (usa `Communication.xml` para leer los archivos y ser reconocidos por el addon)
+- `src/Data/`: Bases de datos internas (Tabla de niveles de experiencia, modificadores de Huargen, listado de atributos). Sólo contiene datos. (usa `Data.xml` para leer los archivos y ser reconocidos por el addon)
+- `src/Constants/`: Constantes globales. (usa `Constants.xml` para leer los archivos y ser reconocidos por el addon)
+- `src/Events/`: Funciones bridge con API WoW. (usa `Events.xml` para leer los archivos y ser reconocidos por el addon)
+- `src/Frames/`: Interfaces gráficas. Basado en Featured-Based architecture.
+  - `src/Frames/[feature]/components/`: Componentes de la feature (usa `components.xml` para leer los archivos y ser reconocidos por el addon)
+  - `src/Frames/[feature]/utils/`: Funciones utilitarias reutilizabes a nivel de feature (usa `utils.xml` para leer los archivos y ser reconocidos por el addon)
+  - `src/Frames/[feature]/services/`: Lógica de negocio de la feature. Se encarga de usar los eventos de `src/Events`, `src/Communication` y `src/Services/`. (usa `services.xml` para leer los archivos y ser reconocidos por el addon)
+  - `src/Frames/[feature]/store/`: Almacenamiento temporal de la feature para servir en todos sus componentes. (usa `store.xml` para leer los archivos y ser reconocidos por el addon)
+  - `src/Frames/[feature]/[feature].xml`: Exportador principal de la feature. (usa `[feature].xml` para leer los archivos y ser reconocidos por el addon)
+  - `src/Frames/[feature]/[feature].lua`: Orquestador.
+- `src/Locales/`: Archivos de traducción y localización (ej. `ES_es`) (usa `Locales.xml` para leer los archivos y ser reconocidos por el addon)
+- `src/Utils/`: Funciones utilitarias globales. (usa `Utils.xml` para leer los archivos y ser reconocidos por el addon)
+- `src/Services/`: Servicios para obtener los Datos que se usan de manera global. (usa `Services.xml` para leer los archivos y ser reconocidos por el addon)
+- `GranAddonDeLasCosas.xml`: Archivo para que todos los archivos `src/**/*.xml` sean importados y cargados para ser reconocidos en el addon.
+- `GAC_DEV.toc`: Archivo para que el archivo `GranAddonDeLasCosas.xml` sea importado y cargado para ser reconocidos en el addon. Define el Addon y permite que el juego lo reconozca.
 
 ---
 

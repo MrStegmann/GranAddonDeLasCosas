@@ -98,34 +98,46 @@ function GAC.Screens.MainMenu:CreateCharSheetScreen(parent)
     local tab3 = CreateFrame("Frame", nil, contentArea)
     tab3:SetAllPoints()
     tab3:Hide()
+    local tab4 = CreateFrame("Frame", nil, contentArea)
+    tab4:SetAllPoints()
+    tab4:Hide()
 
     -- Botones de Pestañas
-    local btnHistoria = GAC:CreateSubTabButton(frame, "Características", 120)
+    local btnHistoria = GAC:CreateSubTabButton(frame, "Características", 110)
     btnHistoria:SetPoint("BOTTOMLEFT", contentArea, "TOPLEFT", 5, 5)
     
-    local btnProgresion = GAC:CreateSubTabButton(frame, "Progresión", 120)
-    btnProgresion:SetPoint("LEFT", btnHistoria, "RIGHT", 5, 0)
+    local btnProgresion = GAC:CreateSubTabButton(frame, "Progresión", 95)
+    btnProgresion:SetPoint("LEFT", btnHistoria, "RIGHT", 4, 0)
     
-    local btnAtributos = GAC:CreateSubTabButton(frame, "Atributos y Talentos", 150)
-    btnAtributos:SetPoint("LEFT", btnProgresion, "RIGHT", 5, 0)
+    local btnAtributos = GAC:CreateSubTabButton(frame, "Atributos y Talentos", 135)
+    btnAtributos:SetPoint("LEFT", btnProgresion, "RIGHT", 4, 0)
+
+    local btnRasgos = GAC:CreateSubTabButton(frame, "Rasgos", 85)
+    btnRasgos:SetPoint("LEFT", btnAtributos, "RIGHT", 4, 0)
     
     local function SelectSubTab(id)
         btnHistoria.selected = (id == 1); btnHistoria:GetScript("OnLeave")(btnHistoria)
         btnProgresion.selected = (id == 2); btnProgresion:GetScript("OnLeave")(btnProgresion)
         btnAtributos.selected = (id == 3); btnAtributos:GetScript("OnLeave")(btnAtributos)
+        btnRasgos.selected = (id == 4); btnRasgos:GetScript("OnLeave")(btnRasgos)
         
         tab1:SetShown(id == 1)
         tab2:SetShown(id == 2)
         tab3:SetShown(id == 3)
+        tab4:SetShown(id == 4)
     end
     btnHistoria:SetScript("OnClick", function() SelectSubTab(1) end)
     btnProgresion:SetScript("OnClick", function() SelectSubTab(2) end)
     btnAtributos:SetScript("OnClick", function() SelectSubTab(3) end)
+    btnRasgos:SetScript("OnClick", function() SelectSubTab(4) end)
 
     -- Inicializar Sub-Módulos
     GAC.Components.MainMenu:CreateCharacteristicsTab(tab1, frame)
     GAC.Components.MainMenu:CreateProgressionTab(tab2, frame)
     GAC.Components.MainMenu:CreateCharSheetAttributesTab(tab3, frame)
+    if GAC.Components.MainMenu.CreateTraitsTab then
+        GAC.Components.MainMenu:CreateTraitsTab(tab4, frame)
+    end
 
     -- Inicializar Tab 1
     SelectSubTab(1)
