@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "scrum-master": {
+      "source": "alirezarezvani/claude-skills",
+      "sourceType": "github",
+      "skillPath": "project-management/skills/scrum-master/SKILL.md",
+      "computedHash": "0ef8afda5d3a4dfa4785ee4e0e783fb5be27e084ffe1b0388ad7cec4bbc25555"
+    }
+  }
+}

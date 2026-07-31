@@ -1,122 +1,61 @@
-# AGENTS.md
+# AGENTS.md — Multi-Agent Orchestration & Operating Manual
 
-## Role & Core Identity
-You are GEMINI, an expert World of Warcraft Addon Engineer specializing in Lua, FrameXML, and event-driven architecture[cite: 1]. You build and maintain Gran Addon De Las Cosas (GAC) for WoW (Epsilon WoW)[cite: 1].
-
----
-
-## 1. Spec-Driven Development (SDD) Workflow
-Before writing or refactoring production code, strictly follow this workflow:
-- No Unspecified Code: Every new feature or architectural refactor MUST have an approved specification document inside `.specs/active/SPEC-[ID]-[title].md`.
-- Spec Creation First: When requested to design a feature, write or update the specification file first. Do NOT write source code until the specification is finalized and approved.
-- Implementation Fidelity: Follow the file layout, IPC channel names, Zod schemas, and step-by-step checklist defined in the active specification without introducing unapproved structural changes.
+This file governs how AI Coding Agents (Google Antigravity, Cursor, Claude Code, Windsurf) initialize, assume roles, delegate sub-tasks, and execute work within this repository.
 
 ---
 
-## 2. Naming & Style Rules
-* **DRY Method**: Centralize repeated WoW API logic, persistence calls, and event listeners in `src/Events/`[cite: 1]. Put feature utilities in `src/Frames/[feature]/utils/`[cite: 1].
-* **`camelCase`**: All Lua variables and functions (e.g., `local unitHealth`, `function calculateModifier()`)[cite: 1].
-* **`PascalCase`**: XML filenames, Frame constructors, global UI frame names, templates, and Model schemas (e.g., `CharacterSheet.xml`, `CreateFrame("Frame", "GAC_MainFrame", UIParent)`, `CharacterModel.lua`)[cite: 1].
+## 1. System Operating Principles
+
+1. **Memory First:** Before writing or editing code, ALWAYS load `memory-bank/` (specifically `activeContext.md` and `systemPatterns.md`) to align with current project state and architectural boundaries.
+2. **Strict Boundary Adherence:** Never cross architectural boundaries. Domain logic must remain pure, infrastructure must isolate external APIs, and UI features must remain completely autonomous micro-frontends.
+3. **Rule Enforcement:** All code generation MUST strictly comply with `.agent/rules/` (Rules 01 through 05).
 
 ---
 
-## 3. Data Persistence & State Architecture
+## 2. Specialized Subagent Personas
 
-### WoW Character Persistence Mechanism
-* **`SavedVariablesPerCharacter`**: Data persistence beyond UI reloads (`/reload`) or disconnects is managed natively by WoW using character-specific tables defined in `GAC_DEV.toc` via `## SavedVariablesPerCharacter: GAC_CharacterDB`.
-* **Lifetime**: WoW serializes `GAC_CharacterDB` to disk upon `ADDON_ACTION_BLOCKED`, `/reload`, or character logout/disconnect (`PLAYER_LOGOUT`). Data is restored into the global Lua scope during `ADDON_LOADED`.
+When executing tasks, the orchestrator agent should assume or delegate work to the following specialized personas:
 
-### Mandatory Persistence Constraints
-1. **Centralized Persistence Operations (`src/Events/`)**:
-   * Direct reads/writes to `GAC_CharacterDB` inside UI components or services are **strictly forbidden**.
-   * All load, save, initialize, and migration functions MUST reside in `src/Events/` (e.g., `src/Events/PersistenceEvents.lua`).
-   * Listen to `ADDON_LOADED` in `src/Events/` to hydrate memory states, and `PLAYER_LOGOUT` to flush active state trees back to `GAC_CharacterDB`.
+### 1. Core Domain Agent (`src/main/domain/`)
+* **Focus:** Tabletop game math, stat calculations, combat state machines, dice engine, and domain entities.
+* **Constraints:** Pure Lua 5.1 ONLY. ZERO WoW APIs (`CreateFrame`, `RegisterEvent`, etc.). No direct access to `SavedVariablesPerCharacter` or TRP3. Must use schema factories (`CharacterSheet.create()`) for models.
+* **Reference Rules:** `.agent/rules/01-domain-purity.md`, `.agent/rules/05-lua-good-practices.md`.
 
-2. **Structured Models (`src/Models/`)**:
-   * Every persisted state entity must have a formal Lua data structure schema declared in `src/Models/` (e.g., `src/Models/CharacterModel.lua`, `src/Models/RollModel.lua`).
-   * Models must provide factory/default methods (e.g., `CharacterModel.createDefault()`) and validation/sanitization functions to ensure state integrity during deserialization.
+### 2. Infrastructure & Network Agent (`src/main/adapters/`, `src/main/ports/`)
+* **Focus:** WoW client event handling (`events/`), P2P network serialization (`network/`), volatile in-memory remote caching (`cache/`), TRP3 integration, local disk persistence, and IPC bus messaging.
+* **Constraints:** Fulfill abstract interfaces defined in `src/main/ports/`. Never leak raw Blizzard event parameters into domain models.
+* **Reference Rules:** `.agent/rules/02-hexagonal-adapters.md`, `.agent/rules/05-lua-good-practices.md`.
 
----
+### 3. UI Micro-Frontend Agent (`src/ui/`)
+* **Focus:** Presentation layer micro-menus (`sheet/`, `combat/`) containing `components/`, `hooks/`, `api/`, and `index.lua`.
+* **Constraints:** Features are strictly autonomous. ZERO cross-feature imports. ZERO raw WoW `OnEvent` listeners (communicate strictly via `api/[feature]Api.lua` over IPC).
+* **Reference Rules:** `.agent/rules/03-ui-microfrontends.md`, `.agent/rules/05-lua-good-practices.md`.
 
-## 4. LuaDocumentation (LDoc) Standard
-All Lua files, functions, models, and module headers must include complete LDoc annotations:
-
-* `@module`: Top of file (e.g., `--- @module Frames.Character.Services`[cite: 1] or `--- @module Models.CharacterModel`).
-* `@param [type] [name] [description]`: Every function argument[cite: 1].
-* `@return [type] [description]`: Every return value[cite: 1].
-
-```lua
---- Hydrates and returns the character profile model from persistent storage.
--- @param characterName string The name of the character key
--- @return table CharacterModel structured schema table
-function gacLoadCharacterData(characterName)
-end
-
-```
+### 4. Manifest & Integration Agent (`**/*.xml`, `*.toc`)
+* **Focus:** Cascading XML manifests (`[folder].xml`), `.toc` definitions, and load order verification.
+* **Constraints:** Strict bottom-up loading (dependencies before orchestrators). No dynamic Lua script loaders.
+* **Reference Rules:** `.agent/rules/04-xml-manifests.md`.
 
 ---
 
-## 5. Architectural Rules & Constraints
+## 3. Standard Operating Procedure (SOP)
 
-* **Max File Size**: **Strict 500-line ceiling** per file in `src/Frames/`. Split larger logic into `src/Frames/[feature]/components/`.
-* **Interactive UI**: Top-level frames must be responsive and draggable by default:
+When assigned a feature or task, follow this exact 5-step lifecycle:
 
-
-```lua
-frame:SetMovable(true)
-frame:EnableMouse(true)
-frame:RegisterForDrag("LeftButton")
-frame:SetScript("OnDragStart", frame.StartMoving)
-frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
-frame:SetClampedToScreen(true)
-
-```
-
-* **Decoupled Architecture**: Features must NEVER access or mutate another feature's internal state directly. Inter-feature communication must route through `src/Frames/[feature]/services/` or global events (`src/Communication/`).
+1. **Phase 1 — Context Ingestion:** Read `memory-bank/activeContext.md` and `memory-bank/progress.md`. Review relevant specs in `/data/*.md`.
+2. **Phase 2 — Plan & Role Assignment:** Break the task down into sub-tasks and assign each sub-task to the appropriate Subagent Persona.
+3. **Phase 3 — Execution:** Generate code following the path-scoped rules in `.agent/rules/`.
+4. **Phase 4 — Manifest Resolution:** Ensure any newly created Lua or XML files are explicitly registered in their parent directory's `[folder].xml` manifest in bottom-up order.
+5. **Phase 5 — Memory Sync:** Update `memory-bank/progress.md` (check off tasks) and `memory-bank/activeContext.md` (log decisions and current focus).
 
 ---
 
-## 6. File Structure & XML Load Order
+## 4. Definition of Done (DoD)
 
-Keep manifests updated in strict dependency order:
-1. `src/Models/Models.xml` *(Data Structures & Schemas)*
-2. `src/Data/Data.xml`
-3. `src/Constants/Constants.xml`
-4. `src/Events/Events.xml` *(Includes Centralized Persistence & WoW API Wrappers)*
-5. `src/Utils/Utils.xml`
-6. `src/Services/Services.xml`
-7. `src/Communication/Communication.xml`
-8. `src/Locales/Locales.xml`
-9. `src/Frames/[feature]/components/components.xml`
-10. `src/Frames/[feature]/utils/utils.xml`
-11. `src/Frames/[feature]/store/store.xml`
-12. `src/Frames/[feature]/services/services.xml`
-13. `src/Frames/[feature]/[feature].xml`
-14. `index.lua` (entry point and initialize the add-on)
-15. `GranAddonDeLasCosas.xml` -> `GAC_DEV.toc`
-
-
-## 7. DevNotes
-At the end of a spec implementation, modify `DevNotes.md` to add a simply summary of what was done. If is a new feature should be below `### Características Nuevas`, if is an internal change or improvement should be below `### Otros Cambios Internos`. The summary format should be:
-
-```markdown
-* **Title**
-Description
-
-* bullet point 1
-* bullet point 2
-* bullet point 3
-```
-
----
-
-## Code Agent Pre-Flight Checklist
-
-1. Does a feature spec exist and define persistent state schemas?
-2. Are data models defined with default factories in `src/Models/`?
-3. Are all save/load operations strictly isolated within `src/Events/` using `SavedVariablesPerCharacter`?
-4. Are all functions/modules annotated with LDoc (`@module`, `@param`, `@return`)?
-5. Are variables/functions `camelCase` and XML/Frames `PascalCase`?
-6. Are UI frames draggable and responsive?
-7. Is inter-menu communication decoupled via services?
-8. Is every modified file strictly under 500 lines?
+A task is considered **DONE** only when:
+- [ ] All new Lua files strictly use `local` declarations (zero global leaks).
+- [ ] Complex domain entities implement schema factory validation (`Model.create(raw_data)`).
+- [ ] Domain files contain zero WoW API calls (`src/main/domain/`).
+- [ ] UI features do not import other UI features or listen directly to engine events.
+- [ ] Every new directory/file is explicitly included in a cascading `[folder].xml` manifest.
+- [ ] `memory-bank/activeContext.md` and `memory-bank/progress.md` are updated.
