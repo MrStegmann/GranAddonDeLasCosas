@@ -1,31 +1,32 @@
 # Project Progress & Roadmap Tracker
 
-## Implementation Milestones
+## Current Sprint: Sprint 1 — Architectural Realignment & Hexagonal Migration (34 SP)
 
-- [x] **Phase 1: Skeleton Wiring & Manifest Validation**
-  - [x] Configure `THE-GAG.toc` with `SavedVariablesPerCharacter`.
-  - [x] Scaffold `src/main/` and `src/ui/` folders with valid `[folder].xml` manifests.
-  - [x] Verify error-free initialization with `src/main/index.lua` startup message.
+- [ ] **Epic 1: Physical Directory Scaffolding & Cascading Manifests (6 SP)**
+  - [ ] Story 1.1: Scaffold `src/main/` and `src/ui/` directory hierarchy & XML manifests (3 SP)
+  - [ ] Story 1.2: Update `GAC_DEV.toc` entry point to `src/src.xml` (2 SP)
+  - [ ] Story 1.3: Clean up legacy TypeScript files (`src/Models/modelosTS/*.ts`) (1 SP)
 
-- [ ] **Phase 2: Infrastructure & IPC Backbone**
-  - [ ] Implement `EventDispatcher.lua` for lifecycle signals (`ADDON_LOADED`, `PLAYER_ENTERING_WORLD`).
-  - [ ] Implement `LocalIPCAdapter.lua` and `IPCMessagePort.lua`.
-  - [ ] Implement `SavedVarsStorageAdapter.lua` for local character persistence.
-  - [ ] Implement `P2PNetworkAdapter.lua` and `RemotePlayerCacheAdapter.lua`.
+- [ ] **Epic 2: Core Domain Purity & Entity Factory Refactoring (11 SP)**
+  - [ ] Story 2.1: Refactor `Character.lua` into `src/main/domain/` with pure schema factory `Character.create()` (5 SP)
+  - [ ] Story 2.2: Refactor Item, Armor & Weapon entities to pure Lua modules (3 SP)
+  - [ ] Story 2.3: Decouple `CharacterService.lua` into `CharacterCalculator.lua` (3 SP)
 
-- [ ] **Phase 3: Hexagonal Core Domain**
-  - [ ] Implement character sheet model & stat calculator (`src/main/domain/sheet/`).
-  - [ ] Implement turn-based combat state engine & dice roll math (`src/main/domain/combat/`).
-  - [ ] Implement TRP3 read-only profile adapter (`src/main/adapters/TRP3Adapter.lua`).
+- [ ] **Epic 3: Infrastructure, Event Dispatching & Local IPC Backbone (12 SP)**
+  - [ ] Story 3.1: Implement `EventDispatcher.lua` in `src/main/adapters/events/` (4 SP)
+  - [ ] Story 3.2: Implement `LocalIPCAdapter.lua` bus for backend-to-frontend messaging (5 SP)
+  - [ ] Story 3.3: Implement `SavedVarsStorageAdapter.lua` and `TRP3Adapter.lua` (3 SP)
 
-- [ ] **Phase 4: Feature-Based UI Micro-Menus**
-  - [ ] Build **Character Sheet Menu** (`src/ui/sheet/` - components, hooks, API, index).
-  - [ ] Build **Combat Tracker Menu** (`src/ui/combat/` - components, hooks, API, index).
-  - [ ] Verify zero direct dependencies between Sheet and Combat UI modules.
+- [ ] **Epic 4: UI Micro-Frontend Isolation & Component Refactoring (4 SP)**
+  - [ ] Story 4.1: Establish base UI architecture & shared templates (`src/ui/shared/`) (2 SP)
+  - [ ] Story 4.2: Refactor Character Sheet UI micro-frontend (`src/ui/sheet/`) (2 SP)
 
-- [ ] **Phase 5: P2P Integration & Polish**
-  - [ ] End-to-end testing of remote player inspection and versioned cache invalidation.
-  - [ ] Live turn-based combat delta broadcast testing.
+- [x] **Epic 5: Memory Bank Synchronization & Governance (1 SP)**
+  - [x] Story 5.1: Realign `activeContext.md`, `progress.md`, and generate `sprint.md` backlog (1 SP)
 
-## Known Gaps & Tech Debt
-* *None currently — project is in initial setup phase.*
+---
+
+## Known Gaps & Tech Debt Tracked in Backlog
+* Physical directory structure in `src/` currently uses legacy monolithic layout (`Communication/`, `Frames/`, `Models/`, `Services/`).
+* Domain models (`Character.lua`) currently call WoW APIs directly (`UnitName("player")`).
+* Central `index.lua` listens directly to WoW events rather than routing through `EventDispatcher.lua`.
