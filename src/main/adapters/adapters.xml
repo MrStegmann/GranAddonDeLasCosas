@@ -1,0 +1,8 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Include file="events\events.xml"/>
+    <Include file="network\network.xml"/>
+    <Include file="cache\cache.xml"/>
+    <Script file="LocalIPCAdapter.lua"/>
+    <Script file="SavedVarsStorageAdapter.lua"/>
+    <Script file="TRP3Adapter.lua"/>
+</Ui>

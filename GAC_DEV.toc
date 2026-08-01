@@ -6,4 +6,5 @@
 ## SavedVariables: GranAddonDeLasCosasDB
 ## SavedVariablesPerCharacter: GAC_CharacterDB
 
+src\src.xml
 GranAddonDeLasCosas.xml

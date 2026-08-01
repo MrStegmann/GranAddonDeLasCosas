@@ -1,9 +1,5 @@
 # AGENTS.md — Multi-Agent Orchestration & Operating Manual
 
-This file governs how AI Coding Agents (Google Antigravity, Cursor, Claude Code, Windsurf) initialize, assume roles, delegate sub-tasks, and execute work within this repository.
-
----
-
 ## 1. System Operating Principles
 
 1. **Memory First:** Before writing or editing code, ALWAYS load `memory-bank/` (specifically `activeContext.md` and `systemPatterns.md`) to align with current project state and architectural boundaries.
