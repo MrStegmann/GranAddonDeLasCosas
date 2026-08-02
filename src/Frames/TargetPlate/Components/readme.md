@@ -1,1 +1,0 @@
-Carpeta contenedora de los diferentes elementos reutilizables utilizados por las Screens.

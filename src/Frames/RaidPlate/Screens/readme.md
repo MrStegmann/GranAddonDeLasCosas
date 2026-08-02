@@ -1,1 +1,0 @@
-Carpeta contenedora de las diferentes pantallas (Screens) del Frame.

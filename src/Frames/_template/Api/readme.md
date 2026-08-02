@@ -1,1 +1,0 @@
-Esta carpeta contendrá los archivos que manejarán lógica personalizada de este Frame y se comunicarán con otros elementos de Epsilon, otros addons a través de los archivos en Communication.

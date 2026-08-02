@@ -1,24 +1,24 @@
 # Active Context & Current Focus
 
-## Current Phase: Sprint 1 — Architectural Realignment & Hexagonal Migration (Completed)
+## Current Phase: Sprint 2 — Legacy Decoupling & Micro-Frontend Migration (Completed)
 
 ## Recent Architectural Deliverables
-1. **Directory & Manifest Scaffolding (`src/main/`, `src/ui/`):**
-   - Created `src/src.xml`, `src/main/main.xml`, `src/ui/ui.xml`, and sub-folder XML manifests.
-   - Updated [GAC_DEV.toc](file:///j:/Juegos/Epsilon927/Epsilon/_retail_/Interface/AddOns/GAC_DEV/GAC_DEV.toc) to load `src/src.xml` as primary entry manifest.
-2. **Domain Models & Calculation Engine (`src/main/domain/`):**
-   - Implemented pure Lua 5.1 domain entity factories: `Item.create()`, `Armor.create()`, `Weapon.create()`, `Character.create()`.
-   - Created `CharacterCalculator.lua` encapsulating deterministic stat, health, and attribute math without WoW API calls.
-3. **Ports & Technical Infrastructure Adapters (`src/main/ports/`, `src/main/adapters/`):**
-   - Defined port interfaces: `IPCMessagePort.lua`, `StoragePort.lua`, `RemotePlayerPort.lua`.
-   - Implemented `EventDispatcher.lua`, `LocalIPCAdapter.lua`, `SavedVarsStorageAdapter.lua`, `TRP3Adapter.lua`, `NetworkAdapter.lua`, and `RemoteCacheAdapter.lua`.
-4. **UI Micro-Frontend Scaffolding (`src/ui/`):**
-   - Implemented shared UI layout templates (`Templates.xml`) and helper functions (`UIHelpers.lua`).
-   - Scaffolded Character Sheet micro-frontend (`src/ui/sheet/`) with IPC client API adapter (`sheetApi.lua`).
-5. **Clean Runtime Tree:**
-   - Removed all non-executable TypeScript (`.ts`) files from `src/Models/modelosTS/` and archived reference definitions into `.specs/modelosTS/`.
+1. **Legacy Model & Service Deprecation:**
+   - Removed legacy `src/Models/` and `src/Services/` directories.
+   - Aliased `GAC.Character`, `GAC.Item`, `GAC.Armor`, `GAC.Weapon`, `GAC.CharacterCalculator`, and `GAC.Services.CharacterService` in `index.lua` to pure Lua domain modules under `src/main/domain/`.
+2. **Micro-Frontend Realignment (`src/ui/`):**
+   - Refactored all visual frames into autonomous micro-frontends: `player-plate`, `target-plate`, `raid-plate`, `main-menu`, `inspection`, `quick-actions`, `economy`, `initiative`, `exp-bar`, `sheet`, `combat`.
+   - Connected all UI views to `LocalIPCAdapter` via dedicated client APIs (`playerPlateApi`, `targetPlateApi`, `raidPlateApi`, `inspectionApi`, `quickActionsApi`, `sheetApi`).
+3. **Infrastructure & Data Consolidation (`src/main/`):**
+   - Encapsulated roleplay data tables into `src/main/domain/DataTables.lua`.
+   - Encapsulated localization strings into `src/main/adapters/locales/LocalesAdapter.lua`.
+   - Realigned P2P messaging into `NetworkAdapter.lua` and TRP3 profile queries into `TRP3Adapter.lua`.
+4. **Complete Directory Cleanup & TOC Consolidation:**
+   - Deleted all 11 legacy subdirectories from `src/` (`Models/`, `Services/`, `Frames/`, `Communication/`, `Constants/`, `Enums/`, `Events/`, `Hooks/`, `Locales/`, `Utils/`) and deleted `GranAddonDeLasCosas.xml`.
+   - `src/` now contains **strictly** `main/`, `ui/`, and `src.xml`.
+   - `GAC_DEV.toc` loads strictly `src\src.xml` and `index.lua`.
 
 ## Active Architectural Principles
 * **Hexagonal Domain Purity:** Logic in `src/main/domain/` operates exclusively in pure Lua 5.1 with zero WoW client API references.
-* **Micro-Frontend UI Isolation:** UI views communicate exclusively over `LocalIPCAdapter` using feature-scoped client APIs (`sheetApi.lua`).
+* **Micro-Frontend UI Isolation:** UI views communicate exclusively over `LocalIPCAdapter` using feature-scoped client APIs.
 * **Cascading XML Load Order:** All files are declared in bottom-up cascading XML manifests (`[folder].xml`).

@@ -2,6 +2,7 @@
     <Include file="events\events.xml"/>
     <Include file="network\network.xml"/>
     <Include file="cache\cache.xml"/>
+    <Include file="locales\locales.xml"/>
     <Script file="LocalIPCAdapter.lua"/>
     <Script file="SavedVarsStorageAdapter.lua"/>
     <Script file="TRP3Adapter.lua"/>

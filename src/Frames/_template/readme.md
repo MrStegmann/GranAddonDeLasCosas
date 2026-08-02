@@ -1,3 +1,0 @@
-Este template debe usarse para la creación de nuevos frames y seguir exactamente las instrucciones de arquitectura especificada en cada README.MD dentro de las carpetas.
-
-Se debe aplicar siempre métodos DRY a funciones y variables que se repiten más de 1 vez. Se deben crear funciones y variables y no repetir código. Evitar el uso de números sueltos en el código, es mejor crear variables para ellos y usarlas en su lugar. (por ejemplo ancho y alto de botones).

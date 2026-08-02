@@ -1,2 +1,0 @@
--- Archivo principal para cargar todas las Screens.
--- Será el MAINFRAME de este FRAME. Aquí haremos el ON_LOAD y los evento.
