@@ -16,6 +16,26 @@ function Character.createDefaultData()
             mana = 10,
             spirit = 10,
         },
+        initiative = 100,
+        offensiveActions = 2,
+        canAttack = true,
+        criticalStrickRange = 20,
+        criticalFailureRange = 1,
+        isAmbushActive = false,
+        defensiveActions = 1,
+        canIntercept = true,
+        movement = 20,
+        canPhysicalPerceptionCheck = true,
+        canMagicPerceptionCheck = true,
+        canTrade = true,
+        canAskAction = true,
+        isFlanked = false,
+        isDowned = false,
+        isStunned = false,
+        isHighest = false,
+        isBacked = false,
+        isBlinded = false,
+        states = {},
         attributes = {
             strength = 0,
             dexterity = 0,
@@ -104,6 +124,14 @@ local function sanitizeNum(val, default)
     return type(val) == "number" and val or (default or 0)
 end
 
+--- Helper function to sanitize a boolean attribute value.
+local function sanitizeBool(val, default)
+    if type(val) == "boolean" then
+        return val
+    end
+    return default
+end
+
 --- Sanitizes equipment slots and wraps item sub-tables into domain models if available.
 local function sanitizeEquipment(eq)
     eq = type(eq) == "table" and eq or {}
@@ -179,6 +207,26 @@ function Character.create(raw)
             mana = sanitizeNum(rawRes.mana, defaults.resources.mana),
             spirit = sanitizeNum(rawRes.spirit, defaults.resources.spirit),
         },
+        initiative = sanitizeNum(raw.initiative, defaults.initiative),
+        offensiveActions = sanitizeNum(raw.offensiveActions, defaults.offensiveActions),
+        canAttack = sanitizeBool(raw.canAttack, defaults.canAttack),
+        criticalStrickRange = sanitizeNum(raw.criticalStrickRange, defaults.criticalStrickRange),
+        criticalFailureRange = sanitizeNum(raw.criticalFailureRange, defaults.criticalFailureRange),
+        isAmbushActive = sanitizeBool(raw.isAmbushActive, defaults.isAmbushActive),
+        defensiveActions = sanitizeNum(raw.defensiveActions, defaults.defensiveActions),
+        canIntercept = sanitizeBool(raw.canIntercept, defaults.canIntercept),
+        movement = sanitizeNum(raw.movement, defaults.movement),
+        canPhysicalPerceptionCheck = sanitizeBool(raw.canPhysicalPerceptionCheck, defaults.canPhysicalPerceptionCheck),
+        canMagicPerceptionCheck = sanitizeBool(raw.canMagicPerceptionCheck, defaults.canMagicPerceptionCheck),
+        canTrade = sanitizeBool(raw.canTrade, defaults.canTrade),
+        canAskAction = sanitizeBool(raw.canAskAction, defaults.canAskAction),
+        isFlanked = sanitizeBool(raw.isFlanked, defaults.isFlanked),
+        isDowned = sanitizeBool(raw.isDowned, defaults.isDowned),
+        isStunned = sanitizeBool(raw.isStunned, defaults.isStunned),
+        isHighest = sanitizeBool(raw.isHighest, defaults.isHighest),
+        isBacked = sanitizeBool(raw.isBacked, defaults.isBacked),
+        isBlinded = sanitizeBool(raw.isBlinded, defaults.isBlinded),
+        states = type(raw.states) == "table" and raw.states or {},
         attributes = {
             strength = sanitizeNum(rawAttr.strength, 0),
             dexterity = sanitizeNum(rawAttr.dexterity, 0),

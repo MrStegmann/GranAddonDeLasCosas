@@ -20,7 +20,7 @@
   - [x] `Armor.lua` domain metatable with schema validation
   - [x] `Weapon.lua` domain metatable with schema validation
   - [x] `Shield.lua` domain metatable with schema validation
-  - [x] `Character.lua` domain metatable with schema validation & `createDefault()` fallback
+  - [x] `Character.lua` domain metatable with schema validation, `CombatStats` integration, & `createDefault()` fallback
   - [x] Cascading manifest update in `models.xml` and `domain.xml`
 - [x] **Persistent Data Loading (`src/main/adapters/events/`)**
   - [x] `AddonLoadedHandler.lua` event listener for `ADDON_LOADED`

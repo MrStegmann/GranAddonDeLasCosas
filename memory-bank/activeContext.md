@@ -9,6 +9,7 @@
    - Registered scripts in `src/main/ports/TR3Bridge/TR3Bridge.xml` and wired sub-manifest in `src/main/ports/ports.xml`.
 2. **Character Sheet Domain Models Transpilation (`src/main/domain/models/`):**
    - Implemented pure Lua 5.1 domain entities: `Armor.lua`, `Weapon.lua`, `Shield.lua`, and `Character.lua`.
+   - Updated `Character.lua` to incorporate `CombatStats` interface properties (`initiative`, `offensiveActions`, `canAttack`, `criticalStrickRange`, `criticalFailureRange`, `isAmbushActive`, `defensiveActions`, `canIntercept`, `movement`, perception flags, tactical condition flags, `states`) with default value sanitization.
    - Created schema factories (`Model.create(raw_data)`) and default initializer (`Character.createDefault()`).
    - Registered model scripts in `models.xml`.
 
