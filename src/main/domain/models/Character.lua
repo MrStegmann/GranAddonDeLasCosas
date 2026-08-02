@@ -51,7 +51,7 @@ function Character.createDefaultData()
                 oneHandedCombat = 0,
                 athletics = 0,
                 brutality = 0,
-                sturdyDefense = 0,
+                robustDefense = 0,
             },
             dexterity = {
                 precision = 0,
@@ -157,7 +157,7 @@ local function sanitizeEquipment(eq)
     end
 
     if type(eq.offHand) == "table" then
-        if eq.offHand.durability ~= nil and eq.offHand.damageMod == nil then
+        if eq.offHand.id == "light" or eq.offHand.id == "medium" or eq.offHand.id == "heavy" or eq.offHand.type == "light" or eq.offHand.type == "medium" or eq.offHand.type == "heavy" then
             result.offHand = (ShieldModel and ShieldModel.create) and ShieldModel.create(eq.offHand) or eq.offHand
         else
             result.offHand = (WeaponModel and WeaponModel.create) and WeaponModel.create(eq.offHand) or eq.offHand
@@ -242,7 +242,7 @@ function Character.create(raw)
                 oneHandedCombat = sanitizeNum(strT.oneHandedCombat, 0),
                 athletics = sanitizeNum(strT.athletics, 0),
                 brutality = sanitizeNum(strT.brutality, 0),
-                sturdyDefense = sanitizeNum(strT.sturdyDefense, 0),
+                robustDefense = sanitizeNum(strT.robustDefense, 0),
             },
             dexterity = {
                 precision = sanitizeNum(dexT.precision, 0),

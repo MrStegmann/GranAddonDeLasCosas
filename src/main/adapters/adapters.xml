@@ -1,4 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Include file="services\services.xml" />
     <Include file="cache\cache.xml" />
     <Include file="events\events.xml" />
     <Include file="locales\locales.xml" />

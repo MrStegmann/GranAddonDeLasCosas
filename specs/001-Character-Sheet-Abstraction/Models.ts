@@ -87,7 +87,7 @@ export interface Character extends CombatStats {
             oneHandedCombat: number;
             athletics: number;
             brutality: number;
-            sturdyDefense: number;
+            robustDefense: number;
         };
         dexterity: {
             precision: number;

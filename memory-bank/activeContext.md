@@ -1,17 +1,19 @@
 # Active Context & Current Focus
 
-## Current Phase: Feature 002 — TRP3 Bridges (Completed)
+## Current Phase: Feature 003 — Core Data Metadata Tables & Services (Completed)
 
 ## Recent Architectural Deliverables
-1. **TRP3 Ports Bridge Implementation (`src/main/ports/TR3Bridge/`):**
-   - Created `characteristics.lua` with `getFullName()` and `getClass()` port functions.
-   - Created `inventory.lua` with `getEquipedItems()` (returning `ItemsResponse` structure) and `updateItem()` port functions.
-   - Registered scripts in `src/main/ports/TR3Bridge/TR3Bridge.xml` and wired sub-manifest in `src/main/ports/ports.xml`.
-2. **Character Sheet Domain Models Transpilation (`src/main/domain/models/`):**
-   - Implemented pure Lua 5.1 domain entities: `Armor.lua`, `Weapon.lua`, `Shield.lua`, and `Character.lua`.
-   - Updated `Character.lua` to incorporate `CombatStats` interface properties (`initiative`, `offensiveActions`, `canAttack`, `criticalStrickRange`, `criticalFailureRange`, `isAmbushActive`, `defensiveActions`, `canIntercept`, `movement`, perception flags, tactical condition flags, `states`) with default value sanitization.
-   - Created schema factories (`Model.create(raw_data)`) and default initializer (`Character.createDefault()`).
-   - Registered model scripts in `models.xml`.
+1. **Transpiled Domain Database Tables (`src/main/domain/database/`):**
+   - Transpiled all 7 TS types/constants into pure Lua 5.1 tables: `ArmorDatabase.lua`, `AttributesTalentsDatabase.lua`, `LevelDatabase.lua`, `RaceDatabase.lua`, `ShieldDatabase.lua`, `TraitsDatabase.lua`, and `WeaponsDatabase.lua`.
+   - Created `src/main/domain/database/database.xml` and wired into `src/main/domain/domain.xml`.
+2. **Metadata Read-Only Access Ports (`src/main/ports/metadata/`):**
+   - Implemented `ArmorPort.lua`, `AttributesTalentsPort.lua`, `LevelPort.lua`, `RacePort.lua`, `ShieldPort.lua`, `TraitsPort.lua`, and `WeaponsPort.lua`.
+   - Created `src/main/ports/metadata/metadataPorts.xml` and wired into `src/main/ports/ports.xml`.
+3. **Mechanical Trait Services (`src/main/adapters/services/traits/`):**
+   - Implemented `combatTraitsService.lua`, `talentTraitsService.lua`, and `progressionTraitsService.lua`.
+   - Created `traitsServices.xml` & `services.xml` and wired into `src/main/adapters/adapters.xml`.
+4. **Domain Model Schema Parity (`src/main/domain/models/`):**
+   - Updated `Armor.lua`, `Shield.lua`, `Weapon.lua`, and `Character.lua` to ensure 100% parity with `*-types.ts` specifications.
 
 ## Active Architectural Principles
 * **Hexagonal Domain Purity:** Logic in `src/main/domain/` operates exclusively in pure Lua 5.1 with zero WoW client API references.

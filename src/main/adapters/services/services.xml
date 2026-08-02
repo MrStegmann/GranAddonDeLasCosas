@@ -1,4 +1,3 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Include file="metadata\metadataPorts.xml" />
-    <Include file="TR3Bridge\TR3Bridge.xml" />
+    <Include file="traits\traitsServices.xml" />
 </Ui>
