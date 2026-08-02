@@ -2,25 +2,29 @@
 
 ## 1. Executive Summary & Vision
 **Project Name:** Custom RP & Turn-Based Combat Manager (Epsilon Server)  
-**Target Environment:** World of Warcraft Client (Epsilon Roleplaying Server)  
+**TOC Name:** GAC_DEV  
+**Target Environment:** World of Warcraft Client (Epsilon Roleplaying Server - Retail 11.0.7+)  
 **Core Purpose:** Provide an in-game system for managing custom tabletop-style character sheets and executing turn-based combat mechanics, while offloading standard roleplay profiles to Total RP 3.
 
 ---
 
 ## 2. Technical Stack & Architecture Constraints
-* **Languages:** Native WoW Lua 5.1 (LuaJIT subset), XML (UI frame definitions).
+* **Languages:** Native WoW Lua 5.1 (LuaJIT subset), XML (UI frame definitions & manifests).
 * **Dependencies & Integrations:**
   * **TotalRP3 (TRP3):** Source of truth for base RP metadata (names, titles, base profiles).
   * **TotalRP3 Extended (TRP3-E):** Optional item/inventory integration.
 * **Storage & Persistence:**
-  * **`SavedVariablesPerCharacter`:** Local runtime player data (own sheets, custom combat states, keybindings) is explicitly isolated per character.
+  * **`SavedVariables` (`GranAddonDeLasCosasDB`):** Account-wide persistent configuration and global data.
+  * **`SavedVariablesPerCharacter` (`GAC_CharacterDB`):** Local runtime player data (character sheet, attributes, custom combat state) isolated per character.
   * **In-Memory Volatile Remote Cache:** Inspected sheets and remote player stats exist **only in memory** during the session to avoid bloating disk storage and prevent stale state pollution.
-  * Static game data and reference rules reside in split markdown specs inside `/data/*.md`.
+  * **Game Data & RPG Mechanics Specifications:** Reside in root `Data/` (Lua data tables) and `Data/sistema_de_rol/` (JSON schemas, markdown mechanics specs, professions, and spell definitions).
 * **Execution & Architectural Paradigms:**
+  * **Entry Point & Orchestrator (`index.lua` & `GAC_DEV.toc`):** `GAC_DEV.toc` loads `src/src.xml` followed by `index.lua`. `index.lua` initializes the addon namespace, registers Blizzard events (`ADDON_LOADED`, `CHAT_MSG_SYSTEM`, `GROUP_ROSTER_UPDATE`, `PLAYER_ENTERING_WORLD`, `PLAYER_LOGOUT`), and binds hexagonal domain modules and adapters.
   * **Backend (`src/main/`):** Strict **Ports & Adapters (Hexagonal Architecture)**. Domain logic remains completely decoupled from WoW client APIs, frame event listeners, storage mechanisms, network protocols, and presentation layers.
   * **Network & Remote Caching (`src/main/adapters/network/` & `cache/`):** Communication between players uses custom addon messaging (`C_ChatInfo.SendAddonMessage`). To prevent Blizzard rate-limit throttling, all remote player queries pass through a versioned in-memory cache adapter.
   * **WoW Event Handling (`src/main/adapters/events/`):** Client engine signals (e.g., `ADDON_LOADED`, `CHAT_MSG_ADDON`) act strictly as **Incoming Driving Adapters**.
-  * **Frontend (`src/ui/`):** Completely **Isolated Micro-Menu Features**. Each feature acts as a self-contained "landing page" micro-frontend with its own components, internal UI hooks, dedicated IPC API bridge, and central orchestrator (`index.lua`).
+  * **Localization (`src/main/adapters/locales/`):** Encapsulates multi-language strings and translation tables.
+  * **Frontend (`src/ui/`):** Isolated **Micro-Frontend Architecture**. Features act as self-contained micro-applications with dedicated IPC API bridges and UI components.
   * **Cascading XML Manifests:** Bottom-up XML manifest loading (`[folder].xml`) ensures predictable dependency resolution.
 
 ---
@@ -28,93 +32,78 @@
 ## 3. Architecture & File Structure
 
 ```text
-[AddonName]/
-├── [AddonName].toc             # Entry point; declares SavedVariablesPerCharacter & loads src/src.xml
-├── data/                       # Split markdown reference specifications
-│   ├── abilities/
-│   │   └── abilities_data.md
-│   ├── spells/
-│   │   └── spells_data.md
-│   ├── amor_data.md
-│   ├── attributes-and-talents.md
-│   ├── combat_mechanics.md
-│   ├── heroic-skill.md
-│   ├── levels.md
-│   ├── pets_data.md
-│   ├── profession_data.md
-│   ├── racial-data.md
-│   ├── resource_mechanics.md
-│   ├── sheet_creation.md
-│   ├── shield_data.md
-│   ├── special-characteristics_mechanics.md
-│   ├── states_mechanics.md
-│   ├── traits_mechanics.md
-│   ├── trp3-guidance.md
-│   └── weapons_data.md
-└── src/
+GAC_DEV/
+├── GAC_DEV.toc                 # Entry point TOC; declares SavedVariables & loads src/src.xml & index.lua
+├── AGENTS.md                   # Multi-agent operating manual & architecture rules
+├── CONTEXT.md                  # Project overview & architecture blueprint
+├── README.md                   # Project overview & setup instructions
+├── memory-bank/                # Architectural memory bank
+│   ├── activeContext.md        # Active context & focus
+│   ├── productContext.md       # Product vision & goals
+│   ├── progress.md             # Project progress tracker
+│   ├── projectbrief.md        # Core project brief
+│   ├── systemPatterns.md       # Architectural system patterns
+│   └── techContext.md          # Technical stack context
+└── src/                        # Source Code Manifest Tree
     ├── src.xml                 # Master manifest (Loads main/main.xml then ui/ui.xml)
+    ├── Data/                   # Data manifest directory
+    │   └── sistema_de_rol/
     ├── main/                   # Backend Layer (Ports & Adapters Architecture)
-    │   ├── main.xml
+    │   ├── main.xml            # Loads ports.xml -> domain.xml -> adapters.xml
     │   ├── domain/             # Business Rules Core (Pure Lua, zero WoW APIs)
-    │   │   ├── domain.xml
-    │   │   └── database/       # Data Layer
-    │   │      └── database.xml
+    │   │   ├── models/         # Lua Metatables for domain entities
+    │   │   │   └── models.xml  # XML Manifest for Lua Metatables
+    │   │   └── domain.xml      # XML Manifest for Domain
     │   ├── ports/              # Core Input/Output Interfaces
     │   │   └── ports.xml
     │   └── adapters/           # Concrete Infrastructure Adapters
     │       ├── adapters.xml
-    │       ├── events/         # Incoming Driving Adapter: WoW Client Event Listeners
-    │       │   ├── events.xml
-    │       │   ├── EventDispatcher.lua    # Hidden frame created to register/listen to Blizzard events
-    │       │   ├── LifecycleEvents.lua    # Handlers for ADDON_LOADED & PLAYER_ENTERING_WORLD
-    │       ├── network/        # P2P Transport Layer
-    │       │   ├── network.xml
-    │       │   ├── P2PNetworkAdapter.lua  # Wraps C_ChatInfo.SendAddonMessage
-    │       │   └── PayloadSerializer.lua  # Compresses/decompresses network payloads
-    │       ├── cache/          # Remote Data Cache
-    │       │   ├── cache.xml
-    │       │   └── RemotePlayerCacheAdapter.lua # Volatile in-memory store (TTL & Versioning)
-    │       ├── SavedVarsStorageAdapter.lua    # Reads/writes local SavedVariablesPerCharacter
-    │       ├── TRP3Adapter.lua                # Reads TRP3 profile data
-    │       └── LocalIPCAdapter.lua            # Main IPC Event/Message Bus implementation
-    └── ui/                     # Presentation Layer (Isolated Micro-Menus / Landing Pages)
-        ├── ui.xml              # Loads shared assets and feature manifests
-        └── shared/             # General XML templates & global UI helpers
-            ├── shared.xml
-            └── Templates.xml
-
+    │       ├── cache/          # Volatile In-Memory Remote Cache Sub-Manifest
+    │       │   └── cache.xm
+    │       ├── events/         # Incoming Driving Adapter (WoW Client Events) Sub-Manifest
+    │       │   └── events.xml
+    │       ├── locales/        # Localization Adapter Sub-Manifest
+    │       │   └── locales.xml
+    │       └── network/        # P2P Network Serialization & Transport Sub-Manifest
+    │           └── network.xml
+    └── ui/                     # Presentation Layer (Isolated Micro-Menus)
+        └── ui.xml              # Master UI Manifest
 ```
 
 ---
 
 ## 4. Architectural Boundaries & Communication Flow
 
-### 1. Remote Data Sync & Caching Architecture
+### 1. Remote Data Sync & Caching Architecture (`src/main/adapters/cache/`)
 
-* **`RemotePlayerPort` Interface:** Exposes methods to query player data (e.g., `FetchPlayerSheet(targetGuid, callback)`).
+* **`RemotePlayerPort` Interface:** Exposes methods to query remote player data.
 * **`RemotePlayerCacheAdapter`:** Manages an in-memory dictionary (`{ [targetGuid] = { data, version, lastUpdated } }`).
-* **Version-Header Ping:** When querying a remote player, a lightweight version ping (`VERSION_CHECK`) is sent over `P2PNetworkAdapter`. If the target's data version matches the local cache, cached data is returned instantly with 0 network overhead.
+* **Version-Header Ping:** Lightweight version pings (`VERSION_CHECK`) over `P2PNetworkAdapter` ensure cached remote character data is returned with 0 unnecessary network overhead.
 * **Roleplay/Inspection Strategy:** Uses TTL-based caching (3–5 minutes) before prompting for a version re-check.
-* **Turn-Based Combat Strategy:** Caches static character stats while subscribing to minimal **delta broadcasts** (e.g., health drops or AP spending) during active combat encounters.
-* **Memory Isolation:** Cache is session-only and never saved to `SavedVariablesPerCharacter`.
-
-
+* **Turn-Based Combat Strategy:** Caches static character stats while subscribing to minimal **delta broadcasts** (e.g., health changes or AP spending) during active combat encounters.
+* **Memory Isolation:** Cache is strictly volatile in-memory and never persisted to `SavedVariablesPerCharacter`.
 
 ### 2. Events Adapter (`src/main/adapters/events/`)
 
-* Listens for raw engine events (e.g., `ADDON_LOADED`, `CHAT_MSG_ADDON`).
-* Routes incoming P2P messaging payloads from `CHAT_MSG_ADDON` directly to `P2PNetworkAdapter` for processing.
+* Listens for raw WoW client engine events (e.g., `ADDON_LOADED`, `CHAT_MSG_ADDON`).
+* Routes incoming P2P messaging payloads from `CHAT_MSG_ADDON` directly to `P2PNetworkAdapter` for payload deserialization and domain processing.
 
 ### 3. Backend Hexagon (`src/main/`)
 
-* **Domain (`domain/`):** Contains tabletop game math, combat sequence rules, and stat spending formulas. Zero WoW client dependencies.
-* **Ports & Adapters (`ports/`, `adapters/`):** Connects storage, external TRP3 integrations, network protocols, and local UI messaging.
+* **Domain (`src/main/domain/`):** Contains tabletop game math, combat sequence rules, dice engine, and stat spending formulas. Operates in pure Lua 5.1 with zero WoW client dependencies.
+* **Ports & Adapters (`src/main/ports/`, `src/main/adapters/`):** Connects storage adapters, external TRP3 integrations, network protocols, localization, and local UI IPC messaging.
 
-### 4. UI Features (`src/ui/[feature]/`)
+### 4. Primary Entry Orchestrator (`index.lua`)
 
-* Functions as independent micro-frontend "landing pages".
-* Consumes backend data strictly via its dedicated `api/[feature]Api.lua` IPC adapter.
-* Fully isolated: never imports other UI feature files, never mutates global state, and never listens directly to Blizzard engine events.
+* Primary script loaded by `GAC_DEV.toc`.
+* Binds Hexagonal Domain modules (`DataTables`, `Character`, `CharacterCalculator`, `Item`, `Armor`, `Weapon`) and instantiates adapters (`EventDispatcher`, `LocalIPCAdapter`, `SavedVarsStorageAdapter`, `TRP3Adapter`, `LocalesAdapter`).
+* Dispatches lifecycle events (`ADDON_LOADED`, `PLAYER_ENTERING_WORLD`, `PLAYER_LOGOUT`) and publishes initial character state over IPC (`CHARACTER_UPDATED`).
+
+### 5. UI Micro-Frontends (`src/ui/`)
+
+* Functions as independent micro-frontend features.
+* Consumes backend data strictly via dedicated `api/[feature]Api.lua` IPC adapters.
+* Fully isolated: features never import other UI feature files, never mutate global state directly, and never listen directly to Blizzard engine events.
 
 ---
 
@@ -122,45 +111,44 @@
 
 Sub-manifests load bottom-up to ensure dependencies exist before higher-level modules instantiate.
 
-#### Adapters Manifest Example (`src/main/adapters/adapters.xml`)
+#### 1. Entry Point Load Sequence (`GAC_DEV.toc`)
+```toc
+src\src.xml
+index.lua
+```
 
+#### 2. Master XML Manifest (`src/src.xml`)
 ```xml
-<Ui xmlns="[http://www.blizzard.com/wow/ui/](http://www.blizzard.com/wow/ui/)" xmlns:xsi="[http://www.w3.org/2001/XMLSchema-instance](http://www.w3.org/2001/XMLSchema-instance)">
-    <!-- Network & Remote Cache Sub-manifests -->
-    <Include file="network\network.xml"/>
-    <Include file="cache\cache.xml"/>
-    
-    <!-- Client Event Dispatcher Adapter -->
-    <Include file="events\events.xml"/>
-    
-    <!-- Infrastructure Adapters -->
-    <Script file="SavedVarsStorageAdapter.lua"/>
-    <Script file="TRP3Adapter.lua"/>
-    <Script file="LocalIPCAdapter.lua"/>
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Include file="main\main.xml"/>
+    <Include file="ui\ui.xml"/>
 </Ui>
+```
 
+#### 3. Backend Manifest (`src/main/main.xml`)
+```xml
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Include file="ports\ports.xml"/>
+    <Include file="domain\domain.xml"/>
+    <Include file="adapters\adapters.xml"/>
+</Ui>
 ```
 
 ---
 
-## 6. Implementation Roadmap
+## 6. Implementation Roadmap & Architectural Status
 
-1. **Phase 1: TOC & Manifest Skeleton**
-* Setup `.toc` with `SavedVariablesPerCharacter`.
-* Establish cascading XML structure (`src.xml` down to all feature/module manifests).
+1. **Phase 1: TOC & Cascading XML Manifest Skeleton (Completed)**
+   * Established `GAC_DEV.toc` loading `src\src.xml` and `index.lua`.
+   * Built cascading XML directory tree (`src.xml` -> `main.xml` -> `ports.xml`, `domain.xml`, `adapters.xml`, `ui.xml`).
 
+2. **Phase 2: Legacy Decoupling & Directory Cleanup (Completed)**
+   * Consolidated legacy files into clean Hexagonal architecture structure (`src/main/` and `src/ui/`).
+   * Cleaned up legacy subdirectories.
 
-2. **Phase 2: Core Messaging & Infrastructure**
-* Implement `EventDispatcher.lua` for lifecycle and addon network channels (`CHAT_MSG_ADDON`).
-* Build `P2PNetworkAdapter.lua` and `RemotePlayerCacheAdapter.lua` for remote inspections.
-* Implement `LocalIPCAdapter.lua` for backend-to-frontend communication.
+3. **Phase 3: Hexagonal Domain & Adapter Implementation (In Progress)**
+   * Implementing domain entities, character calculator, and combat state machines under `src/main/domain/`.
+   * Wiring infrastructure adapters (`SavedVarsStorageAdapter`, `TRP3Adapter`, `EventDispatcher`, `P2PNetworkAdapter`, `LocalesAdapter`, `LocalIPCAdapter`).
 
-
-3. **Phase 3: Hexagonal Domain Engine**
-* Implement local character sheet rules (`domain/sheet/`) and turn-based combat controllers (`domain/combat/`).
-* Hook up `SavedVarsStorageAdapter.lua` and `TRP3Adapter.lua`.
-
-
-4. **Phase 4: Feature Micro-Menus**
-* Build the **Sheet** micro-frontend using `components/`, `hooks/`, `api/`, and `index.lua`.
-* Build the **Combat** micro-frontend following identical micro-app encapsulation.
+4. **Phase 4: Feature Micro-Frontends (Planned)**
+   * Build micro-frontend menus (`sheet`, `combat`, `inspection`, `main-menu`) following isolated component, hook, and API patterns.

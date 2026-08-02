@@ -1,5 +1,3 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Script file="IPCMessagePort.lua"/>
-    <Script file="StoragePort.lua"/>
-    <Script file="RemotePlayerPort.lua"/>
+    <Include file="TR3Bridge\TR3Bridge.xml" />
 </Ui>

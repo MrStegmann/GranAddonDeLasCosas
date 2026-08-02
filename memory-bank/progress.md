@@ -1,31 +1,35 @@
 # Project Progress & Roadmap Tracker
 
-## Sprint 2: Legacy Decoupling & Micro-Frontend Migration (38 SP) — COMPLETED
+## Feature 002: TRP3 Bridges (Characteristics & Inventory) — COMPLETED
 
-- [x] **Epic 1: Legacy Model & Service Deprecation (10 SP)**
-  - [x] Story 1.1: Legacy entity redirection & global alias cleanup in `index.lua` (4 SP)
-  - [x] Story 1.2: CharacterService deprecation & `CharacterCalculator` integration (4 SP)
-  - [x] Story 1.3: Legacy model and service file deletion (`src/Models/`, `src/Services/`) (2 SP)
+- [x] **Characteristics Bridge Port (`src/main/ports/TR3Bridge/characteristics.lua`)**
+  - [x] `getFullName()` concatenation function returning `"Einarr \"Augaraf\" Olafrson"` fallback
+  - [x] `getClass()` function returning `"Vrykingul"` fallback
+- [x] **Inventory Bridge Port (`src/main/ports/TR3Bridge/inventory.lua`)**
+  - [x] `getEquipedItems()` function returning `ItemsResponse` structure (`Item[]`) or empty list `{}`
+  - [x] `updateItem(itemData)` function modifying TRP3_Extended database item entries
+- [x] **Cascading XML Manifest Integration**
+  - [x] Created `src/main/ports/TR3Bridge/TR3Bridge.xml` registering script files
+  - [x] Updated `src/main/ports/ports.xml` to include `TR3Bridge/TR3Bridge.xml`
 
-- [x] **Epic 2: Status Plates Micro-Frontend Migration (12 SP)**
-  - [x] Story 2.1: PlayerPlate micro-frontend refactoring (`src/ui/player-plate/`) (4 SP)
-  - [x] Story 2.2: TargetPlate micro-frontend refactoring (`src/ui/target-plate/`) (4 SP)
-  - [x] Story 2.3: RaidPlate micro-frontend refactoring (`src/ui/raid-plate/`) (4 SP)
+---
 
-- [x] **Epic 3: Menu, Inspection & Action Micro-Frontends Migration (10 SP)**
-  - [x] Story 3.1: MainMenu & Character Sheet sub-tabs migration (`src/ui/main-menu/`) (4 SP)
-  - [x] Story 3.2: InspectionMenu & QuickButtons migration (`src/ui/inspection/`, `src/ui/quick-actions/`) (3 SP)
-  - [x] Story 3.3: Economy, Initiative & ExpBar migration (`src/ui/economy/`, `src/ui/initiative/`, `src/ui/exp-bar/`) (3 SP)
+## Feature 001: Character Sheet Abstraction — COMPLETED
 
-- [x] **Epic 4: Infrastructure Realignment & Legacy Manifest Cleanup (6 SP)**
-  - [x] Story 4.1: Network communication & TRP3 adapter realignment (`NetworkAdapter`, `TRP3Adapter`) (3 SP)
-  - [x] Story 4.2: Data & Locales integration (`DataTables.lua`, `LocalesAdapter.lua`) (2 SP)
-  - [x] Story 4.3: Legacy directory deletion & TOC consolidation (`GAC_DEV.toc`) (1 SP)
+- [x] **Transpilation of TypeScript Models (`Models.ts` -> `src/main/domain/models/`)**
+  - [x] `Armor.lua` domain metatable with schema validation
+  - [x] `Weapon.lua` domain metatable with schema validation
+  - [x] `Shield.lua` domain metatable with schema validation
+  - [x] `Character.lua` domain metatable with schema validation & `createDefault()` fallback
+  - [x] Cascading manifest update in `models.xml` and `domain.xml`
+- [x] **Persistent Data Loading (`src/main/adapters/events/`)**
+  - [x] `AddonLoadedHandler.lua` event listener for `ADDON_LOADED`
+  - [x] `GAC_CharacterDB.character` persistence loading, schema validation, and fallback instantiation
+  - [x] Cascading manifest update in `events.xml` and `adapters.xml`
 
 ---
 
 ## Completed Milestones
-* **Sprint 1 Complete:** Hexagonal Backend (`src/main/`) and autonomous UI micro-frontend infrastructure (`src/ui/`) bootstrapped.
-* **Sprint 2 Complete:** 100% legacy monolithic directories (`Models/`, `Services/`, `Frames/`, `Communication/`, `Constants/`, `Enums/`, `Events/`, `Hooks/`, `Locales/`, `Utils/`) removed.
-* **Pure Directory Tree:** `src/` contains ONLY `main/`, `ui/`, and `src.xml`.
-* **Micro-Frontend Architecture:** All UI components operate as autonomous micro-frontends communicating strictly over `LocalIPCAdapter`.
+* **Feature 002 Complete:** TRP3 Characteristics and TRP3 Extended Inventory ports implemented and wired in `ports.xml`.
+* **Feature 001 Complete:** Character Sheet domain abstraction models transpiled to pure Lua 5.1 and persistent data loading on `ADDON_LOADED` wired.
+

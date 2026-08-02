@@ -1,14 +1,3 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Include file="shared\shared.xml"/>
-    <Include file="sheet\sheet.xml"/>
-    <Include file="player-plate\player-plate.xml"/>
-    <Include file="target-plate\target-plate.xml"/>
-    <Include file="raid-plate\raid-plate.xml"/>
-    <Include file="main-menu\main-menu.xml"/>
-    <Include file="inspection\inspection.xml"/>
-    <Include file="quick-actions\quick-actions.xml"/>
-    <Include file="economy\economy.xml"/>
-    <Include file="initiative\initiative.xml"/>
-    <Include file="exp-bar\exp-bar.xml"/>
-    <Include file="combat\combat.xml"/>
+
 </Ui>

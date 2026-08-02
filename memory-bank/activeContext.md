@@ -1,22 +1,16 @@
 # Active Context & Current Focus
 
-## Current Phase: Sprint 2 — Legacy Decoupling & Micro-Frontend Migration (Completed)
+## Current Phase: Feature 002 — TRP3 Bridges (Completed)
 
 ## Recent Architectural Deliverables
-1. **Legacy Model & Service Deprecation:**
-   - Removed legacy `src/Models/` and `src/Services/` directories.
-   - Aliased `GAC.Character`, `GAC.Item`, `GAC.Armor`, `GAC.Weapon`, `GAC.CharacterCalculator`, and `GAC.Services.CharacterService` in `index.lua` to pure Lua domain modules under `src/main/domain/`.
-2. **Micro-Frontend Realignment (`src/ui/`):**
-   - Refactored all visual frames into autonomous micro-frontends: `player-plate`, `target-plate`, `raid-plate`, `main-menu`, `inspection`, `quick-actions`, `economy`, `initiative`, `exp-bar`, `sheet`, `combat`.
-   - Connected all UI views to `LocalIPCAdapter` via dedicated client APIs (`playerPlateApi`, `targetPlateApi`, `raidPlateApi`, `inspectionApi`, `quickActionsApi`, `sheetApi`).
-3. **Infrastructure & Data Consolidation (`src/main/`):**
-   - Encapsulated roleplay data tables into `src/main/domain/DataTables.lua`.
-   - Encapsulated localization strings into `src/main/adapters/locales/LocalesAdapter.lua`.
-   - Realigned P2P messaging into `NetworkAdapter.lua` and TRP3 profile queries into `TRP3Adapter.lua`.
-4. **Complete Directory Cleanup & TOC Consolidation:**
-   - Deleted all 11 legacy subdirectories from `src/` (`Models/`, `Services/`, `Frames/`, `Communication/`, `Constants/`, `Enums/`, `Events/`, `Hooks/`, `Locales/`, `Utils/`) and deleted `GranAddonDeLasCosas.xml`.
-   - `src/` now contains **strictly** `main/`, `ui/`, and `src.xml`.
-   - `GAC_DEV.toc` loads strictly `src\src.xml` and `index.lua`.
+1. **TRP3 Ports Bridge Implementation (`src/main/ports/TR3Bridge/`):**
+   - Created `characteristics.lua` with `getFullName()` and `getClass()` port functions.
+   - Created `inventory.lua` with `getEquipedItems()` (returning `ItemsResponse` structure) and `updateItem()` port functions.
+   - Registered scripts in `src/main/ports/TR3Bridge/TR3Bridge.xml` and wired sub-manifest in `src/main/ports/ports.xml`.
+2. **Character Sheet Domain Models Transpilation (`src/main/domain/models/`):**
+   - Implemented pure Lua 5.1 domain entities: `Armor.lua`, `Weapon.lua`, `Shield.lua`, and `Character.lua`.
+   - Created schema factories (`Model.create(raw_data)`) and default initializer (`Character.createDefault()`).
+   - Registered model scripts in `models.xml`.
 
 ## Active Architectural Principles
 * **Hexagonal Domain Purity:** Logic in `src/main/domain/` operates exclusively in pure Lua 5.1 with zero WoW client API references.

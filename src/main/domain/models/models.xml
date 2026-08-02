@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Script file="Armor.lua" />
+    <Script file="Weapon.lua" />
+    <Script file="Shield.lua" />
+    <Script file="Character.lua" />
+</Ui>
