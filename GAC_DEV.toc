@@ -6,5 +6,6 @@
 ## SavedVariables: GranAddonDeLasCosasDB
 ## SavedVariablesPerCharacter: GAC_CharacterDB
 
+libs\libs.xml
 src\src.xml
 index.lua
