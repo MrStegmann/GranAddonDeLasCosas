@@ -1,0 +1,12 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Script file="ArcaneSpellsDatabase.lua" />
+    <Script file="ChiSpellsDatabase.lua" />
+    <Script file="ElementalSpellsDatabase.lua" />
+    <Script file="EluneSpellsDatabase.lua" />
+    <Script file="FelSpellsDatabase.lua" />
+    <Script file="HolyLightSpellsDatabase.lua" />
+    <Script file="NatureSpellsDatabase.lua" />
+    <Script file="NecromancySpellsDatabase.lua" />
+    <Script file="ShadowSpellsDatabase.lua" />
+    <Script file="SpellsDatabase.lua" />
+</Ui>

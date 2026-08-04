@@ -1,0 +1,11 @@
+[
+    {
+        "Nombre": "Último aliento",
+        "Descripción": "Una vez por combate, cuando recibes un ataque te mataría, en vez de eso recuperas una cantidad igual a tu Fortaleza.",
+        "Tipo": "Pasiva",
+        "Coste de Acciones": 0,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": "Combate"
+    }
+]

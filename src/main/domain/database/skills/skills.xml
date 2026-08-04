@@ -1,0 +1,8 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Script file="StrengthSkillsDatabase.lua" />
+    <Script file="DexteritySkillsDatabase.lua" />
+    <Script file="ConstitutionSkillsDatabase.lua" />
+    <Script file="WisdomSkillsDatabase.lua" />
+    <Script file="CharismaSkillsDatabase.lua" />
+    <Script file="SkillsDatabase.lua" />
+</Ui>
