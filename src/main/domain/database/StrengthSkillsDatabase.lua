@@ -1,0 +1,104 @@
+local StrengthSkillsDatabase = {
+    {
+        id = "shieldBash",
+        name = "Bloquear y empuja",
+        description = "Cuando te defiendes con éxito usando un escudo, puedes intentar derribar a tu objetivo.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 3
+    },
+    {
+        id = "aggressiveBlock",
+        name = "Bloqueo agresivo",
+        description = "Cuando te defiendes con éxito usando un escudo, ganas ventaja en tu siguiente ataque.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 3
+    },
+    {
+        id = "barbarianCharge",
+        name = "Carga barbárica",
+        description = "Carga contra su objetivo dentro de 15 metros de distancia. Recibirá un dado de daño por parte de su objetivo. Sin embargo, derribará a su objetivo haciendo 1d6 de daño más su brutalidad.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 3
+    },
+    {
+        id = "rabidCounterAttack",
+        name = "Contraataque rabioso",
+        description = "Tras una defensa fallida y perder vida, puedes realizar un contraataque.\n\nEste contraataque debe suceder después de recibir daño y sigue las normas básicas de contraataque.\n\nSolo se puede usar tras recibir daño. Si en el siguiente turno, te defiendes exitosamente, esta habilidad no estará disponible.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 4
+    },
+    {
+        id = "counterAttack",
+        name = "Contragolpe",
+        description = "Cuando te defiendes, ya sea parando o bloqueando, pero fallas tu defensa, devuelves el golpe contra tu atacante acertando directamente.\nEsta habilidad debe usarse ANTES del turno defensivo.\nContragolpe se consume siempre, tengas o no éxito en la defensa.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 1,
+        turnCooldown = 4
+    },
+    {
+        id = "intimidate",
+        name = "Desmoralizar",
+        description = "Desmoraliza a los enemigos cercanos a él, provocandoles desventaja en sus tiradas de ataque y defensa.\n\nLanza un D20 + Fuerza + Brutalidad.\nLos enemigos lanzan un tirada de salvación D20 + Voluntad + Res. Pér. Control enfrentada.\n\nSi es crítico, los enemigos entran en pánico, haciendole imposible realizar cualquier acción, excepto la de huir, durante 4 turnos.",
+        type = "active",
+        costActions = 2,
+        costSlots = 1,
+        turnEffects = 4,
+        turnCooldown = 3
+    },
+    {
+        id = "devastate",
+        name = "Devastar",
+        description = "Una vez cada tres turnos, si el objetivo te ha ganado en defensa, puedes ignorar su defensa y golpearle igualmente como si hubieras acertado.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 3
+    },
+    {
+        id = "fury",
+        name = "Furia",
+        description = "Entra en estado de furia que hace que sus ataques tengan ventaja sobre sus objetivos. Los enemigos dentro del rango efectivo de acción sufrirán desventaja contra el personaje.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 3,
+        turnCooldown = 4
+    },
+    {
+        id = "defenselessness",
+        name = "Indefensos",
+        description = "Cada vez que un ataque acertado es absorbido por un escudo, la mitad del daño afectará directamente al objetivo como daño verdadero.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 0
+    },
+    {
+        id = "breakTheBones",
+        name = "Romper los huesos",
+        description = "Realiza un golpe brutal sobre alguna extremidad con la intención de romper los huesos. Usará brutalidad para realizar esta acción y su objetivo usará su defensa para evitarlo. Si se logra, dependiendo de la extremidad afectada (piernas o manos), quedará Cojo o Manco.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 4
+    }
+}
+
+return StrengthSkillsDatabase

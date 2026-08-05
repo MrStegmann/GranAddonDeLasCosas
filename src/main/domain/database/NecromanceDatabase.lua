@@ -1,0 +1,3 @@
+local NecromanceDatabase = {}
+
+return NecromanceDatabase

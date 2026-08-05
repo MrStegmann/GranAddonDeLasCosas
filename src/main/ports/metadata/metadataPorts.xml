@@ -1,0 +1,22 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Script file="metadata\ReadOnlyHelper.lua" />
+    <Script file="metadata\RacePort.lua" />
+    <Script file="metadata\LevelPort.lua" />
+    <Script file="metadata\TraitsPort.lua" />
+    <Script file="metadata\ArmorPort.lua" />
+    <Script file="metadata\WeaponsPort.lua" />
+    <Script file="metadata\ShieldPort.lua" />
+    <Script file="metadata\StrengthSkillsPort.lua" />
+    <Script file="metadata\DexSkillsPort.lua" />
+    <Script file="metadata\ConstitutionSkillsPort.lua" />
+    <Script file="metadata\ArcanePort.lua" />
+    <Script file="metadata\ElementalPort.lua" />
+    <Script file="metadata\ElunePort.lua" />
+    <Script file="metadata\HolyLightPort.lua" />
+    <Script file="metadata\ShadowPort.lua" />
+    <Script file="metadata\WorgenCursePort.lua" />
+    <Script file="metadata\ChiPort.lua" />
+    <Script file="metadata\FelPort.lua" />
+    <Script file="metadata\NaturePort.lua" />
+    <Script file="metadata\NecromancePort.lua" />
+</Ui>

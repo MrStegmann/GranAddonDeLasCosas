@@ -4,9 +4,9 @@
 
 **Created**: 2026-08-05
 
-**Status**: Approved
+**Status**: APPROVED
 
-**Input**: User description: "Create immutable hardcoded data as the core of the addon using all JSON files in specs/002-core-data/*.json and TypeScript files. Transpile all objects and lists into independent read-only Lua tables in src/main/domain/database, exposed exclusively via src/main/ports endpoint functions with get-all and get-by-id queries. Retain trait comments and enforce structural definition of truth."
+**Input**: User description: "Create immutable hardcoded data as the core of the addon using all JSON files in specs/002-core-data/*.json and TypeScript files. Transpile all objects and lists into completely isolated, independent read-only Lua tables in src/main/domain/database without any grouping. Expose each table exclusively via individual src/main/ports endpoint functions with get-all and get-by-id queries. Retain trait comments and enforce structural definition of truth."
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -42,7 +42,7 @@ As a player or Game Master inspecting another character's profile or sheet, I ne
 
 ### User Story 3 - Mechanical Calculations & Combat Rule Engine (Priority: P1)
 
-As the tabletop rule engine processing combat actions, dice rolls, or armor mitigation, I need to consult the immutable core database tables via port endpoints to compute deterministic values (e.g., armor reduction, damage dice, skill check thresholds).
+As the tabletop rule engine processing combat actions, dice rolls, or armor mitigation, I need to consult the immutable core database tables via isolated port endpoints to compute deterministic values (e.g., armor reduction, damage dice, skill check thresholds).
 
 **Why this priority**: Gameplay calculations (e.g., armor mitigation, weapon damage, spell effects) rely entirely on static rules and base metrics defined in the core data layer.
 
@@ -51,13 +51,13 @@ As the tabletop rule engine processing combat actions, dice rolls, or armor miti
 **Acceptance Scenarios**:
 
 1. **Given** a character equipped with `leather` armor and a `heavyShield`, **When** armor mitigation is calculated, **Then** the calculation engine fetches base values via `ArmorPort:GetById("leather")` and `ShieldPort:GetById("heavyShield")` without mutating the reference tables.
-2. **Given** a player executing a skill check from `dex_skills.json`, **When** the dice engine evaluates success thresholds, **Then** it fetches skill metadata via `SkillsPort:GetDexSkillById(skill_id)` to resolve formulas correctly.
+2. **Given** a player executing a skill check from `dex_skills.json`, **When** the dice engine evaluates success thresholds, **Then** it fetches skill metadata via `DexSkillsPort:GetById(skill_id)` to resolve formulas correctly.
 
 ---
 
 ### User Story 4 - Endpoint Probing & Table Parity Verification (Priority: P2)
 
-As a developer or automated test suite, I need every port endpoint (`src/main/ports/metadata/*Port.lua`) to be probed by retrieving the full data table or specific items by key, ensuring that the returned table structure matches the Lua database table line-for-line without structural drift.
+As a developer or automated test suite, I need every isolated port endpoint (`src/main/ports/metadata/*Port.lua`) to be probed by retrieving the full data table or specific items by key, ensuring that the returned table structure matches the Lua database table line-for-line without structural drift.
 
 **Why this priority**: Guarantees that data access contracts remain intact and that endpoint implementations are 100% complete and verified before feature completion.
 
@@ -75,6 +75,7 @@ As a developer or automated test suite, I need every port endpoint (`src/main/po
 - **Missing or Invalid Key Query**: When a port endpoint is queried with a non-existent ID (e.g., `WeaponsPort:GetById("invalid_id")`), the endpoint MUST safely return `nil` without throwing Lua execution errors or crashing.
 - **Runtime Mutation Attempts**: If any caller attempts to alter a returned table or write to a database endpoint, the underlying domain table MUST remain unaffected (tables are read-only / immutable).
 - **Inline Trait Comments Retention**: `PositiveTraits` and `NegativeTraits` transpiled from `traits-types.ts` MUST retain all inline technical comments (e.g., dual wield penalty handling notes, extra action rules, experience gain triggers) as Lua documentation comments above each respective trait entry.
+- **Empty Dataset Transpilation**: Source JSON files that contain empty objects/arrays (`fel.json`, `chi.json`, `nature.json`, `necromance.json`) MUST still produce valid, isolated Lua database files (`FelDatabase.lua`, `ChiDatabase.lua`, `NatureDatabase.lua`, `NecromanceDatabase.lua`) returning empty tables `{}` and corresponding port interfaces (`FelPort.lua`, `ChiPort.lua`, `NaturePort.lua`, `NecromancePort.lua`) to guarantee complete architecture and port contract parity.
 - **Unloaded or Missing Data File**: If any core database file fails to load during addon initialization, the addon must fail fast with a clear diagnostic log rather than silently proceeding with missing data.
 
 ## Requirements *(mandatory)*
@@ -82,33 +83,47 @@ As a developer or automated test suite, I need every port endpoint (`src/main/po
 ### Functional Requirements
 
 - **FR-001**: **Single Source of Truth**: The object and list structures defined in `specs/002-core-data/*.json` and TypeScript files (`armor-types.ts`, `traits-types.ts`) MUST be strictly respected as the authoritative definition of truth and MUST NOT be altered or structurally modified.
-- **FR-002**: **Lua Transpilation**: All JSON files (`arcane.json`, `chi.json`, `constitution_skills.json`, `dex_skills.json`, `elemental.json`, `elune.json`, `fel.json`, `holy_light.json`, `levels.json`, `nature.json`, `necromance.json`, `races.json`, `shadow.json`, `shields.json`, `strength_skills.json`, `weapons.json`, `worgenCurse.json`) and TypeScript files (`armor-types.ts`, `traits-types.ts`) MUST be transpiled into pure Lua 5.1 database tables.
-- **FR-003**: **Domain Table Isolation**: All transpiled Lua database tables MUST be independent of each other and MUST be strictly isolated inside `src/main/domain/database/`.
-- **FR-004**: **Read-Only Data Access via Ports**: Domain database tables MUST be completely read-only and MUST NOT be accessed directly by external callers or UI features. All data access MUST be mediated exclusively through endpoint functions defined in `src/main/ports/`.
-- **FR-005**: **Endpoint Query Functions**: Every metadata port inside `src/main/ports/` MUST provide functions to:
-  1. Retrieve the entire data table (e.g., `GetAll()`).
-  2. Retrieve a specific data entry by its unique identifier/key (e.g., `GetById(id)`).
+- **FR-002**: **Complete Lua Transpilation & Migration**: ALL data from every JSON file (`arcane.json`, `chi.json`, `constitution_skills.json`, `dex_skills.json`, `elemental.json`, `elune.json`, `fel.json`, `holy_light.json`, `levels.json`, `nature.json`, `necromance.json`, `races.json`, `shadow.json`, `shields.json`, `strength_skills.json`, `weapons.json`, `worgenCurse.json`) and TypeScript file (`armor-types.ts`, `traits-types.ts`) MUST be migrated and transpiled into pure Lua 5.1 database tables.
+- **FR-003**: **Strict Table Isolation (No Grouping)**: EVERY source data file MUST map 1:1 to its own dedicated, standalone Lua database table file inside `src/main/domain/database/`. Tables MUST NOT be grouped, combined, or merged into shared database files.
+- **FR-004**: **Isolated Read-Only Access via Ports**: Every domain database table MUST be completely read-only and MUST have a corresponding isolated port file in `src/main/ports/metadata/`. Direct access to database tables by external callers or UI features is strictly forbidden.
+- **FR-005**: **Isolated Endpoint Query Functions**: Every metadata port in `src/main/ports/metadata/` MUST provide dedicated functions to:
+  1. Retrieve the entire standalone data table (`GetAll()`).
+  2. Retrieve a specific data entry by its unique identifier/key (`GetById(id)`).
 - **FR-006**: **Trait Comments Preservation**: The transpilation of `PositiveTraits` and `NegativeTraits` from `traits-types.ts` MUST preserve all original TypeScript inline comments as Lua comments directly associated with each trait table entry.
-- **FR-007**: **Endpoint Probing & Verification**: Every port endpoint MUST be thoroughly probed and verified by asserting that data returned by port functions matches the exact structure and content constructed in the Lua database tables. A port endpoint is considered unfinished until verified.
+- **FR-007**: **Endpoint Probing & Verification**: Every individual port endpoint MUST be thoroughly probed and verified by asserting that data returned by port functions matches the exact structure and content constructed in the Lua database tables. A port endpoint is considered unfinished until verified.
 - **FR-008**: **Zero WoW API Leakage**: All database files in `src/main/domain/database/` and port interfaces in `src/main/ports/` MUST consist of pure Lua 5.1 code with zero references to World of Warcraft client APIs (`CreateFrame`, `RegisterEvent`, `C_ChatInfo`, etc.).
+- **FR-009**: **Empty Table Support**: Empty source JSON files (`fel.json`, `chi.json`, `nature.json`, `necromance.json`) MUST be explicitly instantiated as isolated Lua database tables (e.g. `FelDatabase.lua`, `ChiDatabase.lua`, `NatureDatabase.lua`, `NecromanceDatabase.lua`) returning valid empty tables `{}` and exposed through individual ports to maintain 1:1 structural parity.
 
-### Key Entities
+### Key Entities (1:1 Isolated File Mapping)
 
-- **ArmorDatabase** (`src/main/domain/database/ArmorDatabase.lua`): Transpiled from `armor-types.ts`. Contains base armor definitions (`clothes`, `leather`, `mail`, `plate`), physical/magical reductions, durability, slot requirements, penalties, and combination rules.
-- **TraitsDatabase** (`src/main/domain/database/TraitsDatabase.lua`): Transpiled from `traits-types.ts`. Contains `PositiveTraits` (with `level1`, `level2`, `level3` effects) and `NegativeTraits` (with `effect` and `incompatibility` arrays). Preserves all inline technical comments from source TS file.
-- **LevelDatabase** (`src/main/domain/database/LevelDatabase.lua`): Transpiled from `levels.json`. Contains character level progression metrics, attribute caps, and health/resource scaling.
-- **RaceDatabase** (`src/main/domain/database/RaceDatabase.lua`): Transpiled from `races.json`. Contains playable race definitions, base stat allocations, racial traits, and visual/lore metadata.
-- **ShieldDatabase** (`src/main/domain/database/ShieldDatabase.lua`): Transpiled from `shields.json`. Contains shield categories (buckler, light, heavy, tower), block values, damage reduction, and movement/speed penalties.
-- **WeaponsDatabase** (`src/main/domain/database/WeaponsDatabase.lua`): Transpiled from `weapons.json`. Contains weapon categories (1-handed, 2-handed, agile, ranged), base damage ranges, critical ranges, and dual-wield penalty profiles.
-- **SkillsDatabases** (`src/main/domain/database/`): Transpiled from `strength_skills.json`, `dex_skills.json`, `constitution_skills.json`. Contains skill definitions, governing attributes, and difficulty thresholds.
-- **SpellsDatabases** (`src/main/domain/database/`): Transpiled from school JSON files (`arcane.json`, `elemental.json`, `holy_light.json`, `shadow.json`, `elune.json`, `worgenCurse.json`, `chi.json`, `fel.json`, `nature.json`, `necromance.json`). Contains spell definitions, resource costs, cast types, ranges, dice formulas, and school attributes.
+Each core data file is strictly transpiled into its own isolated Lua database table and exposed via its own dedicated port:
+
+1. **ArmorDatabase** (`src/main/domain/database/ArmorDatabase.lua`) & **ArmorPort** (`src/main/ports/metadata/ArmorPort.lua`): Transpiled from `armor-types.ts`.
+2. **TraitsDatabase** (`src/main/domain/database/TraitsDatabase.lua`) & **TraitsPort** (`src/main/ports/metadata/TraitsPort.lua`): Transpiled from `traits-types.ts`. Preserves all inline comments.
+3. **LevelDatabase** (`src/main/domain/database/LevelDatabase.lua`) & **LevelPort** (`src/main/ports/metadata/LevelPort.lua`): Transpiled from `levels.json`.
+4. **RaceDatabase** (`src/main/domain/database/RaceDatabase.lua`) & **RacePort** (`src/main/ports/metadata/RacePort.lua`): Transpiled from `races.json`.
+5. **ShieldDatabase** (`src/main/domain/database/ShieldDatabase.lua`) & **ShieldPort** (`src/main/ports/metadata/ShieldPort.lua`): Transpiled from `shields.json`.
+6. **WeaponsDatabase** (`src/main/domain/database/WeaponsDatabase.lua`) & **WeaponsPort** (`src/main/ports/metadata/WeaponsPort.lua`): Transpiled from `weapons.json`.
+7. **StrengthSkillsDatabase** (`src/main/domain/database/StrengthSkillsDatabase.lua`) & **StrengthSkillsPort** (`src/main/ports/metadata/StrengthSkillsPort.lua`): Transpiled from `strength_skills.json`.
+8. **DexSkillsDatabase** (`src/main/domain/database/DexSkillsDatabase.lua`) & **DexSkillsPort** (`src/main/ports/metadata/DexSkillsPort.lua`): Transpiled from `dex_skills.json`.
+9. **ConstitutionSkillsDatabase** (`src/main/domain/database/ConstitutionSkillsDatabase.lua`) & **ConstitutionSkillsPort** (`src/main/ports/metadata/ConstitutionSkillsPort.lua`): Transpiled from `constitution_skills.json`.
+10. **ArcaneDatabase** (`src/main/domain/database/ArcaneDatabase.lua`) & **ArcanePort** (`src/main/ports/metadata/ArcanePort.lua`): Transpiled from `arcane.json`.
+11. **ChiDatabase** (`src/main/domain/database/ChiDatabase.lua`) & **ChiPort** (`src/main/ports/metadata/ChiPort.lua`): Transpiled from `chi.json` (Empty table `{}`).
+12. **ElementalDatabase** (`src/main/domain/database/ElementalDatabase.lua`) & **ElementalPort** (`src/main/ports/metadata/ElementalPort.lua`): Transpiled from `elemental.json`.
+13. **EluneDatabase** (`src/main/domain/database/EluneDatabase.lua`) & **ElunePort** (`src/main/ports/metadata/ElunePort.lua`): Transpiled from `elune.json`.
+14. **FelDatabase** (`src/main/domain/database/FelDatabase.lua`) & **FelPort** (`src/main/ports/metadata/FelPort.lua`): Transpiled from `fel.json` (Empty table `{}`).
+15. **HolyLightDatabase** (`src/main/domain/database/HolyLightDatabase.lua`) & **HolyLightPort** (`src/main/ports/metadata/HolyLightPort.lua`): Transpiled from `holy_light.json`.
+16. **NatureDatabase** (`src/main/domain/database/NatureDatabase.lua`) & **NaturePort** (`src/main/ports/metadata/NaturePort.lua`): Transpiled from `nature.json` (Empty table `{}`).
+17. **NecromanceDatabase** (`src/main/domain/database/NecromanceDatabase.lua`) & **NecromancePort** (`src/main/ports/metadata/NecromancePort.lua`): Transpiled from `necromance.json` (Empty table `{}`).
+18. **ShadowDatabase** (`src/main/domain/database/ShadowDatabase.lua`) & **ShadowPort** (`src/main/ports/metadata/ShadowPort.lua`): Transpiled from `shadow.json`.
+19. **WorgenCurseDatabase** (`src/main/domain/database/WorgenCurseDatabase.lua`) & **WorgenCursePort** (`src/main/ports/metadata/WorgenCursePort.lua`): Transpiled from `worgenCurse.json`.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: **100% Data Parity**: All 19 JSON/TS core data sources are fully represented in `src/main/domain/database/` with 0 missing fields or altered property names.
-- **SC-002**: **100% Endpoint Verification**: 100% of port query endpoints (`GetAll` and `GetById`) in `src/main/ports/` are probed and produce return tables matching the source database tables exactly.
+- **SC-001**: **100% Data Parity**: All 19 JSON/TS core data sources are fully represented in individual, isolated files under `src/main/domain/database/` (including empty tables for empty JSON files) with 0 missing fields or altered property names.
+- **SC-002**: **100% Endpoint Verification**: 100% of individual port query endpoints (`GetAll` and `GetById`) across all 19 ports in `src/main/ports/metadata/` are probed and produce return tables matching their respective source database tables exactly.
 - **SC-003**: **Zero Domain Taint**: 0 Lua database files in `src/main/domain/database/` invoke WoW Client APIs or mutate global states.
 - **SC-004**: **Complete Comment Retention**: All technical comments present in `traits-types.ts` for `PositiveTraits` and `NegativeTraits` are verified to exist as Lua comments in `TraitsDatabase.lua`.
 - **SC-005**: **Read-Only Safety**: Query calls to port endpoints return independent or protected data references, preventing accidental runtime mutations of core database state.
@@ -119,4 +134,6 @@ As a developer or automated test suite, I need every port endpoint (`src/main/po
 - Data structures defined in TypeScript (`.ts`) and JSON (`.json`) files within `specs/002-core-data/` are the authoritative definition of truth.
 - Access to core data from outside `src/main/domain/` MUST always pass through abstract interfaces in `src/main/ports/`.
 - Endpoint probing tests will be executed within the Lua test runner environment to confirm table matching before declaring completion.
+
+
 

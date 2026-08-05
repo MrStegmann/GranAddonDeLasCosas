@@ -1,0 +1,234 @@
+local DexSkillsDatabase = {
+    {
+        id = "dodgeAndStrike",
+        name = "Esquivar y atacar",
+        description = "Después de haber esquivado (defensa ágil) un ataque con éxito puedes atacar sin coste adicional en ese mismo momento.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 3
+    },
+    {
+        id = "strikeVitalPoints",
+        name = "Golpe en puntos vitales",
+        description = "Ataque preciso que perfora zonas críticas. Además del daño del arma, aplica el estado Sangrado continuo. Cuenta como tu ataque del turno.",
+        type = "active",
+        costActions = 2,
+        costSlots = 1,
+        turnEffects = 3,
+        turnCooldown = 2
+    },
+    {
+        id = "fastFeint",
+        name = "Finta rápida",
+        description = "Engañas visualmente a tu enemigo. Tu próximo ataque obtiene Ventaja automática y el defensor no puede aplicar Defensa Robusta contra él. Este es un caso de habilidad rápida que potencia tu ataque único del turno.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 2
+    },
+    {
+        id = "acrobaticDodge",
+        name = "Acrobacia evasiva",
+        description = "Te mueves 5 metros haciendo piruetas sin provocar ataques de oportunidad y ganas Ventaja en tu próxima Defensa Ágil de este turno.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 1,
+        turnCooldown = 2
+    },
+    {
+        id = "rainOfKnives",
+        name = "Lluvia de cuchillos",
+        description = "Lanzas armas arrojadizas a hasta 3 objetivos diferentes en un cono frontal cercano. Se salta la regla de 'un solo ataque por turno' a cambio de su alto coste de acciones y enfriamiento.",
+        type = "active",
+        costActions = 2,
+        costSlots = 2,
+        turnEffects = 0,
+        turnCooldown = 3
+    },
+    {
+        id = "shadowMaster",
+        name = "Maestro de las sombras",
+        description = "Ganas Ventaja permanente en tus tiradas de Sigilo para preparar Emboscadas. Además, si fallas una Emboscada (tirada menor a 10), el enemigo recibe la mitad del daño en lugar de fallar por completo.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 2,
+        turnEffects = 0,
+        turnCooldown = 0
+    },
+    {
+        id = "felineReflexes",
+        name = "Reflejos felinos",
+        description = "Reduce siempre a la mitad el daño sufrido por caídas. Además, si sufres el estado Derribado, puedes levantarte sin consumir ninguna acción en tu turno.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 0
+    },
+    {
+        id = "deathStrike",
+        name = "Tiro de gracia",
+        description = "Si realizas un ataque cuerpo a cuerpo contra un objetivo que sufra el estado Derribado o Aturdido, añades +1D6 al daño total del impacto.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 0
+    },
+    {
+        id = "tendonSlice",
+        name = "Cortar tendones",
+        description = "Un tajo bajo dirigido a las piernas. Aplica el estado Cojera al objetivo. Cuenta como tu ataque del turno.",
+        type = "active",
+        costActions = 2,
+        costSlots = 1,
+        turnEffects = 2,
+        turnCooldown = 3
+    },
+    {
+        id = "lowBlowPirate",
+        name = "Golpe bajo pirata",
+        description = "Lucha sucia pura. Aplica el estado Cegado o Aturdido al objetivo si falla su salvación.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 1,
+        turnCooldown = 2
+    },
+    {
+        id = "closeRangeShot",
+        name = "Disparo a quemarropa",
+        description = "Al disparar un arma de fuego a rango de cuerpo a cuerpo, evitas desventajas. El impacto empuja al objetivo 2 metros hacia atrás y le aplica el estado Vértigo.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 1,
+        turnCooldown = 2
+    },
+    {
+        id = "swingingRope",
+        name = "Balanceo de abordaje",
+        description = "Usas una cuerda o liana para balancearte hasta 10 metros volando. Si terminas cayendo sobre un enemigo, puedes realizar una tirada libre para aplicarle el estado Derribado.",
+        type = "active",
+        costActions = 2,
+        costSlots = 2,
+        turnEffects = 0,
+        turnCooldown = 3
+    },
+    {
+        id = "treacherousStab",
+        name = "Apuñalamiento traicionero",
+        description = "Si atacas a un enemigo flanqueado o por la espalda (donde ya tienes Ventaja), el impacto suma +2D6 adicionales de daño bruto.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 2,
+        turnEffects = 0,
+        turnCooldown = 0
+    },
+    {
+        id = "drinkAndFight",
+        name = "Beber y pelear",
+        description = "Bebes un trago de licor fuerte en combate. Curas una Herida Leve automáticamente y te vuelves inmune al estado Asustado, pero sufres Desventaja en tiradas mentales.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 3,
+        turnCooldown = 4
+    },
+    {
+        id = "cloakOfDuelist",
+        name = "Capa de duelista",
+        description = "Pelear usando una capa o abrigo en tu mano torpe te otorga un +1 pasivo a tu Defensa Ágil, y te permite realizar fintas visuales.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 0
+    },
+    {
+        id = "daggerParry",
+        name = "Parada con daga (Main-Gauche)",
+        description = "Si luchas empuñando una espada en tu principal y una daga en tu mano torpe, sumas un +2 pasivo a tus tiradas de Defensa Ágil.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 2,
+        turnEffects = 0,
+        turnCooldown = 0
+    },
+    {
+        id = "penetratingShot",
+        name = "Disparo Penetrante",
+        description = "Utilizas tu extrema precisión para apuntar a los puntos ciegos. Si realizas la acción de 'Disparo de precisión', ignoras por completo los bonificadores otorgados por la Defensa Robusta (escudos o paradas) del objetivo.",
+        type = "active",
+        costActions = 2,
+        costSlots = 2,
+        turnEffects = 0,
+        turnCooldown = 3
+    },
+    {
+        id = "movingShot",
+        name = "Disparo en Movimiento",
+        description = "Eres un maestro del reposicionamiento ágil. Te permite dividir tu distancia de movimiento gratuito (20m) en dos partes: moverte un poco, realizar tu ataque a distancia, y seguir moviéndote con el resto de la distancia restante.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 2
+    },
+    {
+        id = "tacticalRetreat",
+        name = "Retirada Táctica",
+        description = "Maniobra evasiva veloz. Inmediatamente después de realizar tu ataque a distancia del turno, te desplazas 5 metros hacia atrás en línea recta sin provocar ningún ataque de oportunidad.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 0,
+        turnCooldown = 2
+    },
+    {
+        id = "eagleEye",
+        name = "Ojo de Halcón",
+        description = "Tu dominio visual y talento de Precisión son inigualables. Tu bonificador nativo al usar la acción de 'Disparo de precisión' aumenta a +4 (en lugar del +2 normal) siempre y cuando no te hayas movido en todo el turno.",
+        type = "pasive",
+        costActions = 0,
+        costSlots = 2,
+        turnEffects = 0,
+        turnCooldown = 0
+    },
+    {
+        id = "legShot",
+        name = "Apuntar a las Piernas",
+        description = "Disparo de precisión destinado únicamente a incapacitar. Si el ataque impacta, el daño infligido se reduce a la mitad, pero aplicas automáticamente el estado Enraizado al objetivo durante 1 turno.",
+        type = "active",
+        costActions = 2,
+        costSlots = 2,
+        turnEffects = 1,
+        turnCooldown = 3
+    },
+    {
+        id = "windStep",
+        name = "Paso del Viento",
+        description = "Te mueves con agilidad extrema, ignorando por completo cualquier penalización o efecto negativo del terreno adverso (como barro, hielo o suelo resbaladizo) al desplazarte durante este turno.",
+        type = "active",
+        costActions = 1,
+        costSlots = 1,
+        turnEffects = 1,
+        turnCooldown = 2
+    },
+    {
+        id = "projectileRain",
+        name = "Lluvia de Proyectiles",
+        description = "Disparas rápidamente al aire o en abanico frente a ti. Realizas tu ataque del turno afectando a un área de 5 metros de radio a distancia. Los afectados no pueden usar Defensa Robusta, sino que deben realizar una salvación de Defensa Ágil.",
+        type = "active",
+        costActions = 2,
+        costSlots = 2,
+        turnEffects = 0,
+        turnCooldown = 4
+    }
+}
+
+return DexSkillsDatabase

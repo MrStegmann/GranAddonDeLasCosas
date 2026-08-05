@@ -1,3 +1,21 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-
+    <Script file="database\RaceDatabase.lua" />
+    <Script file="database\LevelDatabase.lua" />
+    <Script file="database\TraitsDatabase.lua" />
+    <Script file="database\ArmorDatabase.lua" />
+    <Script file="database\WeaponsDatabase.lua" />
+    <Script file="database\ShieldDatabase.lua" />
+    <Script file="database\StrengthSkillsDatabase.lua" />
+    <Script file="database\DexSkillsDatabase.lua" />
+    <Script file="database\ConstitutionSkillsDatabase.lua" />
+    <Script file="database\ArcaneDatabase.lua" />
+    <Script file="database\ElementalDatabase.lua" />
+    <Script file="database\EluneDatabase.lua" />
+    <Script file="database\HolyLightDatabase.lua" />
+    <Script file="database\ShadowDatabase.lua" />
+    <Script file="database\WorgenCurseDatabase.lua" />
+    <Script file="database\ChiDatabase.lua" />
+    <Script file="database\FelDatabase.lua" />
+    <Script file="database\NatureDatabase.lua" />
+    <Script file="database\NecromanceDatabase.lua" />
 </Ui>

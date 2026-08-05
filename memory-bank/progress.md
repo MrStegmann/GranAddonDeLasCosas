@@ -1,12 +1,5 @@
 # Project Progress & Roadmap Tracker
 
-## Core Data Feature Specification & Planning (`specs/002-core-data/`) — COMPLETED
-
-- [x] **Feature Specification (`SPEC.md`)**: Updated status to `Approved` with full user stories, functional requirements, key data entities, edge cases, and success criteria.
-- [x] **Implementation Plan (`plan.md`)**: Created implementation plan based on `.specify/templates/plan-template.md` establishing technical context, constitution gates, directory structure, and complexity tracking.
-
----
-
 ## Third-Party Libraries Integration — COMPLETED
 
 - [x] **Core Base Framework Libraries (`libs/`)**
@@ -34,23 +27,20 @@
 ## Feature 003: Core Data Metadata Tables & Trait Services — COMPLETED
 
 - [x] **Transpiled Domain Database Tables (`src/main/domain/database/`)**
-  - [x] `ArmorDatabase.lua` (Transpiled from `armor-types.ts`)
-  - [x] `AttributesTalentsDatabase.lua` (Transpiled from `attributes-talents-types.ts`)
-  - [x] `LevelDatabase.lua` (Transpiled from `level-type.ts`)
-  - [x] `RaceDatabase.lua` (Transpiled from `races-type.ts`)
-  - [x] `ShieldDatabase.lua` (Transpiled from `shield-types.ts`)
-  - [x] `TraitsDatabase.lua` (Transpiled from `traits-types.ts`)
-  - [x] `WeaponsDatabase.lua` (Transpiled from `weapons-type.ts`)
+  - [x] `ArmorDatabase.lua`, `LevelDatabase.lua`, `RaceDatabase.lua`, `ShieldDatabase.lua`, `TraitsDatabase.lua`, `WeaponsDatabase.lua`
+  - [x] `StrengthSkillsDatabase.lua`, `DexSkillsDatabase.lua`, `ConstitutionSkillsDatabase.lua`
+  - [x] `ArcaneDatabase.lua`, `ElementalDatabase.lua`, `EluneDatabase.lua`, `HolyLightDatabase.lua`, `ShadowDatabase.lua`, `WorgenCurseDatabase.lua`
+  - [x] Empty tables: `ChiDatabase.lua`, `FelDatabase.lua`, `NatureDatabase.lua`, `NecromanceDatabase.lua`
   - [x] Cascading manifest `database.xml` created and wired into `domain.xml`
 - [x] **Read-Only Access Ports (`src/main/ports/metadata/`)**
-  - [x] `ArmorPort.lua`
-  - [x] `AttributesTalentsPort.lua`
-  - [x] `LevelPort.lua`
-  - [x] `RacePort.lua`
-  - [x] `ShieldPort.lua`
-  - [x] `TraitsPort.lua`
-  - [x] `WeaponsPort.lua`
+  - [x] `ArmorPort.lua`, `LevelPort.lua`, `RacePort.lua`, `ShieldPort.lua`, `TraitsPort.lua`, `WeaponsPort.lua`
+  - [x] `StrengthSkillsPort.lua`, `DexSkillsPort.lua`, `ConstitutionSkillsPort.lua`
+  - [x] `ArcanePort.lua`, `ElementalPort.lua`, `ElunePort.lua`, `HolyLightPort.lua`, `ShadowPort.lua`, `WorgenCursePort.lua`
+  - [x] Empty ports: `ChiPort.lua`, `FelPort.lua`, `NaturePort.lua`, `NecromancePort.lua`
   - [x] Cascading manifest `metadataPorts.xml` created and wired into `ports.xml`
+- [x] **Probing Test Suite & Parity Verification (`tests/probing/`)**
+  - [x] `test_core_data_ports.lua`, `test_equipment_ports.lua`, `test_skills_ports.lua`, `test_spell_school_ports.lua`, `test_empty_ports.lua`
+  - [x] `run_all_probing_tests.lua` master runner asserting 100% structural parity across all 19 endpoints
 - [x] **Mechanical Trait Services (`src/main/adapters/services/traits/`)**
   - [x] `combatTraitsService.lua` (dual wield, critical, initiative, immunity checks)
   - [x] `talentTraitsService.lua` (trait talent bonuses)
