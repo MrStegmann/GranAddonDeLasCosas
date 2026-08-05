@@ -1,8 +1,11 @@
 # Active Context & Current Focus
 
-## Current Phase: Library Integration & Infrastructure Setup (Completed)
+## Current Phase: Core Data Specification & Planning (Completed)
 
 ## Recent Architectural Deliverables
+0. **Core Data Feature Specification & Planning (`specs/002-core-data/`):**
+   - Updated `SPEC.md` to Approved status incorporating user scenarios, functional requirements, key entities, edge cases, and success criteria.
+   - Created `plan.md` adhering to `.specify/templates/plan-template.md` defining the technical context, constitution gates, project structure, and complexity tracking for immutable domain data transpilation.
 1. **Third-Party WoW Addon Libraries (`libs/` & `libs.xml`):**
    - Integrated `LibStub` and `CallbackHandler-1.0` base framework dependencies.
    - Integrated complete **Ace3 Suite**: `AceAddon-3.0`, `AceEvent-3.0`, `AceDB-3.0`, `AceDBOptions-3.0`, `AceConsole-3.0`, `AceGUI-3.0`, `AceComm-3.0`, and `AceSerializer-3.0`.

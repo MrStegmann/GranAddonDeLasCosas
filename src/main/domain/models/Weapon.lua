@@ -1,5 +1,5 @@
 --- @class Weapon
---- Domain model for weapons matching weapons-type.ts schema interface.
+--- Domain model for weapons matching Item.ts (Weapon) schema interface.
 local Weapon = {}
 Weapon.__index = Weapon
 
@@ -20,8 +20,14 @@ end
 function Weapon.create(raw)
     raw = type(raw) == "table" and raw or {}
 
+    local weaponId = type(raw.weaponId) == "string" and raw.weaponId or (type(raw.id) == "string" and raw.id or "dagger")
+
     local instance = {
-        id = type(raw.id) == "string" and raw.id or (type(raw.weaponId) == "string" and raw.weaponId or "dagger"),
+        id = type(raw.id) == "string" and raw.id or weaponId,
+        name = type(raw.name) == "string" and raw.name or "Weapon",
+        quality = type(raw.quality) == "string" and raw.quality or "common",
+        description = type(raw.description) == "string" and raw.description or "",
+        weaponId = weaponId,
         talent = type(raw.talent) == "table" and raw.talent or { "agileCombat" },
         damage = type(raw.damage) == "number" and raw.damage or 4,
         diceNumber = type(raw.diceNumber) == "number" and raw.diceNumber or 1,

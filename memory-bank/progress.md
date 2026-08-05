@@ -1,5 +1,12 @@
 # Project Progress & Roadmap Tracker
 
+## Core Data Feature Specification & Planning (`specs/002-core-data/`) — COMPLETED
+
+- [x] **Feature Specification (`SPEC.md`)**: Updated status to `Approved` with full user stories, functional requirements, key data entities, edge cases, and success criteria.
+- [x] **Implementation Plan (`plan.md`)**: Created implementation plan based on `.specify/templates/plan-template.md` establishing technical context, constitution gates, directory structure, and complexity tracking.
+
+---
+
 ## Third-Party Libraries Integration — COMPLETED
 
 - [x] **Core Base Framework Libraries (`libs/`)**

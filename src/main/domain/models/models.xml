@@ -2,5 +2,11 @@
     <Script file="Armor.lua" />
     <Script file="Weapon.lua" />
     <Script file="Shield.lua" />
+    <Script file="Heroic.lua" />
+    <Script file="Skill.lua" />
+    <Script file="Spell.lua" />
+    <Script file="Profession.lua" />
+    <Script file="Pet.lua" />
+    <Script file="Combat.lua" />
     <Script file="Character.lua" />
 </Ui>

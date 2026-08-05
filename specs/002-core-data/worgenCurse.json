@@ -1,0 +1,101 @@
+{
+    "humanoid": {
+        "advantages": [
+            {
+                "id": "athletics",
+                "name": "Atletismo",
+                "value": 1
+            },
+            {
+                "id": "brutality",
+                "name": "Brutalidad",
+                "value": 1
+            },
+            {
+                "id": "magicResistance",
+                "name": "Resistencia Mágica",
+                "value": 1
+            },
+            {
+                "id": "perception",
+                "name": "Percepción",
+                "value": 1
+            },
+            {
+                "id": "resilience",
+                "name": "Resiliencia",
+                "value": 1
+            }
+        ],
+        "disadvantages": [
+            {
+                "id": "lossOfControlResistance",
+                "name": "Resistencia a Pérdida de Control",
+                "value": -5
+            },
+            {
+                "id": "stealth",
+                "name": "Sigilo",
+                "value": -3
+            },
+            {
+                "id": "sleightOfHand",
+                "name": "Destreza",
+                "value": -2
+            }
+        ],
+        "special": [
+            "adaptability"
+        ]
+    },
+    "worgen": {
+        "advantages": [
+            {
+                "id": "athletics",
+                "name": "Atletismo",
+                "value": 2
+            },
+            {
+                "id": "brutality",
+                "name": "Brutalidad",
+                "value": 2
+            },
+            {
+                "id": "magicResistance",
+                "name": "Resistencia Mágica",
+                "value": 2
+            },
+            {
+                "id": "perception",
+                "name": "Percepción",
+                "value": 2
+            },
+            {
+                "id": "resilience",
+                "name": "Resiliencia",
+                "value": 2
+            }
+        ],
+        "disadvantages": [
+            {
+                "id": "lossOfControlResistance",
+                "name": "Resistencia a Pérdida de Control",
+                "value": -5
+            },
+            {
+                "id": "stealth",
+                "name": "Sigilo",
+                "value": -3
+            },
+            {
+                "id": "sleightOfHand",
+                "name": "Destreza",
+                "value": -2
+            }
+        ],
+        "special": [
+            "superStrength",
+            "hughMovility:fourLegs"
+        ]
+    }
+}

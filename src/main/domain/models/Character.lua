@@ -1,5 +1,5 @@
 --- @class Character
---- Domain model representing character sheet data and persistent stats.
+--- Domain model representing character sheet data, combat stats, and persistence structure matching Character.ts.
 local Character = {}
 Character.__index = Character
 
@@ -11,6 +11,7 @@ function Character.createDefaultData()
         class = "",
         category = "normal",
         level = 1,
+        type = "player",
         healthPoints = 20,
         resources = {
             mana = 10,
@@ -116,6 +117,10 @@ function Character.createDefaultData()
             ranged = nil,
         },
         pets = {},
+        heroics = {},
+        skills = {},
+        spells = {},
+        professions = {},
     }
 end
 
@@ -137,9 +142,9 @@ local function sanitizeEquipment(eq)
     eq = type(eq) == "table" and eq or {}
     local result = {}
 
-    local ArmorModel = _G.Armor or (require and pcall(require, "src.main.domain.models.Armor") and require("src.main.domain.models.Armor") or nil)
-    local WeaponModel = _G.Weapon or (require and pcall(require, "src.main.domain.models.Weapon") and require("src.main.domain.models.Weapon") or nil)
-    local ShieldModel = _G.Shield or (require and pcall(require, "src.main.domain.models.Shield") and require("src.main.domain.models.Shield") or nil)
+    local ArmorModel = _G.Armor
+    local WeaponModel = _G.Weapon
+    local ShieldModel = _G.Shield
 
     local armorSlots = { head = true, chest = true, hands = true, legs = true }
     for slot, _ in pairs(armorSlots) do
@@ -183,6 +188,7 @@ function Character.create(raw)
     raw = type(raw) == "table" and raw or {}
 
     local validCategories = { noob = true, normal = true, elite = true, boss = true }
+    local validTypes = { player = true, npc = true }
 
     local rawRes = type(raw.resources) == "table" and raw.resources or {}
     local rawAttr = type(raw.attributes) == "table" and raw.attributes or {}
@@ -197,11 +203,54 @@ function Character.create(raw)
     local wisT = type(rawTalents.wisdom) == "table" and rawTalents.wisdom or {}
     local chaT = type(rawTalents.charisma) == "table" and rawTalents.charisma or {}
 
+    -- Sub-model instantiation
+    local PetModel = _G.Pet
+    local HeroicModel = _G.Heroic
+    local SkillModel = _G.Skill
+    local SpellModel = _G.Spell
+    local ProfessionModel = _G.Profession
+
+    local petsList = {}
+    if type(raw.pets) == "table" then
+        for _, p in ipairs(raw.pets) do
+            table.insert(petsList, (PetModel and PetModel.create) and PetModel.create(p) or p)
+        end
+    end
+
+    local heroicsList = {}
+    if type(raw.heroics) == "table" then
+        for _, h in ipairs(raw.heroics) do
+            table.insert(heroicsList, (HeroicModel and HeroicModel.create) and HeroicModel.create(h) or h)
+        end
+    end
+
+    local skillsList = {}
+    if type(raw.skills) == "table" then
+        for _, s in ipairs(raw.skills) do
+            table.insert(skillsList, (SkillModel and SkillModel.create) and SkillModel.create(s) or s)
+        end
+    end
+
+    local spellsList = {}
+    if type(raw.spells) == "table" then
+        for _, s in ipairs(raw.spells) do
+            table.insert(spellsList, (SpellModel and SpellModel.create) and SpellModel.create(s) or s)
+        end
+    end
+
+    local professionsList = {}
+    if type(raw.professions) == "table" then
+        for _, pr in ipairs(raw.professions) do
+            table.insert(professionsList, (ProfessionModel and ProfessionModel.create) and ProfessionModel.create(pr) or pr)
+        end
+    end
+
     local instance = {
         fullName = type(raw.fullName) == "string" and raw.fullName or defaults.fullName,
         class = type(raw.class) == "string" and raw.class or defaults.class,
         category = validCategories[raw.category] and raw.category or defaults.category,
         level = sanitizeNum(raw.level, defaults.level),
+        type = validTypes[raw.type] and raw.type or defaults.type,
         healthPoints = sanitizeNum(raw.healthPoints, defaults.healthPoints),
         resources = {
             mana = sanitizeNum(rawRes.mana, defaults.resources.mana),
@@ -298,7 +347,11 @@ function Character.create(raw)
         positiveTraits = type(raw.positiveTraits) == "table" and raw.positiveTraits or {},
         negativeTraits = type(raw.negativeTraits) == "table" and raw.negativeTraits or {},
         equipment = sanitizeEquipment(raw.equipment),
-        pets = type(raw.pets) == "table" and raw.pets or {},
+        pets = petsList,
+        heroics = heroicsList,
+        skills = skillsList,
+        spells = spellsList,
+        professions = professionsList,
     }
 
     return setmetatable(instance, Character)
@@ -310,4 +363,5 @@ function Character.createDefault()
     return Character.create(Character.createDefaultData())
 end
 
+_G.Character = Character
 return Character

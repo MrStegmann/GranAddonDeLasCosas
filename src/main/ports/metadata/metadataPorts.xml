@@ -1,9 +1,0 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Script file="ArmorPort.lua" />
-    <Script file="AttributesTalentsPort.lua" />
-    <Script file="LevelPort.lua" />
-    <Script file="RacePort.lua" />
-    <Script file="ShieldPort.lua" />
-    <Script file="TraitsPort.lua" />
-    <Script file="WeaponsPort.lua" />
-</Ui>

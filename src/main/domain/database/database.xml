@@ -1,9 +1,3 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Script file="ArmorDatabase.lua" />
-    <Script file="AttributesTalentsDatabase.lua" />
-    <Script file="LevelDatabase.lua" />
-    <Script file="RaceDatabase.lua" />
-    <Script file="ShieldDatabase.lua" />
-    <Script file="TraitsDatabase.lua" />
-    <Script file="WeaponsDatabase.lua" />
+
 </Ui>
