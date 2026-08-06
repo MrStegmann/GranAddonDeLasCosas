@@ -2,7 +2,7 @@
 
 ## System Overview & Specifications
 
-* **Frame Dimensions:** 50% Viewport Width $\times$ 30% Viewport Height
+* **Frame Dimensions:** 50% Viewport Width $\times$ 65% Viewport Height
 * **Global Persistent Storage Key:** `SavedVariablesPerCharacter.Character` (On-disk persistent storage managed via `SavedVarsStorageAdapter`)
 * **Session Runtime Cache:** In-memory character model instance cached during the active session in `CharacterCacheAdapter` to ensure zero-latency UI reads and updates.
 * **Layout Structure:** Two-column split layout (Left: Navigation Sidebar | Right: Content Container)
@@ -11,7 +11,7 @@
 
 ---
 
-## Component Architecture
+## Feature 0: Component Architecture
 
 ### Minimap Anchor Button
 

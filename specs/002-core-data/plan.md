@@ -14,7 +14,7 @@ Migrate all 19 core reference data sources (17 JSON files and 2 TypeScript files
 **Primary Dependencies**: None (pure Lua 5.1 domain logic without external libraries or WoW APIs)  
 **Storage**: Static immutable Lua tables in `src/main/domain/database/` (Read-only reference data)  
 **Testing**: Lua test runner probing endpoints for 1:1 structural equality against domain database tables  
-**Target Platform**: World of Warcraft Retail Client (11.x / 12.x Lua 5.1 sandbox)  
+**Target Platform**: World of Warcraft Client (Shadowlands 9.2.7 Lua 5.1 sandbox)  
 **Project Type**: WoW Addon Domain Database & Metadata Ports Layer  
 **Performance Goals**: Instantaneous sub-millisecond in-memory lookups for `GetAll()` and `GetById()` queries  
 **Constraints**: 

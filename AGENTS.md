@@ -4,7 +4,7 @@
 
 1. **Memory First:** Before writing or editing code, ALWAYS load `memory-bank/` (specifically `activeContext.md` and `systemPatterns.md`) to align with current project state and architectural boundaries.
 2. **Strict Boundary Adherence:** Never cross architectural boundaries. Domain logic must remain pure, infrastructure must isolate external APIs, and UI features must remain completely autonomous micro-frontends.
-3. **Rule Enforcement:** All code generation MUST strictly comply with `.agent/rules/` (Rules 01 through 05).
+3. **Rule & Design Pattern Enforcement:** All code generation MUST strictly comply with `.agent/rules/` (Rules 01 through 05) and [DESIGN.md](file:///j:/Juegos/Epsilon927/Epsilon/_retail_/Interface/AddOns/GAC_DEV/DESIGN.md) (TRP3-abstracted Navigation & Page Container design patterns).
 
 ---
 

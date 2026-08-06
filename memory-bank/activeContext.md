@@ -1,9 +1,13 @@
 # Active Context & Current Focus
 
-## Current Phase: Feature 002 Core Data Implementation (100% COMPLETED)
+## Current Phase: WoW 9.2.7 (Shadowlands) Environmental Alignment
 
 ## Recent Architectural Deliverables
-1. **Executed Feature 002 Core Data (`specs/002-core-data/tasks.md` Tasks T001–T045):**
+1. **Synchronized Addon Environment & Versioning for WoW 9.2.7 (Shadowlands Expansion):**
+   - Updated `GAC_DEV.toc` Interface header to `90207` (Shadowlands 9.2.7).
+   - Synchronized `CONTEXT.md`, `README.md`, `specs/`, and `memory-bank/` to target WoW 9.2.7 (Shadowlands).
+
+2. **Executed Feature 002 Core Data (`specs/002-core-data/tasks.md` Tasks T001–T045):**
    - [x] **Setup & Foundational (Phases 1-2)**: Created `ReadOnlyHelper.lua`, `database.xml`, and `metadataPorts.xml`.
    - [x] **Core Reference Data (Phase 3)**: Transpiled `RaceDatabase`, `LevelDatabase`, `TraitsDatabase` (100% comments preserved) and created `RacePort`, `LevelPort`, `TraitsPort`.
    - [x] **Equipment Datasets (Phase 4)**: Transpiled `ArmorDatabase`, `WeaponsDatabase` (36 weapons), `ShieldDatabase` and created `ArmorPort`, `WeaponsPort`, `ShieldPort`.

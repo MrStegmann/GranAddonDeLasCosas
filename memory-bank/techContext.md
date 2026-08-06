@@ -1,6 +1,7 @@
 # Technical Context & Environmental Constraints
 
 ## WoW Lua Execution Environment
+* **Target Client:** World of Warcraft 9.2.7 (Shadowlands expansion, Interface `90207`).
 * **Lua Version:** WoW Lua 5.1 (LuaJIT subset runtime).
 * **No Standard I/O or File System:** All disk persistence must go through Blizzard's `SavedVariables` system upon UI reload or logout.
 * **Global Scope Hygiene:** Avoid global variable pollution. Explicitly namespace modules or localize within Lua files.
