@@ -21,7 +21,7 @@ globs: src/**/*.lua
 
 ## 3. Naming & Style Conventions
 * **Variables & Functions:** Use `snake_case` (e.g., `calculate_derived_stats`, `player_guid`).
-* **Modules & UI Classes:** Use `PascalCase` (e.g., `CharacterSheet`, `CombatEngine`).
+* **Modules & UI Classes:** Use `PascalCase` (e.g., `Character`, `CombatEngine`).
 * **Constants:** Use `UPPER_SNAKE_CASE` (e.g., `MAX_ACTION_POINTS`, `DEFAULT_CACHE_TTL`).
 * **Explicit Returns:** Modules must explicitly return their local table interface at the end of the file.
 
@@ -29,5 +29,5 @@ globs: src/**/*.lua
 To enforce type safety and prevent state corruption from un-typed Lua tables, disk stores (`SavedVariablesPerCharacter`), or network payloads:
 * **Schema Definitions:** Complex models (e.g., `Character`, `Item`, `Combatant`) MUST define a local static schema containing expected field keys, default fallback values, and types (`string`, `number`, `boolean`, `table`).
 * **Factory Constructors:** Models MUST export a factory function (e.g., `Model.create(raw_data)`) that validates incoming raw data against the schema, repairs missing or invalid fields, and enforces value boundaries (e.g., `min`/`max` ranges) before returning the entity.
-* **No Direct Property Mutation:** State changes on complex models MUST occur through explicit domain mutator functions (e.g., `CharacterSheet.add_attribute_point(char, stat_name, amount)`) that validate parameters prior to assignment.
+* **No Direct Property Mutation:** State changes on complex models MUST occur through explicit domain mutator functions (e.g., `Character.add_attribute_point(char, stat_name, amount)`) that validate parameters prior to assignment.
 * **Avoid Metatable Proxy Overuse:** Do NOT use heavy `__newindex` or `__index` metatable traps for property enforcement due to garbage collection overhead in WoW Lua. Prefer clean table factory sanitization.

@@ -14,7 +14,7 @@ When executing tasks, the orchestrator agent should assume or delegate work to t
 
 ### 1. Core Domain Agent (`src/main/domain/`)
 * **Focus:** Tabletop game math, stat calculations, combat state machines, dice engine, and domain entities.
-* **Constraints:** Pure Lua 5.1 ONLY. ZERO WoW APIs (`CreateFrame`, `RegisterEvent`, etc.). No direct access to `SavedVariablesPerCharacter` or TRP3. Must use schema factories (`CharacterSheet.create()`) for models.
+* **Constraints:** Pure Lua 5.1 ONLY. ZERO WoW APIs (`CreateFrame`, `RegisterEvent`, etc.). No direct access to `SavedVariablesPerCharacter` or TRP3. Must use schema factories (`Character.create()`) for models.
 * **Reference Rules:** `.agent/rules/01-domain-purity.md`, `.agent/rules/05-lua-good-practices.md`.
 
 ### 2. Infrastructure & Network Agent (`src/main/adapters/`, `src/main/ports/`)
