@@ -1,0 +1,42 @@
+[
+  {
+    "id": "runa_caida_pluma",
+    "nombre": "Runa de Caída de Pluma",
+    "activacion": "Activación Inmediata",
+    "descripcion_base": "Un glifo que otorga a la persona que lo lleva reducir la velocidad de caída drásticamente evitando todo daño por caída.",
+    "trazado": {
+      "tipo_1": "Líneas simples y rectas que forman un patron estelar con forma de pluma de ave.",
+      "tipo_2": "Se añaden más lineas transformando el patron estela de una pluma en una forma más parecido a un ave en vuelo.",
+      "tipo_3": "Se añade líneas rectas que unen las puntas de las alas creando una figura con forma de ave.",
+      "tipo_4": "Se duplican las lineas conformando un borde más crueso y relleno conformado por patrones y runas."
+    },
+    "escalado": {
+      "tipo_1": "Reduce la velocidad de caida para evitar el daño por caida durante un breve periodo de tiempo.",
+      "tipo_2": "Reduce la velocidad de caída para evitar el daño por caída durante un tiempo más prolongado",
+      "tipo_3": "Reduce la velocidad de caída para evitar el daño por caída durante un tiempo mucho más prolongado y también permite rectificar la dirección de caída.",
+      "tipo_4": "Te crecen alas de fénix arcanos hechas de magia pura que puedes controlar para volar."
+    },
+    "preparacion": "Puede grabarse sobre una superficie, objetos o sobre personas.",
+    "image_url": "assets/runa_caida_pluma.png"
+  },
+  {
+    "id": "runa_ignitis",
+    "nombre": "Runa de Fuego",
+    "activacion": "Activación Inmediata",
+    "descripcion_base": "Trampa de fuego simple",
+    "trazado": {
+      "tipo_1": "Tres anillas que nacen del mismo punto de inicio. Uno más grande que otro y dentro uno de otro.",
+      "tipo_2": "Se añade Y desde la unión de las tres anillas.",
+      "tipo_3": "Los espacios entre anillas se rellena con runas de fuego, y se engruesan los trazos. Se aplica dos lineas más dentro del circulo más pequeño y una anilla extra entre la mediana y la grande.",
+      "tipo_4": "Se completa la anilla exterior dibujando los patrones de fuego."
+    },
+    "escalado": {
+      "tipo_1": "Causa un pequeño fogonazo de fuego que inflige daño leve a los enemigos que estén sobre las runas",
+      "tipo_2": "Provoca un fogonazo más potentes que daña a los enemigos que estén sobre las runas.",
+      "tipo_3": "Causa una fuerte explosión de llamas que Incendia a todos los objetivos sobre las runas, además de provocar grandes daños. Repelea a las personas cercanas.",
+      "tipo_4": "Crea una columna de llamas que golpea a los enemigos que estén sobre las runas y circundantes. Repele a todos e Indencia a todos"
+    },
+    "preparacion": "Puede ser grabada en cualquier superficie, pero suele grabarse en el suelo.",
+    "image_url": "assets/runa_ignitis.png"
+  }
+]

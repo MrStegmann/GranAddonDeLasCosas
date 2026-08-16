@@ -1,0 +1,74 @@
+[
+    {
+        "name": "dexterity",
+        "talents": [
+            "precision",
+            "agileCombat",
+            "acrobatics",
+            "stealth",
+            "sleightOfHand",
+            "agileDefense"
+        ]
+    },
+    {
+        "name": "strength",
+        "talents": [
+            "twoHandedCombat",
+            "oneHandedCombat",
+            "athletics",
+            "brutality",
+            "sturdyDefense"
+        ]
+    },
+    {
+        "name": "intelligence",
+        "talents": [
+            "arcane",
+            "fel",
+            "nature",
+            "shadow",
+            "necromancy"
+        ]
+    },
+    {
+        "name": "willpower",
+        "talents": [
+            "magicResistance",
+            "lossOfControlResistance",
+            "faith",
+            "elementalConnection",
+            "chi",
+            "manaRegeneration"
+        ]
+    },
+    {
+        "name": "constitution",
+        "talents": [
+            "resilience",
+            "stunResistance",
+            "knockdownResistance",
+            "coldResistance",
+            "heatResistance",
+            "fortitude"
+        ]
+    },
+    {
+        "name": "wisdom",
+        "talents": [
+            "animalConnection",
+            "survival",
+            "perception"
+        ]
+    },
+    {
+        "name": "charisma",
+        "talents": [
+            "persuasion",
+            "diplomacy",
+            "commerce",
+            "provocation",
+            "seduction",
+            "performance"
+        ]
+    }
+]

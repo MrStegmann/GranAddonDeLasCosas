@@ -1,0 +1,248 @@
+[
+  {
+    "Nombre": "Adefesio",
+    "Descripción": "Eres tan feo que de pequeño te ponían a dormir con los cerdos.\n\nLos NPC preferirán ignorarte antes que tener una conversación contigo.\n\nSerás recordado por lo horrible que eres.\n\n-3 a seducción.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Adicto al maná",
+    "Descripción": "Cuando gastes más de la mitad de tu maná, dejarás de hacer cualquier\ncosa y buscarás desesperadamente recuperarlo. Siempre consumirás el doble (Gemas\nde maná, comida mágica, fuentes de energía, pociones de maná, etc)",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Alcohólico/a",
+    "Descripción": "Siempre necesitas un trago, sea cual sea la situación, sea cual sea\nel momento, siempre necesitas beber. Cuando no bebes durante demasiado tiempo,\nrecibes una penalización de -3 a cualquier acción.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Amnésico",
+    "Descripción": "Pierdes todos los puntos iniciales de atributo a repartir y no los\nrecuperarás hasta que los recuerdos vuelvan a tu personaje. Esto no ocurrirá por\nnorma general y debería llevar tiempo.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Asalvajado",
+    "Descripción": "Penaliza todas las tiradas del personaje en zonas urbanas.",
+    "Efectos": "-3",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Asocial",
+    "Descripción": "Penaliza todas las tiradas de Carisma",
+    "Efectos": "-3",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Bufón",
+    "Descripción": "No respetas a ningún símbolo de autoridad ni títulos nobiliarios, contradiciendo\nlas órdenes que te den y devolviendoles su condescendencia.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Buscado",
+    "Descripción": "Puedes elegir por quién y qué motivos eres buscados sino serán mercenarios\nque buscan tu cabeza por alguna razón aleatoria. Siempre que se esté en pueblos\no caminos, pueden emboscarte aquellos que te buscan. El máster tirará 1D100, acto\nseguido 1D5 para determinar cuántos son los que te emboscan. (1D100 = <45 sufres\nuna emboscada)",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Ciego de amor",
+    "Descripción": "Eliges el objetivo de un amor (otro personaje de jugador). Ese personaje\nestá tan obsesionado que cuando el objeto de su amor sufre daño, el jugador cambiará\nsu objetivo hacia aquel que haya dañado a su amor hasta que muera.\n\nAdemás, si el objeto de su amor está bajo de vida, el personaje abandonará a todos\ncon tal de alejar a su amor del lugar para salvarle la vida.",
+    "Efectos": null,
+    "Incompatibilidad": "Vengativo"
+  },
+  {
+    "Nombre": "Bocazas",
+    "Descripción": "El personaje tiene dificultades para guardar secretos o medir sus palabras.\nCuando obtiene información relevante, escucha un rumor importante o se encuentra\nbajo presión social, debe superar una tirada de Voluntad + Res. Perd. Control\n14 para mantenerse discreto.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Cobarde",
+    "Descripción": "Cada vez que el jugador se vea superado en número de enemigos o una\nsituación que supera sus capacidades (el máster avisará al jugador), quedará aturdido\ny será incapaz de actuar. Tirará un dado de Voluntad + Res. Perd. Control en su\nturno y tendrá que superar 15.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Cojera",
+    "Descripción": "Reduce a la mitad el Movimiento base del personaje.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Corto de miras",
+    "Descripción": "Penaliza el talento de Percepción siempre que implique el sentido\nde la vista.\n\nPenaliza los ataques a distancia.",
+    "Efectos": "Percepción -2\n\nAtq. Dist -2",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Débil",
+    "Descripción": "Penaliza los talentos de Fortaleza y Def. Robusta",
+    "Efectos": "Fortaleza -2\n\nDef. Robusta -1",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Desastroso",
+    "Descripción": "Recibe la mitad de experiencia total comparado con el resto de personajes.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Despistado",
+    "Descripción": "Penaliza los talentos de Percepción y Percepción Mágica",
+    "Efectos": "-3",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Enfermizo/a",
+    "Descripción": "Penaliza la resiliencia y la cantidad de vida.",
+    "Efectos": "Resiliencia -2\n\nVida -5",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Ensañamiento",
+    "Descripción": "Cuando mates a un enemigo, permanecerás un turno más atacando al cadáver.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Escuálido/a",
+    "Descripción": "Penaliza los talentos de Brutalidad y DR.\n\nSi tu oponente tiene más fuerza que tú, te derribará.",
+    "Efectos": "Brutalidad -3\n\nDef. Robusta -2",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Fanático religioso",
+    "Descripción": "Penaliza con 1 todas las tiradas si no se realizan rezos o ritos religiosos.\nLa penalización es acumulativa.\n\nTodas las cosas en contra de tu religión te enfurece y te vuelves hostil. Para\nevitar esto, podrás lanzar un d20 VOL + Resistencia a la Pérdida de Control. Si\nsuperas o iguales 15, lo evitas.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Fobia",
+    "Descripción": "Elige un tipo de fobia para el personaje. Cada vez que te enfrentes\na tu fobia, recibirás una penalización a todas tus tiradas.",
+    "Efectos": "-3",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Frágil",
+    "Descripción": "Penaliza el talento de Resistencia Mágica y la efectividad de cualquier\ndefensa mágica.",
+    "Efectos": "-2 Rst. Mágica\n\n-1 Def. Mágica con hechizos.",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Indeciso",
+    "Descripción": "No puede atacar o curar al mismo objetivo dos turnos seguidos",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Inmisericorde",
+    "Descripción": "Ejecutarás a todos los enemigos sin piedad alguna y sin atender a\nnada ni nadie. No harás nunca prisioneros ni dejarás a nadie con vida.\n\nPara evitar esto, podrás lanzar un d20 VOL + Resistencia a la Pérdida de Control.\nSi superas o iguales 15 lo evitas.",
+    "Efectos": null,
+    "Incompatibilidad": "Piadoso"
+  },
+  {
+    "Nombre": "Inútil",
+    "Descripción": "Penaliza un talento de tu elección sin restricciones.",
+    "Efectos": "-3",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Ladrón",
+    "Descripción": "Siempre que alguien obtenga una recompensa, deberá tirar por Voluntad\n+ Rest. Per. Control. Deberá superar 14 si no quiere robar. Siempre que tengas\nla oportunidad, tratarás de robar algo.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Manco",
+    "Descripción": "Le falta una mano o un brazo.",
+    "Efectos": "No puede usar doble empuñadura.",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Mastodonte",
+    "Descripción": "Eres un fiera, un crack, un máquina der furbito, un mastodonte. Pero\nte pesa el culo.",
+    "Efectos": "-2 Def. Ágil\n\n-3 Acrobacias",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Mentalidad frágil",
+    "Descripción": "Penaliza el talento de Res. Pérdida de control",
+    "Efectos": "-3",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Miedica",
+    "Descripción": "Penaliza las iniciativas.",
+    "Efectos": "Siempre empieza el último.",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Muggle",
+    "Descripción": "Penaliza todas las tiradas mágicas.",
+    "Efectos": "-3",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Pesadillas",
+    "Descripción": "Los recuerdos del pasado te atormentan cada noche al cerrar los ojos,\nvolviendo a ti en forma de vívidas pesadillas.\n\nCada vez que el personaje vaya a dormir, deberá tirar 1d20 Voluntad + Res. Pérdida\nControl. Si no supera o iguala 15, no podrá dormir y se verá afectado por Fatiga.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Piadoso",
+    "Descripción": "Te ves incapaz de matar a nadie aunque lo que tengas delante sea un\nmonstruo en vida y hagas más bien que mal matándolo. Pero no lo harás, no matarás\na nadie.",
+    "Efectos": null,
+    "Incompatibilidad": "Inmisericorde"
+  },
+  {
+    "Nombre": "Ruidoso",
+    "Descripción": "Penaliza el talento de sigilo.",
+    "Efectos": "-3",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Sanguijuela de maná",
+    "Descripción": "Te deleitas con la energía de otros, lo degustas como si fuera un buen\nvino. Siempre que sea posible, robarás la energía a la persona más cercana (amigo\no enemigo, la verdad es que te da igual) para lanzar tus hechizos.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Sordera",
+    "Descripción": "Penaliza el talento de Percepción siempre que implique el sentido del\noído.",
+    "Efectos": "-3",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Torpe",
+    "Descripción": "Penaliza los talentos de Juego de manos y todas los de Armas al intentar\nimpactar.",
+    "Efectos": "Juego de manos-2\n\nArmas -2",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Traidor",
+    "Descripción": "No es que tengas nada en contra de tus compañeros, es que los otros\npagan mejor.\n\nSiempre que se te ofrezca una suma importante para tu personaje, no tendrás dudas\na la hora de dejarlos de lado.\n\nElige algo por lo que tu personaje aceptaría sin dudar cambiar de bando.",
+    "Efectos": null,
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Tuerto",
+    "Descripción": "Te falta un ojo.",
+    "Efectos": "Percepción -5\n\nAtq. Distancia -5",
+    "Incompatibilidad": null
+  },
+  {
+    "Nombre": "Vengativo",
+    "Descripción": "Hasta que muera el primer enemigo que te ataque, sólo atacarás a ese\nenemigo.",
+    "Efectos": null,
+    "Incompatibilidad": "Ciego de amor"
+  },
+  {
+    "Nombre": "Zopenco",
+    "Descripción": "Penaliza los talentos de Res. Derribos y Aturdimientos",
+    "Efectos": "Rest. Derribos -2\n\nRest. Aturdimientos -2",
+    "Incompatibilidad": null
+  }
+]
