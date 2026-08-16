@@ -1,50 +1,24 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# GAC Constitution (Code Quality & Performance)
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Pure Lua over WoW API Where Possible
+The core business logic and domain models must strictly rely on pure Lua 5.1 constructs. Avoid calls to Blizzard UI APIs (`CreateFrame`, `RegisterEvent`, etc.) outside of the designated Controller and UI layers. This ensures our logic is lightweight, easily testable, and less prone to engine-specific bugs.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Strict MVC Architecture
+Adhere rigorously to the MVC (Model-View-Controller) architectural pattern:
+- **Models** own the data and validation. They do not know about the UI or external events.
+- **Views (API layer)** expose clean interfaces (DTOs) and dispatch events. Zero UI frames are defined here.
+- **Controllers** act as the bridge, listening to WoW events and updating Models or triggering Views.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Micro-Frontend Isolation
+All UI elements are isolated features. A feature frame must never access the state or elements of another feature frame. State and events must be synchronized through the backend (`src/main/`) to guarantee decoupling and high maintainability.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Defensive Data Handling & Taint Protection
+Never leak mutable internal state to the public API layer. Always return deep-copies or read-only proxy tables to prevent external addons from corrupting our `SavedVariables`. Fail fast with `assert` when validating API inputs.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
-
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
-
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
-
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
-
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### V. Performance First
+Since GAC manages real-time P2P syncing (like Health/Shields and dice rolls):
+- Use object pooling for dynamically generated frames (e.g., list rows).
+- Throttle high-frequency events (`UNIT_HEALTH`, `OnUpdate`) intelligently.
+- Avoid unnecessary garbage collection overhead by reusing tables instead of creating new ones inside hot loops.

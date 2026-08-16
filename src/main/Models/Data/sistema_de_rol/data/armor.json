@@ -1,0 +1,153 @@
+{
+  "slots_disponibles": [
+    "Cabeza",
+    "Pecho",
+    "Guantes",
+    "Piernas"
+  ],
+  "tipos_armaduras": {
+    "Tela": {
+      "caracteristicas": {
+        "Reducción física": 0,
+        "Reducción mágica": 4,
+        "Durabilidad": 2,
+        "Perforante": "Vulnerable",
+        "Cortante": "Vulnerable",
+        "Contundente": "Vulnerable"
+      },
+      "slots": {}
+    },
+    "Cuero": {
+      "caracteristicas": {
+        "Reducción física": 2,
+        "Reducción mágica": 1,
+        "Durabilidad": 4,
+        "Perforante": "Vulnerable",
+        "Cortante": "Débil",
+        "Contundente": "Normal"
+      },
+      "slots": {}
+    },
+    "Malla": {
+      "caracteristicas": {
+        "Reducción física": 4,
+        "Reducción mágica": 0,
+        "Durabilidad": 3,
+        "Perforante": "Vulnerable",
+        "Cortante": "Resistente",
+        "Contundente": "Débil"
+      },
+      "slots": {
+        "Pecho": {
+          "Requisitos": [
+            "Brutalidad: 1"
+          ],
+          "Penalizaciones": [
+            "Movimiento: -1",
+            "Acrobacias: -1",
+            "Defensa Ágil: -1"
+          ]
+        },
+        "Guantes": {
+          "Requisitos": [],
+          "Penalizaciones": [
+            "Juego de Manos: -1"
+          ]
+        },
+        "Piernas": {
+          "Requisitos": [
+            "Brutalidad: 1"
+          ],
+          "Penalizaciones": [
+            "Movimiento: -1",
+            "Acrobacias: -1",
+            "Defensa Ágil: -1"
+          ]
+        }
+      }
+    },
+    "Placa": {
+      "caracteristicas": {
+        "Reducción física": 6,
+        "Reducción mágica": 0,
+        "Durabilidad": 5,
+        "Perforante": "Resistente",
+        "Cortante": "Muy Resistente",
+        "Contundente": "Vulnerable"
+      },
+      "slots": {
+        "Cabeza": {
+          "Requisitos": [
+            "Brutalidad: 1"
+          ],
+          "Penalizaciones": [
+            "Percepción: -1",
+            "Acrobacias: -1",
+            "Defensa Ágil: -1"
+          ]
+        },
+        "Pecho": {
+          "Requisitos": [
+            "Brutalidad: 2"
+          ],
+          "Penalizaciones": [
+            "Movimiento: -5",
+            "Acrobacias: -2",
+            "Defensa Ágil: -2",
+            "Sigilo: -4"
+          ]
+        },
+        "Guantes": {
+          "Requisitos": [
+            "Brutalidad: 1"
+          ],
+          "Penalizaciones": [
+            "Juego de Manos: -2",
+            "Acrobacias: -1"
+          ]
+        },
+        "Piernas": {
+          "Requisitos": [
+            "Brutalidad: 2"
+          ],
+          "Penalizaciones": [
+            "Movimiento: -5",
+            "Acrobacias: -2",
+            "Defensa Ágil: -2",
+            "Sigilo: -4"
+          ]
+        }
+      }
+    }
+  },
+  "refuerzos": {
+    "Cuero": {
+      "Reducción física": 1,
+      "Reducción mágica": 0,
+      "Durabilidad": 1,
+      "Requisitos": [],
+      "Penalizaciones": []
+    },
+    "Malla": {
+      "Reducción física": 2,
+      "Reducción mágica": 0,
+      "Durabilidad": 2,
+      "Requisitos": [],
+      "Penalizaciones": [
+        "Defensa Ágil: -1"
+      ]
+    },
+    "Placa": {
+      "Reducción física": 3,
+      "Reducción mágica": 0,
+      "Durabilidad": 3,
+      "Requisitos": [
+        "Brutalidad: 1"
+      ],
+      "Penalizaciones": [
+        "Movimiento: -1",
+        "Defensa Ágil: -2"
+      ]
+    }
+  }
+}

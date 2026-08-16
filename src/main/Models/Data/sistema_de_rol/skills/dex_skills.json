@@ -1,0 +1,209 @@
+[
+    {
+        "Nombre": "Esquivar y atacar",
+        "Descripción": "Después de haber esquivado (defensa ágil) un ataque con éxito puedes atacar sin coste adicional en ese mismo momento.",
+        "Tipo": "Pasiva",
+        "Coste de Acciones": 0,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 3
+    },
+    {
+        "Nombre": "Golpe en puntos vitales",
+        "Descripción": "Ataque preciso que perfora zonas críticas. Además del daño del arma, aplica el estado Sangrado continuo. Cuenta como tu ataque del turno.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 2,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 3,
+        "Turnos de Enfriamiento (Cooldown)": 2
+    },
+    {
+        "Nombre": "Finta rápida",
+        "Descripción": "Engañas visualmente a tu enemigo. Tu próximo ataque obtiene Ventaja automática y el defensor no puede aplicar Defensa Robusta contra él. Este es un caso de habilidad rápida que potencia tu ataque único del turno.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 1,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 2
+    },
+    {
+        "Nombre": "Acrobacia evasiva",
+        "Descripción": "Te mueves 5 metros haciendo piruetas sin provocar ataques de oportunidad y ganas Ventaja en tu próxima Defensa Ágil de este turno.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 1,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 1,
+        "Turnos de Enfriamiento (Cooldown)": 2
+    },
+    {
+        "Nombre": "Lluvia de cuchillos",
+        "Descripción": "Lanzas armas arrojadizas a hasta 3 objetivos diferentes en un cono frontal cercano. Se salta la regla de 'un solo ataque por turno' a cambio de su alto coste de acciones y enfriamiento.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 2,
+        "Coste de Ranuras": 2,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 3
+    },
+    {
+        "Nombre": "Maestro de las sombras",
+        "Descripción": "Ganas Ventaja permanente en tus tiradas de Sigilo para preparar Emboscadas. Además, si fallas una Emboscada (tirada menor a 10), el enemigo recibe la mitad del daño en lugar de fallar por completo.",
+        "Tipo": "Pasiva",
+        "Coste de Acciones": 0,
+        "Coste de Ranuras": 2,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 0
+    },
+    {
+        "Nombre": "Reflejos felinos",
+        "Descripción": "Reduce siempre a la mitad el daño sufrido por caídas. Además, si sufres el estado Derribado, puedes levantarte sin consumir ninguna acción en tu turno.",
+        "Tipo": "Pasiva",
+        "Coste de Acciones": 0,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 0
+    },
+    {
+        "Nombre": "Tiro de gracia",
+        "Descripción": "Si realizas un ataque cuerpo a cuerpo contra un objetivo que sufra el estado Derribado o Aturdido, añades +1D6 al daño total del impacto.",
+        "Tipo": "Pasiva",
+        "Coste de Acciones": 0,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 0
+    },
+    {
+        "Nombre": "Cortar tendones",
+        "Descripción": "Un tajo bajo dirigido a las piernas. Aplica el estado Cojera al objetivo. Cuenta como tu ataque del turno.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 2,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 2,
+        "Turnos de Enfriamiento (Cooldown)": 3
+    },
+    {
+        "Nombre": "Golpe bajo pirata",
+        "Descripción": "Lucha sucia pura. Aplica el estado Cegado o Aturdido al objetivo si falla su salvación.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 1,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 1,
+        "Turnos de Enfriamiento (Cooldown)": 2
+    },
+    {
+        "Nombre": "Disparo a quemarropa",
+        "Descripción": "Al disparar un arma de fuego a rango de cuerpo a cuerpo, evitas desventajas. El impacto empuja al objetivo 2 metros hacia atrás y le aplica el estado Vértigo.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 1,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 1,
+        "Turnos de Enfriamiento (Cooldown)": 2
+    },
+    {
+        "Nombre": "Balanceo de abordaje",
+        "Descripción": "Usas una cuerda o liana para balancearte hasta 10 metros volando. Si terminas cayendo sobre un enemigo, puedes realizar una tirada libre para aplicarle el estado Derribado.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 2,
+        "Coste de Ranuras": 2,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 3
+    },
+    {
+        "Nombre": "Apuñalamiento traicionero",
+        "Descripción": "Si atacas a un enemigo flanqueado o por la espalda (donde ya tienes Ventaja), el impacto suma +2D6 adicionales de daño bruto.",
+        "Tipo": "Pasiva",
+        "Coste de Acciones": 0,
+        "Coste de Ranuras": 2,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 0
+    },
+    {
+        "Nombre": "Beber y pelear",
+        "Descripción": "Bebes un trago de licor fuerte en combate. Curas una Herida Leve automáticamente y te vuelves inmune al estado Asustado, pero sufres Desventaja en tiradas mentales.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 1,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 3,
+        "Turnos de Enfriamiento (Cooldown)": 4
+    },
+    {
+        "Nombre": "Capa de duelista",
+        "Descripción": "Pelear usando una capa o abrigo en tu mano torpe te otorga un +1 pasivo a tu Defensa Ágil, y te permite realizar fintas visuales.",
+        "Tipo": "Pasiva",
+        "Coste de Acciones": 0,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 0
+    },
+    {
+        "Nombre": "Parada con daga (Main-Gauche)",
+        "Descripción": "Si luchas empuñando una espada en tu principal y una daga en tu mano torpe, sumas un +2 pasivo a tus tiradas de Defensa Ágil.",
+        "Tipo": "Pasiva",
+        "Coste de Acciones": 0,
+        "Coste de Ranuras": 2,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 0
+    },
+    {
+        "Nombre": "Disparo Penetrante",
+        "Descripción": "Utilizas tu extrema precisión para apuntar a los puntos ciegos. Si realizas la acción de 'Disparo de precisión', ignoras por completo los bonificadores otorgados por la Defensa Robusta (escudos o paradas) del objetivo.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 2,
+        "Coste de Ranuras": 2,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 3
+    },
+    {
+        "Nombre": "Disparo en Movimiento",
+        "Descripción": "Eres un maestro del reposicionamiento ágil. Te permite dividir tu distancia de movimiento gratuito (20m) en dos partes: moverte un poco, realizar tu ataque a distancia, y seguir moviéndote con el resto de la distancia restante.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 1,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 2
+    },
+    {
+        "Nombre": "Retirada Táctica",
+        "Descripción": "Maniobra evasiva veloz. Inmediatamente después de realizar tu ataque a distancia del turno, te desplazas 5 metros hacia atrás en línea recta sin provocar ningún ataque de oportunidad.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 1,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 2
+    },
+    {
+        "Nombre": "Ojo de Halcón",
+        "Descripción": "Tu dominio visual y talento de Precisión son inigualables. Tu bonificador nativo al usar la acción de 'Disparo de precisión' aumenta a +4 (en lugar del +2 normal) siempre y cuando no te hayas movido en todo el turno.",
+        "Tipo": "Pasiva",
+        "Coste de Acciones": 0,
+        "Coste de Ranuras": 2,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 0
+    },
+    {
+        "Nombre": "Apuntar a las Piernas",
+        "Descripción": "Disparo de precisión destinado únicamente a incapacitar. Si el ataque impacta, el daño infligido se reduce a la mitad, pero aplicas automáticamente el estado Enraizado al objetivo durante 1 turno.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 2,
+        "Coste de Ranuras": 2,
+        "Turnos de Efecto": 1,
+        "Turnos de Enfriamiento (Cooldown)": 3
+    },
+    {
+        "Nombre": "Paso del Viento",
+        "Descripción": "Te mueves con agilidad extrema, ignorando por completo cualquier penalización o efecto negativo del terreno adverso (como barro, hielo o suelo resbaladizo) al desplazarte durante este turno.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 1,
+        "Coste de Ranuras": 1,
+        "Turnos de Efecto": 1,
+        "Turnos de Enfriamiento (Cooldown)": 2
+    },
+    {
+        "Nombre": "Lluvia de Proyectiles",
+        "Descripción": "Disparas rápidamente al aire o en abanico frente a ti. Realizas tu ataque del turno afectando a un área de 5 metros de radio a distancia. Los afectados no pueden usar Defensa Robusta, sino que deben realizar una salvación de Defensa Ágil.",
+        "Tipo": "Activa",
+        "Coste de Acciones": 2,
+        "Coste de Ranuras": 2,
+        "Turnos de Efecto": 0,
+        "Turnos de Enfriamiento (Cooldown)": 4
+    }
+]

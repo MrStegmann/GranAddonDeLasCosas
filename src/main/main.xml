@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Include file="ports\ports.xml"/>
-    <Include file="domain\domain.xml"/>
-    <Include file="adapters\adapters.xml"/>
+    <Include file="Models\Models.xml"/>
+    <Include file="API\API.xml"/>
+    <Include file="Controllers\Controllers.xml"/>
 </Ui>

@@ -1,0 +1,34 @@
+{
+  "Ligeros": {
+    "Durabilidad": 10,
+    "Reducción física": 1,
+    "Requisitos": [],
+    "Penalizaciones": [],
+    "Golpear": "1D4 + Brutalidad"
+  },
+  "Medios": {
+    "Durabilidad": 15,
+    "Reducción física": 2,
+    "Requisitos": [
+      "Brutalidad: 1"
+    ],
+    "Penalizaciones": [
+      "Acrobacias: -1",
+      "Defensa Ágil: -1"
+    ],
+    "Golpear": "1D6 + Brutalidad"
+  },
+  "Pesados": {
+    "Durabilidad": 20,
+    "Reducción física": 3,
+    "Requisitos": [
+      "Brutalidad: 2"
+    ],
+    "Penalizaciones": [
+      "Movimiento: -2",
+      "Acrobacias: -4",
+      "Defensa Ágil: -4"
+    ],
+    "Golpear": "1D8 + Brutalidad"
+  }
+}

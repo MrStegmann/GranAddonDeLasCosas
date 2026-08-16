@@ -1,0 +1,311 @@
+{
+  "Daga": {
+    "Talento": [
+      "Combate Ágil"
+    ],
+    "Dado": "1D4",
+    "TipoDaño": "Perforante",
+    "Arrojadiza": {
+      "Talento": "Precisión",
+      "Dado": "1D4",
+      "TipoDaño": "Perforante"
+    }
+  },
+  "Látigo": {
+    "Talento": [
+      "Combate Ágil"
+    ],
+    "Dado": "1D4",
+    "TipoDaño": "Cortante"
+  },
+  "Hacha de mano": {
+    "Talento": [
+      "Combate Ágil",
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Cortante",
+    "Arrojadiza": {
+      "Talento": "Precisión",
+      "Dado": "1D6",
+      "TipoDaño": "Cortante"
+    }
+  },
+  "Bastón": {
+    "Talento": [
+      "Combate Ágil"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Contundente"
+  },
+  "Hoz": {
+    "Talento": [
+      "Combate Ágil"
+    ],
+    "Dado": "1D4",
+    "TipoDaño": "Cortante"
+  },
+  "Lanza": {
+    "Talento": [
+      "Combate Ágil"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Perforante",
+    "Arrojadiza": {
+      "Talento": "Precisión",
+      "Dado": "1D6",
+      "TipoDaño": "Perforante"
+    },
+    "A dos manos": {
+      "Talento": [
+        "Combate a 2 manos"
+      ],
+      "Dado": "1D8",
+      "TipoDaño": "Perforante"
+    }
+  },
+  "Estoque": {
+    "Talento": [
+      "Combate Ágil"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Perforante",
+    "Arrojadiza": {
+      "Talento": "Precisión",
+      "Dado": "1D4",
+      "TipoDaño": "Perforante"
+    }
+  },
+  "Cimitarra": {
+    "Talento": [
+      "Combate Ágil"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Perforante"
+  },
+  "Espada corta": {
+    "Talento": [
+      "Combate Ágil",
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Cortante"
+  },
+  "Jabalina": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Perforante"
+  },
+  "Ballesta ligera": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Perforante"
+  },
+  "Arco corto": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Perforante"
+  },
+  "Ballesta de mano": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Perforante"
+  },
+  "Arco largo": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Perforante"
+  },
+  "Ballesta pesada": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "1D10",
+    "TipoDaño": "Perforante"
+  },
+  "Pistola": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Perforante"
+  },
+  "Rifle": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Perforante"
+  },
+  "Escopeta": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "1D12",
+    "TipoDaño": "Perforante"
+  },
+  "Lanzacohetes": {
+    "Talento": [
+      "Precisión"
+    ],
+    "Dado": "2D8",
+    "TipoDaño": "Contundente"
+  },
+  "Garrote": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Contundente"
+  },
+  "Maza ligera": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D4",
+    "TipoDaño": "Contundente"
+  },
+  "Maza": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Contundente"
+  },
+  "Hacha de guerra": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Cortante",
+    "A dos manos": {
+      "Talento": [
+        "Combate a 2 manos"
+      ],
+      "Dado": "1D10",
+      "TipoDaño": "Cortante"
+    }
+  },
+  "Mayal": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Contundente"
+  },
+  "Espada larga": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Cortante",
+    "A dos manos": {
+      "Talento": [
+        "Combate a 2 manos"
+      ],
+      "Dado": "1D10",
+      "TipoDaño": "Cortante"
+    }
+  },
+  "Lucero del alba": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Contundente"
+  },
+  "Tridente": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D6",
+    "TipoDaño": "Perforante",
+    "A dos manos": {
+      "Talento": [
+        "Combate a 2 manos"
+      ],
+      "Dado": "1D8",
+      "TipoDaño": "Perforante"
+    }
+  },
+  "Martillo de guerra": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Contundente",
+    "A dos manos": {
+      "Talento": [
+        "Combate a 2 manos"
+      ],
+      "Dado": "1D10",
+      "TipoDaño": "Contundente"
+    }
+  },
+  "Pico de guerra": {
+    "Talento": [
+      "Combate a 1 mano"
+    ],
+    "Dado": "1D8",
+    "TipoDaño": "Perforante"
+  },
+  "Gran garrote": {
+    "Talento": [
+      "Combate a 2 manos"
+    ],
+    "Dado": "1D12",
+    "TipoDaño": "Contundente"
+  },
+  "Guja": {
+    "Talento": [
+      "Combate a 2 manos"
+    ],
+    "Dado": "1D10",
+    "TipoDaño": "Cortante"
+  },
+  "Hacha pesada": {
+    "Talento": [
+      "Combate a 2 manos"
+    ],
+    "Dado": "1D12",
+    "TipoDaño": "Cortante"
+  },
+  "Espadón": {
+    "Talento": [
+      "Combate a 2 manos"
+    ],
+    "Dado": "1D12",
+    "TipoDaño": "Cortante"
+  },
+  "Alabarda": {
+    "Talento": [
+      "Combate a 2 manos"
+    ],
+    "Dado": "1D10",
+    "TipoDaño": "Cortante"
+  },
+  "Gran maza": {
+    "Talento": [
+      "Combate a 2 manos"
+    ],
+    "Dado": "1D12",
+    "TipoDaño": "Contundente"
+  },
+  "Pica": {
+    "Talento": [
+      "Combate a 2 manos"
+    ],
+    "Dado": "1D10",
+    "TipoDaño": "Perforante"
+  }
+}
