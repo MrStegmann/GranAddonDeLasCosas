@@ -10,7 +10,7 @@ An in-game World of Warcraft (WoW) Addon built specifically for the **Epsilon Ro
 4. **Strict Architectural Integrity:** Maintain clean separation between business logic, network/storage infrastructure, and isolated UI features.
 
 ## Target Environment & Tech Stack
-* **Target Environment:** World of Warcraft Client (Epsilon Server)
+* **Target Environment:** World of Warcraft Client (Epsilon Server - Shadowlands 9.2.7)
 * **Languages:** Native WoW Lua 5.1 (LuaJIT subset), XML (UI Frame Specifications)
 * **Integrations:** Total RP 3 (TRP3), Total RP 3 Extended (TRP3-E)
 * **Storage:** `SavedVariablesPerCharacter` (Strictly character-isolated persistence)

@@ -81,6 +81,6 @@ El código está puramente construido en Lua, separado modularmente bajo la carp
 ---
 
 ## ⚙️ Notas de Desarrollo
-- Proyecto desarrollado para **Epsilon WoW** bajo el cliente de *Shadowlands/Dragonflight*. 
+- Proyecto desarrollado para **Epsilon WoW** bajo el cliente de *Shadowlands 9.2.7*. 
 - Los perfiles de guardado persisten a nivel de personaje en las `SavedVariablesPerCharacter`.
 - El módulo de "Registro Maestro" y la herramienta de "Telemetría (Distancias)" están en fase activa de desarrollo en la lista de Tareas (`TODO`).

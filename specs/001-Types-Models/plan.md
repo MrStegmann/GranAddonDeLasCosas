@@ -18,7 +18,7 @@ The technical approach requires updating/replacing pure Lua 5.1 domain model met
 
 ## Technical Context
 
-**Language/Version**: Pure Lua 5.1 (LuaJIT subset for Retail 11.0.7+) & TypeScript 5.x schema specifications (`specs/001-Types-Models/*.ts`).
+**Language/Version**: Pure Lua 5.1 (LuaJIT subset for Shadowlands 9.2.7) & TypeScript 5.x schema specifications (`specs/001-Types-Models/*.ts`).
 
 **Primary Dependencies**: None for domain models (Pure Lua 5.1 with zero external libraries or WoW APIs). Integrated via Hexagonal adapters with `SavedVariablesPerCharacter` (`GAC_CharacterDB`), TRP3 Extended (`TRP3_Extends`), and UI IPC API bridges.
 
@@ -26,7 +26,7 @@ The technical approach requires updating/replacing pure Lua 5.1 domain model met
 
 **Testing**: Manual test suite, payload verification playgrounds (`operations-playground.html`), and empirical validation tests parsing both valid raw payloads and malformed/corrupted raw payloads.
 
-**Target Platform**: World of Warcraft Client (Epsilon Roleplaying Server - Retail 11.0.7+).
+**Target Platform**: World of Warcraft Client (Epsilon Roleplaying Server - Shadowlands 9.2.7).
 
 **Project Type**: WoW Addon (Hexagonal Backend Architecture & Micro-Frontend UI Architecture).
 

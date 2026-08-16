@@ -13,7 +13,7 @@ globs: src/ui/**
 * **Standalone Micro-Menus:** Each feature folder inside `src/ui/[feature]/` acts as an autonomous, self-contained UI window/menu (e.g., `sheet/`, `combat/`).
 * **Zero Cross-Feature Imports:** UI features MUST NOT directly import, call, or reference frames, scripts, or hooks from other UI feature directories.
 * **Zero Raw WoW Engine Events:** UI features MUST NOT attach raw Blizzard event handlers (`OnEvent`). All external data updates must be received asynchronously via the feature's local `api/[feature]Api.lua` IPC client.
-* **Visibility Lifecycle:** UI menus do not dynamically mount or unmount Lua code; they manage visual lifecycles exclusively using WoW frame visibility state controls (`Frame:Show()` and `Frame:Hide()`).
+* **Visibility & Navigation Lifecycle:** UI menus MUST NOT directly show/hide sibling frames or toggle cross-feature visibility. Views and sub-tabs MUST register as manageable pages via `GAC.navigation.page.registerPage({ id, frame, onPageShow, onPageHide })` and register sidebar/sub-menu options via `GAC.navigation.menu.registerMenu({ id, text, icon, pageId, isChildOf })` as specified in `DESIGN.md`.
 
 ## 2. Directory & Architectural Layers
 Every feature directory (`src/ui/[feature]/`) must enforce a strict 4-layer separation:

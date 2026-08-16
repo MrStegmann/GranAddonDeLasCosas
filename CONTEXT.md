@@ -3,7 +3,7 @@
 ## 1. Executive Summary & Vision
 **Project Name:** Custom RP & Turn-Based Combat Manager (Epsilon Server)  
 **TOC Name:** GAC_DEV  
-**Target Environment:** World of Warcraft Client (Epsilon Roleplaying Server - Retail 11.0.7+)  
+**Target Environment:** World of Warcraft Client (Epsilon Roleplaying Server - Shadowlands 9.2.7)  
 **Core Purpose:** Provide an in-game system for managing custom tabletop-style character sheets and executing turn-based combat mechanics, while offloading standard roleplay profiles to Total RP 3.
 
 ---
