@@ -25,6 +25,12 @@
       "skillPath": ".github/skills/wow-api-events/SKILL.md",
       "computedHash": "7af891d67625b29db1533051b23db65327b9eb282ffabbb3cac60aec490d1399"
     },
+    "wow-api-framexml": {
+      "source": "jburlison/wowaddonapiagents",
+      "sourceType": "github",
+      "skillPath": ".github/skills/wow-api-framexml/SKILL.md",
+      "computedHash": "5257581ec023bcd1c4c8455ecc31c49f07b8f57b96513e8e61930e0ecc1900dd"
+    },
     "wow-lua-api": {
       "source": "jburlison/wowaddonapiagents",
       "sourceType": "github",

@@ -1,4 +1,7 @@
+local addonName, addonTable = ...
+addonTable.API = addonTable.API or {}
 local ReadOnlyHelper = {}
+addonTable.API.ReadOnlyHelper = ReadOnlyHelper
 
 --- Wraps a table in a read-only proxy or returns a protected table to prevent runtime mutations
 -- @param tbl table
@@ -32,4 +35,3 @@ function ReadOnlyHelper.copyTable(tbl)
     return copy
 end
 
-return ReadOnlyHelper

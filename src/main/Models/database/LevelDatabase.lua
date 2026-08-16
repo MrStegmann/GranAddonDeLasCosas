@@ -1,4 +1,6 @@
-local LevelDatabase = {
+local addonName, addonTable = ...
+addonTable.Models = addonTable.Models or {}
+addonTable.Models.LevelDatabase = {
     noob = {
         [1] = { maxHealth = 10, expToLevel = 10, attPoints = 0, skillPoints = 2, heroicPoints = 1, maxPositiveTraits = 0 },
         [2] = { maxHealth = 11, expToLevel = 12, attPoints = 1, skillPoints = 3, heroicPoints = 1, maxPositiveTraits = 0 },
@@ -44,4 +46,3 @@ local LevelDatabase = {
     }
 }
 
-return LevelDatabase

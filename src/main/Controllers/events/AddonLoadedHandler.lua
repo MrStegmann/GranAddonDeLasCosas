@@ -16,6 +16,7 @@ local function OnAddonLoaded(self, event, loadedAddonName)
 
     -- Ensure SavedVariablesPerCharacter container exists
     _G.GAC_CharacterDB = _G.GAC_CharacterDB or {}
+    _G.GAC_CharacterDB.minimap = _G.GAC_CharacterDB.minimap or { hide = false }
 
     local CharacterModel = _G.Character or (require and pcall(require, "src.main.domain.models.Character") and require("src.main.domain.models.Character") or nil)
 

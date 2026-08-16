@@ -1,4 +1,6 @@
-local RaceDatabase = {
+local addonName, addonTable = ...
+addonTable.Models = addonTable.Models or {}
+addonTable.Models.RaceDatabase = {
     human = {
         advantages = {
             { id = "diplomacy", name = "Diplomacia", value = 2 },
@@ -144,4 +146,3 @@ local RaceDatabase = {
     }
 }
 
-return RaceDatabase

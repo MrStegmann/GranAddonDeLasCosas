@@ -24,6 +24,45 @@
 
 ---
 
+## Feature 006: CharacterBook Minimap Button — COMPLETED
+
+- [x] **Minimap UI Component (`src/ui/CharacterBook/Components/MinimapButton.lua`)**
+  - [x] Initialized `LibDataBroker-1.1` object (`GAC_CharacterBook`) with `OnClick` and `OnTooltipShow`.
+  - [x] Registered LDB object with `LibDBIcon-1.0`.
+- [x] **Persistence Integration**
+  - [x] Added `_G.GAC_CharacterDB.minimap` fallback in `AddonLoadedHandler.lua`.
+  - [x] Hooked MinimapButton init to `PLAYER_LOGIN` event to securely read from CharacterDB.
+- [x] **Manifest Resolution**
+  - [x] Wired `Components/MinimapButton.lua` in `CharacterBook.xml`.
+
+---
+## Feature 005: CharacterBook UI - Basic Information — COMPLETED
+
+- [x] **Core UI Implementation (`src/ui/CharacterBook/`)**
+  - [x] Bootstrapped feature-based UI components (Frame, Controller, Presenter, index).
+  - [x] Implemented Navigation Bar and Sub-Tabs placeholder logic.
+  - [x] Implemented Basic Info UI components (Dropdowns, Checkboxes, Trait displays).
+- [x] **Controller & Data Binding (`src/ui/CharacterBook/CharacterBookController.lua`)**
+  - [x] `FetchTRP3Data()` integration to extract Name and Class dynamically.
+  - [x] Data-bound Category, Level, and Race dropdowns using API endpoints.
+  - [x] Single-race and Dual-race traits logic via `UpdateTraitsDisplay()`.
+  - [x] Interactive GameTooltip logic for the Worgen Curse checkbox.
+- [x] **API Endpoint Parity (`src/main/API/metadata/`)**
+  - [x] Expose `LevelPort.GetCategories()` and `LevelPort.GetLevelsByCategory()`.
+  - [x] Expose `RacePort.GetAllRaces()` and `RacePort.GetRaceTraits()`.
+
+---
+
+## Feature 004: MVC Architecture Refactor — COMPLETED
+
+- [x] **Architecture Redesign**
+  - [x] Created `src/main/Models/`, `src/main/API/`, `src/main/Controllers/` enforcing MVC rules.
+  - [x] Migrated `adapters`, `domain`, `ports`, and `Data` folders to their correct MVC counterparts.
+- [x] **Manifest Resolution**
+  - [x] Configured cascading XML load order (`Models.xml` -> `API.xml` -> `Controllers.xml`).
+  - [x] Scrubbed `src/main/` of legacy folder structure references.
+
+---
 ## Feature 003: Core Data Metadata Tables & Trait Services — COMPLETED
 
 - [x] **Transpiled Domain Database Tables (`src/main/domain/database/`)**
@@ -84,6 +123,9 @@
 ---
 
 ## Completed Milestones
+* **Feature 006 Complete:** Minimap Button toggles the CharacterBook UI and persists position via LibDBIcon.
+* **Feature 005 Complete:** The CharacterBook UI feature is functional. TRP3 and database API endpoints are wired, and the basic info logic is sound.
+* **Feature 004 Complete:** The MVC architecture refactor is successful, moving all legacy folders (`adapters`, `domain`, `ports`, `Data`) into `Models`, `API`, and `Controllers` securely with XML manifests.
 * **Feature 003 Complete:** All metadata databases, read-only ports, trait mechanical services, domain model parity updates, and cascading XML manifests implemented and verified.
 * **Feature 002 Complete:** TRP3 Characteristics and TRP3 Extended Inventory ports implemented and wired in `ports.xml`.
 * **Feature 001 Complete:** Character Sheet domain abstraction models transpiled to pure Lua 5.1 and persistent data loading on `ADDON_LOADED` wired.

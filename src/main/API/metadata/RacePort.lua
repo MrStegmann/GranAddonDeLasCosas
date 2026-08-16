@@ -1,12 +1,20 @@
-local RaceDatabase = RaceDatabase or require("src.main.domain.database.RaceDatabase")
-local ReadOnlyHelper = ReadOnlyHelper or require("src.main.ports.metadata.ReadOnlyHelper")
+local addonName, addonTable = ...
+local RaceDatabase = addonTable.Models.RaceDatabase
+local ReadOnlyHelper = addonTable.API.ReadOnlyHelper
 
+addonTable.API = addonTable.API or {}
 local RacePort = {}
+addonTable.API.RacePort = RacePort
 
 --- Retrieves the full race database table
 -- @return table read-only proxy of all races
 function RacePort.GetAll()
-    return ReadOnlyHelper.makeReadOnly(RaceDatabase)
+    return ReadOnlyHelper.copyTable(RaceDatabase)
+end
+
+--- Alias for GetAll to match requirements
+function RacePort.GetAllRaces()
+    return RacePort.GetAll()
 end
 
 --- Retrieves a specific race entry by its ID
@@ -23,4 +31,17 @@ function RacePort.GetById(id)
     return ReadOnlyHelper.makeReadOnly(race)
 end
 
-return RacePort
+--- Retrieves race traits (advantages and disadvantages)
+-- @param raceID string
+-- @return table|nil Table containing positive and negative traits, or nil
+function RacePort.GetRaceTraits(raceID)
+    local race = RaceDatabase[raceID]
+    if not race then return nil end
+    
+    local traits = {
+        positive = race.positiveTraits or {},
+        negative = race.negativeTraits or {}
+    }
+    return ReadOnlyHelper.makeReadOnly(traits)
+end
+
