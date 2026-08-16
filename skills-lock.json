@@ -6,6 +6,24 @@
       "sourceType": "github",
       "skillPath": "project-management/skills/scrum-master/SKILL.md",
       "computedHash": "0ef8afda5d3a4dfa4785ee4e0e783fb5be27e084ffe1b0388ad7cec4bbc25555"
+    },
+    "wow-api-escape-sequences": {
+      "source": "jburlison/wowaddonapiagents",
+      "sourceType": "github",
+      "skillPath": ".github/skills/wow-api-escape-sequences/SKILL.md",
+      "computedHash": "c68327f19b82298b19799c2cb5865e5a97a15d6e77a7541cdec842c4210ee575"
+    },
+    "wow-api-events": {
+      "source": "jburlison/wowaddonapiagents",
+      "sourceType": "github",
+      "skillPath": ".github/skills/wow-api-events/SKILL.md",
+      "computedHash": "7af891d67625b29db1533051b23db65327b9eb282ffabbb3cac60aec490d1399"
+    },
+    "wow-lua-api": {
+      "source": "jburlison/wowaddonapiagents",
+      "sourceType": "github",
+      "skillPath": ".github/skills/wow-lua-api/SKILL.md",
+      "computedHash": "eb97e7183d9210312c42d767707618acd4d5889b87cbf1d3517efab01a0bad60"
     }
   }
 }
