@@ -102,8 +102,37 @@ function GAC:InitializePlayerPlate()
                 
                 local currentShield = GAC.characterData and GAC.characterData.currentShield or 0
                 
+                local displayHealth = math.max(0, currentHealth)
                 statusbar:SetMinMaxValues(0, maxHealth)
-                statusbar:SetValue(currentHealth)
+                statusbar:SetValue(displayHealth)
+
+                if not statusbar.GAC_NegativeHealthBar then
+                    statusbar.GAC_NegativeHealthBar = statusbar:CreateTexture(nil, "BORDER")
+                    statusbar.GAC_NegativeHealthBar:SetColorTexture(0.5, 0.05, 0.05, 1)
+                end
+                
+                if currentHealth < 0 then
+                    local barWidth = statusbar:GetWidth()
+                    if barWidth == 0 then barWidth = 119 end
+                    
+                    local negPercent = math.abs(currentHealth) / maxHealth
+                    if negPercent > 1 then negPercent = 1 end
+                    local negWidth = negPercent * barWidth
+                    
+                    if negWidth > 0 then
+                        statusbar.GAC_NegativeHealthBar:SetWidth(negWidth)
+                        statusbar.GAC_NegativeHealthBar:ClearAllPoints()
+                        statusbar.GAC_NegativeHealthBar:SetPoint("TOPLEFT", statusbar, "TOPLEFT", 0, 0)
+                        statusbar.GAC_NegativeHealthBar:SetPoint("BOTTOMLEFT", statusbar, "BOTTOMLEFT", 0, 0)
+                        statusbar.GAC_NegativeHealthBar:Show()
+                    else
+                        statusbar.GAC_NegativeHealthBar:Hide()
+                    end
+                else
+                    if statusbar.GAC_NegativeHealthBar then
+                        statusbar.GAC_NegativeHealthBar:Hide()
+                    end
+                end
 
                 -- Lógica visual del escudo
                 if not statusbar.GAC_ShieldBar then

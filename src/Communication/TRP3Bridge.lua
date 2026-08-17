@@ -276,3 +276,827 @@ end
 function GAC:GetTargetTRP3ProfileClass()
     return getTargetTRP3ProfileValue(getProfileClassFromData) or UnitClass("target")
 end
+
+local WEARABLE_SLOT_COUNT = 16
+local getItemDisplayName
+local function parseTRP3Text(rawText, slotInfo)
+    if type(rawText) ~= "string" then
+        return nil
+    end
+
+    local parsed = rawText
+    if type(TRP3_API) == "table"
+        and type(TRP3_API.script) == "table"
+        and type(TRP3_API.script.parseArgs) == "function"
+    then
+        parsed = safeCall(TRP3_API.script.parseArgs, rawText, { object = slotInfo }) or rawText
+    end
+
+    return trim(parsed)
+end
+
+local function getItemClassData(slotInfo)
+    if type(slotInfo) ~= "table" or type(slotInfo.id) ~= "string" then
+        return nil
+    end
+
+    if type(TRP3_API) ~= "table"
+        or type(TRP3_API.extended) ~= "table"
+        or type(TRP3_API.extended.getClass) ~= "function"
+    then
+        return nil
+    end
+
+    return safeCall(TRP3_API.extended.getClass, slotInfo.id)
+end
+
+local function getItemTooltipFields(slotInfo)
+    local BA = nil
+    if type(slotInfo) == "table" and type(slotInfo.BA) == "table" then
+        BA = slotInfo.BA
+    else
+        local classData = getItemClassData(slotInfo)
+        if type(classData) == "table" and type(classData.BA) == "table" then
+            BA = classData.BA
+        end
+    end
+    
+    if type(BA) ~= "table" then
+        return getItemDisplayName(slotInfo), nil, nil, nil
+    end
+
+    local itemName = parseTRP3Text(BA.NA, slotInfo) or getItemDisplayName(slotInfo)
+    local tooltipLeft = parseTRP3Text(BA.LE, slotInfo)
+    local tooltipRight = parseTRP3Text(BA.RI, slotInfo)
+    
+    local itemDescription = parseTRP3Text(BA.DE, slotInfo)
+
+    -- Extraemos la durabilidad dinámicamente de la tabla base en vez de la descripción
+    local itemTypeStrL, hasReinfL, reinfStrL = GAC:ParseArmorString(tooltipLeft)
+    local itemTypeStrR, hasReinfR, reinfStrR = GAC:ParseArmorString(tooltipRight)
+    
+    local baseKey = GAC:GetArmorKeyByAlias(itemTypeStrL)
+    local slotKey = GAC:GetArmorKeyByAlias(itemTypeStrR)
+    
+    local hasReinforcement = hasReinfL or hasReinfR
+    local reinforcementStr = (hasReinfL and reinfStrL) or (hasReinfR and reinfStrR) or ""
+    
+    if (not baseKey or not GAC:GetArmorTypeInfo(baseKey)) and GAC:GetArmorTypeInfo(GAC:GetArmorKeyByAlias(itemTypeStrR)) then
+        baseKey = GAC:GetArmorKeyByAlias(itemTypeStrR)
+        slotKey = GAC:GetArmorKeyByAlias(itemTypeStrL)
+    end
+    
+    local maxDurability = nil
+    if baseKey then
+        local info = GAC:GetArmorTypeInfo(baseKey)
+        if info then
+            maxDurability = info.durability or 0
+            if hasReinforcement then
+                local rKey = GAC:GetArmorKeyByAlias(reinforcementStr)
+                if rKey then
+                    local rInfo = GAC:GetArmorReinforcementInfo(rKey)
+                    if rInfo then
+                        maxDurability = maxDurability + (rInfo.durability or 0)
+                    end
+                end
+            end
+        end
+    end
+    
+    if maxDurability then
+        local curDur = maxDurability
+        if slotInfo and slotInfo.VA and slotInfo.VA.durability then
+            curDur = tonumber(slotInfo.VA.durability)
+        end
+        
+        local durStr = "\n\nDurabilidad: " .. tostring(curDur) .. "/" .. tostring(maxDurability)
+        
+        if type(itemDescription) == "string" and itemDescription ~= "" then
+            itemDescription = itemDescription .. durStr
+        else
+            itemDescription = "Durabilidad: " .. tostring(curDur) .. "/" .. tostring(maxDurability)
+        end
+    end
+
+    local itemIcon = BA.IC or "INV_Misc_QuestionMark"
+    local itemQuality = BA.QA
+
+    return itemName, tooltipLeft, tooltipRight, itemDescription, itemIcon, itemQuality
+end
+
+local function findFirstTable(candidates)
+    for _, candidate in ipairs(candidates) do
+        if type(candidate) == "table" then
+            return candidate
+        end
+    end
+
+    return nil
+end
+
+getItemDisplayName = function(itemData)
+    if itemData == nil then
+        return nil
+    end
+
+    if type(itemData) == "string" then
+        local clean = trim(itemData)
+        if clean then
+            return clean
+        end
+        return nil
+    end
+
+    if type(itemData) ~= "table" then
+        return tostring(itemData)
+    end
+
+    local nameCandidates = {
+        itemData.link,
+        itemData.itemLink,
+        itemData.name,
+        itemData.itemName,
+        itemData.label,
+        itemData.title,
+        itemData.id,
+        itemData.itemID,
+    }
+
+    if type(itemData.id) == "string"
+        and type(TRP3_API) == "table"
+        and type(TRP3_API.inventory) == "table"
+        and type(TRP3_API.extended) == "table"
+        and type(TRP3_API.extended.getClass) == "function"
+        and type(TRP3_API.inventory.getItemLink) == "function"
+    then
+        local classData = safeCall(TRP3_API.extended.getClass, itemData.id)
+        local itemLink = safeCall(TRP3_API.inventory.getItemLink, classData, itemData.id)
+        if type(itemLink) == "string" and itemLink ~= "" then
+            table.insert(nameCandidates, 1, itemLink)
+        end
+    end
+
+    for _, candidate in ipairs(nameCandidates) do
+        if candidate ~= nil then
+            local candidateType = type(candidate)
+            if candidateType == "string" then
+                local clean = trim(candidate)
+                if clean then
+                    return clean
+                end
+            elseif candidateType == "number" then
+                return tostring(candidate)
+            end
+        end
+    end
+
+    return nil
+end
+
+local function readSlotValue(slotTable, slotID)
+    if type(slotTable) ~= "table" then
+        return nil
+    end
+
+    return slotTable[tostring(slotID)]
+end
+
+local function getExtendedInventoryFromAPI()
+    if type(TRP3_API) == "table"
+        and type(TRP3_API.inventory) == "table"
+        and type(TRP3_API.inventory.getInventory) == "function"
+    then
+        local playerInventory = safeCall(TRP3_API.inventory.getInventory)
+        if type(playerInventory) == "table" and type(playerInventory.content) == "table" then
+            return playerInventory.content
+        end
+    end
+
+    if type(TRP3_API) ~= "table" then
+        return nil
+    end
+
+    local extended = TRP3_API.extended
+    if type(extended) ~= "table" then
+        return nil
+    end
+
+    local inventoryModule = extended.inventory
+    local itemsModule = extended.items
+
+    local inventoryCandidates = {
+        safeCall(extended.getPlayerInventory, "player"),
+        safeCall(extended.getPlayerInventory),
+        safeCall(extended.getInventoryForUnit, "player"),
+        safeCall(extended.getInventory, "player"),
+        safeCall(inventoryModule and inventoryModule.getPlayerInventory, "player"),
+        safeCall(inventoryModule and inventoryModule.getPlayerInventory),
+        safeCall(inventoryModule and inventoryModule.getInventoryForUnit, "player"),
+        safeCall(inventoryModule and inventoryModule.getInventory, "player"),
+        safeCall(itemsModule and itemsModule.getPlayerInventory, "player"),
+        safeCall(itemsModule and itemsModule.getInventoryForUnit, "player"),
+    }
+
+    local inventoryData = findFirstTable(inventoryCandidates)
+    if type(inventoryData) ~= "table" then
+        return nil
+    end
+
+    if type(inventoryData.content) == "table" then
+        return inventoryData.content
+    end
+
+    local equippedCandidates = {
+        inventoryData.equipped,
+        inventoryData.equipment,
+        inventoryData.slots,
+        inventoryData.worn,
+        inventoryData,
+    }
+
+    return findFirstTable(equippedCandidates)
+end
+
+local function getExtendedInventoryFromProfileData()
+    if type(TRP3_API) == "table"
+        and type(TRP3_API.profile) == "table"
+        and type(TRP3_API.profile.getPlayerCurrentProfile) == "function"
+    then
+        local profileData = safeCall(TRP3_API.profile.getPlayerCurrentProfile)
+        if type(profileData) == "table"
+            and type(profileData.inventory) == "table"
+            and type(profileData.inventory.content) == "table"
+        then
+            return profileData.inventory.content
+        end
+    end
+
+    if type(TRP3_API) ~= "table" or type(TRP3_API.profile) ~= "table" then
+        return nil
+    end
+
+    local profileData = safeCall(TRP3_API.profile.getData, "player")
+        or safeCall(TRP3_API.profile.getData)
+        or safeCall(TRP3_API.profile.getCurrentProfile)
+
+    if type(profileData) ~= "table" then
+        return nil
+    end
+
+    local extendedData = profileData.extended or profileData.Extended or profileData.EXTENDED
+    if type(extendedData) ~= "table" then
+        return nil
+    end
+
+    local inventoryData = extendedData.inventory or extendedData.Inventory
+    if type(inventoryData) ~= "table" then
+        return nil
+    end
+
+    if type(inventoryData.content) == "table" then
+        return inventoryData.content
+    end
+
+    local equippedCandidates = {
+        inventoryData.equipped,
+        inventoryData.equipment,
+        inventoryData.slots,
+        inventoryData.worn,
+        inventoryData,
+    }
+
+    return findFirstTable(equippedCandidates)
+end
+
+function GAC:GetTRP3ExtendedItemVariable(slotID, varName)
+    local equipped = self:GetTRP3ExtendedEquippedSnapshot()
+    local itemData = readSlotValue(equipped, slotID)
+    if itemData and itemData.VA then
+        return itemData.VA[varName]
+    end
+    return nil
+end
+
+function GAC:SetTRP3ExtendedItemVariable(slotID, varName, value)
+    local equipped = self:GetTRP3ExtendedEquippedSnapshot()
+    local itemData = readSlotValue(equipped, slotID)
+    if itemData then
+        itemData.VA = itemData.VA or {}
+        itemData.VA[varName] = value
+        return true
+    end
+    return false
+end
+
+local targetInventoryCallback = nil
+
+local function onInspectionResponseReceived(response, sender)
+    local expected = GAC.inspectedPlayerName and Ambiguate(GAC.inspectedPlayerName, "none") or ""
+    local actual = sender and Ambiguate(sender, "none") or ""
+    
+    if actual == expected and expected ~= "" and targetInventoryCallback then
+        targetInventoryCallback(response.slots or {})
+    end
+end
+
+function GAC:RequestTargetExtendedInventory(targetName, callback)
+    if not TRP3_API or not AddOn_TotalRP3 or not AddOn_TotalRP3.Communications then 
+        if callback then callback({}) end
+        return 
+    end
+    
+    if not self.inspectionResponseRegistered then
+        AddOn_TotalRP3.Communications.registerSubSystemPrefix("IIRS", onInspectionResponseReceived)
+        self.inspectionResponseRegistered = true
+    end
+    
+    self.inspectedPlayerName = targetName
+    targetInventoryCallback = callback
+    
+    local reservedMessageID = AddOn_TotalRP3.Communications.getNewMessageToken()
+    local data = { reservedMessageID }
+    
+    AddOn_TotalRP3.Communications.sendObject("IIRQ", data, targetName, AddOn_TotalRP3.Communications.PRIORITIES.MEDIUM)
+end
+
+function GAC:GetTRP3ExtendedEquippedSnapshot()
+    return getExtendedInventoryFromAPI() or getExtendedInventoryFromProfileData()
+end
+
+function GAC:GetTRP3ExtendedEquippedItems()
+    local equipped = self:GetTRP3ExtendedEquippedSnapshot()
+    if type(equipped) ~= "table" then
+        return nil
+    end
+
+    local items = {}
+
+    for slotID = 1, WEARABLE_SLOT_COUNT do
+        local itemData = readSlotValue(equipped, slotID)
+        if itemData then
+            local itemName, tooltipLeft, tooltipRight, itemDescription, itemIcon, itemQuality = getItemTooltipFields(itemData)
+            items[#items + 1] = {
+                slotID = slotID,
+                itemID = itemData.id,
+                itemName = itemName,
+                tooltipLeft = tooltipLeft,
+                tooltipRight = tooltipRight,
+                itemDescription = itemDescription,
+                itemIcon = itemIcon,
+                itemQuality = itemQuality,
+                itemVA = itemData.VA or {},
+            }
+        end
+    end
+
+    return items
+end
+
+function GAC:ParseTRP3ExtendedItem(itemData, slotID)
+    if not itemData then return nil end
+    local itemName, tooltipLeft, tooltipRight, itemDescription, itemIcon, itemQuality = getItemTooltipFields(itemData)
+    return {
+        slotID = slotID,
+        itemID = itemData.id,
+        itemName = itemName,
+        tooltipLeft = tooltipLeft,
+        tooltipRight = tooltipRight,
+        itemDescription = itemDescription,
+        itemIcon = itemIcon,
+        itemQuality = itemQuality,
+        itemVA = itemData.VA or {},
+    }
+end
+
+local isTRP3Hooked = false
+
+function GAC:UpdateEquippedArmor()
+    self.characterData = self.characterData or {}
+    self.characterData.inventory = self.characterData.inventory or {}
+    self.characterData.inventory.equippedArmor = {}
+    
+    local equippedItems = self:GetTRP3ExtendedEquippedItems() or {}
+    
+    local groupedBySlot = {}
+    local parsedItemsInfo = {}
+    
+    local nextWeaponSlotIdx = 1
+    local weaponSlotsIds = {16, 17, 18}
+    
+    for _, item in ipairs(equippedItems) do
+        if item.tooltipRight and string.find(string.lower(item.tooltipRight), "escudo") then
+            weaponSlotsIds = {16, 18}
+            break
+        end
+    end
+    
+    -- PASO 1: Parseo individual de cada pieza y agrupación por ranura
+    for _, item in ipairs(equippedItems) do
+        local itemTypeStrL, hasReinfL, reinfStrL = self:ParseArmorString(item.tooltipLeft)
+        local itemTypeStrR, hasReinfR, reinfStrR = self:ParseArmorString(item.tooltipRight)
+        
+        local baseKey = self:GetArmorKeyByAlias(itemTypeStrL)
+        local slotKey = self:GetArmorKeyByAlias(itemTypeStrR)
+        
+        local hasReinforcement = hasReinfL or hasReinfR
+        local reinforcementStr = (hasReinfL and reinfStrL) or (hasReinfR and reinfStrR) or ""
+        
+        -- Si están invertidos (Ej: "Cabeza" a la izquierda, "Placas" a la derecha)
+        if (not baseKey or not self:GetArmorTypeInfo(baseKey)) and self:GetArmorTypeInfo(self:GetArmorKeyByAlias(itemTypeStrR)) then
+            baseKey = self:GetArmorKeyByAlias(itemTypeStrR)
+            slotKey = self:GetArmorKeyByAlias(itemTypeStrL)
+        end
+        
+        -- Si la base Key se detectó pero es un slot (Ej: "Cabeza"), descartarlo como base
+        if baseKey and not self:GetArmorTypeInfo(baseKey) then
+            baseKey = nil
+        end
+        
+        local weaponKey = self:GetWeaponKeyByAlias(item.tooltipRight)
+        local isShield = false
+        local shieldKey = nil
+        if item.tooltipRight and string.find(string.lower(item.tooltipRight), "escudo") then
+            isShield = true
+            shieldKey = GAC:GetShieldKeyByAlias(item.tooltipRight) or GAC:GetShieldKeyByAlias(item.tooltipLeft)
+        end
+        
+        local targetSlot = slotKey or item.slotID
+        local isValidItem = true
+        
+        if isShield and shieldKey then
+            targetSlot = 17
+        elseif weaponKey then
+            if nextWeaponSlotIdx <= #weaponSlotsIds then
+                targetSlot = weaponSlotsIds[nextWeaponSlotIdx]
+                nextWeaponSlotIdx = nextWeaponSlotIdx + 1
+            else
+                isValidItem = false
+            end
+        else
+            if targetSlot == 16 or targetSlot == 17 or targetSlot == 18 then
+                isValidItem = false
+            end
+        end
+        
+        if isValidItem then
+            if not groupedBySlot[targetSlot] then groupedBySlot[targetSlot] = {} end
+            table.insert(groupedBySlot[targetSlot], item)
+            
+            if baseKey then
+                local info = self:GetArmorTypeInfo(baseKey)
+                if info then
+                    local physRed = info.physicalReduction or 0
+                    local magRed = info.magicalReduction or 0
+                    local maxDurability = info.durability or 0
+                    
+                    local rInfo = nil
+                    if hasReinforcement then
+                        local rKey = self:GetArmorKeyByAlias(reinforcementStr)
+                        if rKey then
+                            rInfo = self:GetArmorReinforcementInfo(rKey)
+                            if rInfo then
+                                physRed = physRed + (rInfo.physicalReduction or 0)
+                                magRed = magRed + (rInfo.magicalReduction or 0)
+                                maxDurability = maxDurability + (rInfo.durability or 0)
+                            end
+                        end
+                    end
+                    
+                    local reqs = {}
+                    if slotKey and info.requirements and info.requirements[slotKey] then
+                        for stat, val in pairs(info.requirements[slotKey]) do
+                            reqs[stat] = (reqs[stat] or 0) + val
+                        end
+                    end
+                    if rInfo and rInfo.requirements then
+                        for stat, val in pairs(rInfo.requirements) do
+                            reqs[stat] = (reqs[stat] or 0) + val
+                        end
+                    end
+                    
+                    local pens = {}
+                    if slotKey and info.disadvantage and info.disadvantage[slotKey] then
+                        for stat, val in pairs(info.disadvantage[slotKey]) do
+                            pens[stat] = (pens[stat] or 0) + val
+                        end
+                    end
+                    if rInfo and rInfo.disadvantage then
+                        for stat, val in pairs(rInfo.disadvantage) do
+                            pens[stat] = (pens[stat] or 0) + val
+                        end
+                    end
+                    
+                    parsedItemsInfo[item.slotID] = {
+                        isArmor = true,
+                        baseKey = baseKey,
+                        slotKey = slotKey,
+                        itemTypeStr = itemTypeStrL .. " - " .. itemTypeStrR,
+                        hasReinforcement = hasReinforcement,
+                        reinforcementStr = reinforcementStr,
+                        maxDurability = maxDurability,
+                        physRed = physRed,
+                        magRed = magRed,
+                        reqs = reqs,
+                        pens = pens
+                    }
+                end
+            elseif isShield and shieldKey then
+                local info = GAC:GetShieldInfo(shieldKey)
+                if info then
+                    parsedItemsInfo[item.slotID] = {
+                        isShield = true,
+                        shieldKey = shieldKey,
+                        itemTypeStr = item.tooltipRight,
+                        maxDurability = info.durability or 0,
+                        physRed = info.physicalReduction or 0,
+                        magRed = 0,
+                        reqs = info.requirements or {},
+                        pens = info.penalties or {}
+                    }
+                end
+            elseif weaponKey then
+                parsedItemsInfo[item.slotID] = {
+                    isWeapon = true,
+                    weaponKey = weaponKey,
+                    itemTypeStr = item.tooltipRight
+                }
+            end
+        end
+    end
+    
+    -- PASO 2: Lógica de Combinación por Slot
+    local notAllowedSlots = {}
+    for slot, itemsInSlot in pairs(groupedBySlot) do
+        if #itemsInSlot > 1 then
+            local item1 = itemsInSlot[1]
+            local item2 = itemsInSlot[2]
+            local p1 = parsedItemsInfo[item1.slotID]
+            local p2 = parsedItemsInfo[item2.slotID]
+            
+            if p1 and p2 then
+                local isNotAllowed = false
+                local reason = nil
+                
+                if p1.hasReinforcement or p2.hasReinforcement then
+                    isNotAllowed = true
+                    reason = "No puedes combinar una armadura con refuerzos."
+                else
+                    local info1 = self:GetArmorTypeInfo(p1.baseKey)
+                    if info1 and info1.combinable and info1.combinable[p2.baseKey] then
+                        local rules = info1.combinable[p2.baseKey]
+                        for _, rule in ipairs(rules) do
+                            if rule == "notAllowed" then
+                                isNotAllowed = true
+                                reason = "Combinación no permitida. No puedes equipar dos piezas del mismo tipo."
+                            elseif rule == "doubleDisadvantage" then
+                                for s, v in pairs(p1.pens) do p1.pens[s] = v * 2 end
+                                for s, v in pairs(p2.pens) do p2.pens[s] = v * 2 end
+                            elseif rule == "doubleRequirements" then
+                                for s, v in pairs(p1.reqs) do p1.reqs[s] = v * 2 end
+                                for s, v in pairs(p2.reqs) do p2.reqs[s] = v * 2 end
+                            end
+                        end
+                    end
+                end
+                if isNotAllowed then
+                    notAllowedSlots[slot] = reason or "Combinación no permitida."
+                end
+            end
+        end
+    end
+    
+    -- PASO 3: Calcular la suma total de requerimientos post-combinación
+    local totalReqs = {}
+    for _, item in ipairs(equippedItems) do
+        local pInfo = parsedItemsInfo[item.slotID]
+        if pInfo and pInfo.reqs then
+            for stat, val in pairs(pInfo.reqs) do
+                totalReqs[stat] = (totalReqs[stat] or 0) + val
+            end
+        end
+    end
+    
+    -- PASO 4: Comprobar el total contra los atributos del jugador
+    local globallyMeetsRequirements = true
+    if self.characterData then
+        local attrs = self.characterData.attributes or {}
+        local talents = self.characterData.talents or {}
+        for stat, totalReqVal in pairs(totalReqs) do
+            local playerVal = (attrs[stat] or 0) + (talents[stat] or 0)
+            if playerVal < totalReqVal then
+                globallyMeetsRequirements = false
+                break
+            end
+        end
+    end
+    
+    -- PASO 5: Asignar data y penalizaciones finales (y empaquetar por slot)
+    for slot, itemsInSlot in pairs(groupedBySlot) do
+        local slotList = { notAllowed = notAllowedSlots[slot] }
+        for _, item in ipairs(itemsInSlot) do
+            local pInfo = parsedItemsInfo[item.slotID]
+            if pInfo then
+                if pInfo.isShield or pInfo.isArmor then
+                    if not globallyMeetsRequirements then
+                        for stat, val in pairs(pInfo.pens) do
+                            pInfo.pens[stat] = val * 2
+                        end
+                    end
+                end
+
+                if pInfo.isShield or pInfo.isWeapon then
+                    local damageModifier = 0
+                    if item.tooltipLeft then
+                        local modVal = string.match(item.tooltipLeft, "%+(%d+)")
+                        if modVal then
+                            damageModifier = tonumber(modVal) or 0
+                        end
+                    end
+                    
+                    item.weaponData = {
+                        weaponKey = pInfo.weaponKey or pInfo.shieldKey,
+                        baseStr = pInfo.itemTypeStr,
+                        damageModifier = damageModifier
+                    }
+                end
+                
+                if pInfo.isShield or pInfo.isArmor then
+                    local curVal = pInfo.maxDurability
+                    if item.itemVA and item.itemVA.durability then
+                        curVal = tonumber(item.itemVA.durability)
+                    end
+                    
+                    item.armorData = {
+                        baseStr = pInfo.itemTypeStr,
+                        hasReinforcement = pInfo.hasReinforcement or false,
+                        reinforcementStr = pInfo.reinforcementStr or "",
+                        slotStr = item.tooltipRight or "",
+                        physRed = pInfo.physRed,
+                        magRed = pInfo.magRed,
+                        currentDurability = tostring(curVal) .. "/" .. tostring(pInfo.maxDurability),
+                        maxDurability = pInfo.maxDurability,
+                        requirements = pInfo.reqs,
+                        penalties = pInfo.pens,
+                        meetsRequirements = globallyMeetsRequirements
+                    }
+                end
+            end
+            table.insert(slotList, item)
+        end
+        self.characterData.inventory.equippedArmor[slot] = slotList
+    end
+    
+    if self.quickActionsFrame and self.quickActionsFrame.UpdateArmorIcons then
+        self.quickActionsFrame:UpdateArmorIcons()
+    end
+    if self.quickActionsFrame and self.quickActionsFrame.UpdateWeaponIcons then
+        self.quickActionsFrame:UpdateWeaponIcons()
+    end
+end
+
+function GAC:GetArmorPenalty(statName)
+    if type(statName) ~= "string" then return 0 end
+    if not self.characterData or not self.characterData.inventory or type(self.characterData.inventory.equippedArmor) ~= "table" then
+        return 0
+    end
+    
+    local totalPenalty = 0
+    for _, slotList in pairs(self.characterData.inventory.equippedArmor) do
+        if type(slotList) == "table" then
+            for _, item in ipairs(slotList) do
+                if item.armorData and type(item.armorData.penalties) == "table" then
+                    totalPenalty = totalPenalty + (tonumber(item.armorData.penalties[statName]) or 0)
+                end
+            end
+        end
+    end
+    
+    return totalPenalty
+end
+
+function GAC:UpdateTRP3ItemDurability(slotName, diffAmount)
+    if not self.characterData or not self.characterData.inventory or not self.characterData.inventory.equippedArmor then return end
+    
+    local slotList = self.characterData.inventory.equippedArmor[slotName]
+    if not slotList or #slotList == 0 then return end
+    
+    local item = slotList[1]
+    if not item or not item.armorData or not item.itemID then return end
+    
+    local tableMax = tonumber(item.armorData.maxDurability)
+    if not tableMax then return end
+    
+    local equipped = self:GetTRP3ExtendedEquippedSnapshot()
+    local itemData = readSlotValue(equipped, item.slotID)
+    if not itemData then return end
+    
+    local currentVal = tableMax
+    if itemData.VA and itemData.VA.durability then
+        currentVal = tonumber(itemData.VA.durability)
+    end
+    
+    local newVal = currentVal + diffAmount
+    if newVal < 0 then newVal = 0 end
+    if newVal > tableMax then newVal = tableMax end
+    
+    local amount = math.abs(newVal - currentVal)
+    if amount > 0 then
+        local qualityColor = "|cFFFFFFFF"
+        local q = item.itemQuality or 1
+        if type(q) == "number" or tonumber(q) then
+            q = tonumber(q)
+            if ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[q] and ITEM_QUALITY_COLORS[q].color then
+                qualityColor = ITEM_QUALITY_COLORS[q].color:GenerateHexColorMarkup() or ITEM_QUALITY_COLORS[q].hex or "|cFFFFFFFF"
+            else
+                local _, _, _, hex = GetItemQualityColor(q)
+                if hex then
+                    qualityColor = "|c" .. hex
+                end
+            end
+        end
+        
+        -- Fallback si ITEM_QUALITY_COLORS[q].hex no existe en esta versión de WoW (Epsilon usa 9.2 o similar)
+        if not qualityColor:match("^|c") then
+            local _, _, _, hex = GetItemQualityColor(q)
+            qualityColor = hex and ("|c" .. hex) or "|cFFFFFFFF"
+        end
+        
+        local coloredName = qualityColor .. "[" .. tostring(item.itemName) .. "]|r"
+        
+        if newVal > currentVal then
+            print(coloredName .. " recibe " .. amount .. " de durabilidad.")
+        elseif newVal < currentVal then
+            print(coloredName .. " pierde " .. amount .. " de durabilidad.")
+        end
+    end
+    
+    self:SetTRP3ExtendedItemVariable(item.slotID, "durability", newVal)
+    
+    if type(TRP3_API.events) == "table" and type(TRP3_API.events.fireEvent) == "function" and TRP3_API.inventory then
+        TRP3_API.events.fireEvent(TRP3_API.inventory.EVENT_REFRESH_BAG)
+        if TRP3_API.events.ON_OBJECT_UPDATED then
+            TRP3_API.events.fireEvent(TRP3_API.events.ON_OBJECT_UPDATED)
+        end
+    end
+end
+
+function GAC:InitTRP3ArmorHook()
+    if isTRP3Hooked then 
+        return 
+    end
+    
+    if type(TRP3_API) == "table" and type(TRP3_API.events) == "table" and type(TRP3_API.events.listenToEvent) == "function" then
+        local function onInventoryUpdate(...)
+            GAC:UpdateEquippedArmor()
+            if GAC.contentFrames and GAC.contentFrames.inventory and GAC.contentFrames.inventory:IsVisible() then
+                GAC.contentFrames.inventory:Update()
+            end
+            if GAC.quickActionsFrame and GAC.quickActionsFrame.UpdateArmorIcons then
+                GAC.quickActionsFrame:UpdateArmorIcons()
+            end
+            if GAC.quickActionsFrame and GAC.quickActionsFrame.UpdateWeaponIcons then
+                GAC.quickActionsFrame:UpdateWeaponIcons()
+            end
+        end
+        
+        local eventsToHook = {
+            TRP3_API.events.WORKFLOW_ON_LOADED,
+            TRP3_API.events.ON_OBJECT_UPDATED,
+            TRP3_API.inventory and TRP3_API.inventory.EVENT_REFRESH_BAG,
+            TRP3_API.inventory and TRP3_API.inventory.EVENT_ON_SLOT_SWAP,
+            TRP3_API.inventory and TRP3_API.inventory.EVENT_ON_SLOT_REMOVE,
+            TRP3_API.inventory and TRP3_API.inventory.EVENT_ON_SLOT_USE,
+        }
+        
+        for _, eventKey in pairs(eventsToHook) do
+            if eventKey then
+                TRP3_API.events.listenToEvent(eventKey, onInventoryUpdate)
+            end
+        end
+        isTRP3Hooked = true
+        
+        -- Interceptar las respuestas de inspección de inventario (IIRS)
+        -- TRP3 Extended por defecto no envía las variables dinámicas (VA) al jugador que inspecciona.
+        -- Como la durabilidad vive en VA, debemos inyectarla justo antes de enviarla.
+        if AddOn_TotalRP3 and AddOn_TotalRP3.Communications and AddOn_TotalRP3.Communications.sendObject and not GAC.sendObjectHooked then
+            local original_sendObject = AddOn_TotalRP3.Communications.sendObject
+            AddOn_TotalRP3.Communications.sendObject = function(prefix, data, target, priority, reservedMessageID, ...)
+                if prefix == "IIRS" and type(data) == "table" and type(data.slots) == "table" then
+                    local playerInventory = TRP3_API.inventory and TRP3_API.inventory.getInventory and TRP3_API.inventory.getInventory()
+                    if playerInventory and playerInventory.content then
+                        for slotID, slotInfo in pairs(playerInventory.content) do
+                            if data.slots[slotID] and slotInfo.VA then
+                                data.slots[slotID].VA = slotInfo.VA
+                            end
+                        end
+                    end
+                end
+                return original_sendObject(prefix, data, target, priority, reservedMessageID, ...)
+            end
+            GAC.sendObjectHooked = true
+        end
+    end
+    
+    -- Primera carga manual
+    self:UpdateEquippedArmor()
+end

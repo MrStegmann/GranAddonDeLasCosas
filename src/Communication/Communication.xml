@@ -3,4 +3,5 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="TRP3Bridge.lua"/>
 	<Include file="Transmitter.lua"/>
 	<Include file="Receiver.lua"/>
+	<Include file="GroupEvents.lua"/>
 </Ui>

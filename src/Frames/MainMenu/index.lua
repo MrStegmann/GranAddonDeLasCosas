@@ -16,6 +16,7 @@ function GAC:CreateMainMenuFrame()
     
     frame:SetPoint(pos.anchor, UIParent, pos.relativeAnchor, pos.x, pos.y)
     frame:SetMovable(true)
+    GAC:SetClampedWithVisiblePixels(frame, 20)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetClampedToScreen(true)
@@ -81,18 +82,28 @@ function GAC:CreateMainMenuFrame()
     local tabCount = 0
 
     local function SelectTab(tabID)
+        -- Primero ocultamos todas las pestañas para asegurar que no queden superpuestas
         for id, data in pairs(tabs) do
-            local isSelected = (id == tabID)
-            data.button.indicator:SetShown(isSelected)
-            if isSelected then
-                data.button:SetBackdropColor(1, 1, 1, 0.08)
-                data.button.text:SetTextColor(0.25, 0.78, 0.94)
-                data.content:Show()
-                if data.content.Update then data.content:Update() end
-            else
-                data.button:SetBackdropColor(0, 0, 0, 0)
-                data.button.text:SetTextColor(1, 1, 1)
-                data.content:Hide()
+            data.button.indicator:SetShown(false)
+            data.button:SetBackdropColor(0, 0, 0, 0)
+            data.button.text:SetTextColor(1, 1, 1)
+            data.content:Hide()
+        end
+        
+        -- Luego mostramos y actualizamos solo la seleccionada
+        if tabs[tabID] then
+            local data = tabs[tabID]
+            data.button.indicator:SetShown(true)
+            data.button:SetBackdropColor(1, 1, 1, 0.08)
+            data.button.text:SetTextColor(0.25, 0.78, 0.94)
+            data.content:Show()
+            
+            -- Pcall para evitar que un error en Update rompa el flujo de UI
+            if data.content.Update then
+                local success, err = pcall(data.content.Update, data.content)
+                if not success then
+                    print("|cffff0000[GAC Error]|r Fallo al actualizar la pestaña " .. tabID .. ": " .. tostring(err))
+                end
             end
         end
     end
@@ -139,21 +150,11 @@ function GAC:CreateMainMenuFrame()
 
     -- Inserción de la primera pestaña solicitada
     AddTab("CharSheet", "Ficha de Personaje", function(p) return GAC:CreateCharSheetContent(p) end)
+    AddTab("Inventory", "Inventario", function(p) return GAC:CreateInventoryContent(p) end)
     AddTab("ExpConfig", "Conf. Experiencia", function(p) return GAC:CreateExperienceConfigurator(p) end)
 
-    frame.tabs = tabs
     self.mainMenuFrame = frame
     SelectTab("CharSheet")
-end
-
-function GAC:UpdateMainMenu()
-    if self.mainMenuFrame and self.mainMenuFrame:IsShown() then
-        for id, data in pairs(self.mainMenuFrame.tabs) do
-            if data.content and data.content:IsShown() and data.content.Update then
-                data.content:Update()
-            end
-        end
-    end
 end
 
 function GAC:ToggleMainMenu()

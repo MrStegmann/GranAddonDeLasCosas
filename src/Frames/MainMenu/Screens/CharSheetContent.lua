@@ -1,45 +1,11 @@
 local addonName, GAC = ...
 
--- Helper for TRP3 style sub-tab buttons
-local function CreateSubTabButton(parent, text, width)
-    local btn = CreateFrame("Button", nil, parent, "BackdropTemplate")
-    btn:SetSize(width, 26)
-    btn:SetBackdrop({
-        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 10,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
-    btn:SetBackdropColor(0, 0, 0, 0.6)
-    btn:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.5)
-
-    btn.text = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    btn.text:SetPoint("CENTER")
-    btn.text:SetText(text)
-
-    btn:SetScript("OnEnter", function(self) self:SetBackdropColor(0.25, 0.78, 0.94, 0.3) end)
-    btn:SetScript("OnLeave", function(self)
-        if not self.selected then 
-            self:SetBackdropColor(0, 0, 0, 0.6) 
-            self.text:SetTextColor(1, 1, 1)
-        else 
-            self:SetBackdropColor(0.25, 0.78, 0.94, 0.15) 
-            self.text:SetTextColor(0.25, 0.78, 0.94)
-        end
-    end)
-
-    return btn
-end
-
 function GAC:CreateCharSheetContent(parent)
     local frame = CreateFrame("Frame", nil, parent, "BackdropTemplate")
     frame:SetAllPoints()
 
     -- Título
-    local header = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    header:SetPoint("TOPLEFT", 15, -15)
-    header:SetText("Ficha de Personaje")
-    header:SetTextColor(1, 1, 1)
+    local header = GAC:CreateFontString(frame, "Ficha de Personaje", "GameFontNormalLarge", { "TOPLEFT", 15, -15 }, { 1, 1, 1 })
 
     local line = frame:CreateTexture(nil, "ARTWORK")
     line:SetPoint("TOPLEFT", 15, -40)
@@ -66,18 +32,14 @@ function GAC:CreateCharSheetContent(parent)
     portrait:SetPortraitZoom(1)
 
 
-    local nameText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
-    nameText:SetPoint("TOPLEFT", portraitBorder, "TOPRIGHT", 15, -10)
-    nameText:SetText(GAC:GetRollDisplayName())
-    nameText:SetTextColor(0.25, 0.78, 0.94)
+    local nameText = GAC:CreateFontString(frame, GAC:GetRollDisplayName(), "GameFontNormalHuge", { "TOPLEFT", portraitBorder, "TOPRIGHT", 15, -10 }, { 0.25, 0.78, 0.94 })
 
-    local infoText = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    infoText:SetPoint("TOPLEFT", nameText, "BOTTOMLEFT", 0, -5)
-    
     local level = GAC.characterData.level
     local race = GAC:GetActiveTRP3ProfileRace()
     local class = GAC:GetActiveTRP3ProfileClass()
-    infoText:SetText(string.format("Nivel %d - %s - %s", level, race, class))
+    
+    local infoText = GAC:CreateFontString(frame, string.format("Nivel %d - %s - %s", level, race, class), "GameFontHighlight", { "TOPLEFT", nameText, "BOTTOMLEFT", 0, -5 }, {1, 1, 1}) 
+    
 
     -- Contenedor principal de pestañas interiores
     local contentArea = CreateFrame("Frame", nil, frame)
@@ -97,16 +59,16 @@ function GAC:CreateCharSheetContent(parent)
     tab4:Hide()
 
     -- Botones de Pestañas
-    local btnHistoria = CreateSubTabButton(frame, "Historia", 100)
+    local btnHistoria = GAC:CreateSubTabButton(frame, "Historia", 100)
     btnHistoria:SetPoint("BOTTOMLEFT", contentArea, "TOPLEFT", 5, 5)
     
-    local btnProgresion = CreateSubTabButton(frame, "Progresión", 120)
+    local btnProgresion = GAC:CreateSubTabButton(frame, "Progresión", 120)
     btnProgresion:SetPoint("LEFT", btnHistoria, "RIGHT", 5, 0)
     
-    local btnAtributos = CreateSubTabButton(frame, "Atributos y Talentos", 150)
+    local btnAtributos = GAC:CreateSubTabButton(frame, "Atributos y Talentos", 150)
     btnAtributos:SetPoint("LEFT", btnProgresion, "RIGHT", 5, 0)
     
-    local btnOtros = CreateSubTabButton(frame, "Otros", 80)
+    local btnOtros = GAC:CreateSubTabButton(frame, "Otros", 80)
     btnOtros:SetPoint("LEFT", btnAtributos, "RIGHT", 5, 0)
 
     local function SelectSubTab(id)
@@ -169,51 +131,24 @@ function GAC:CreateCharSheetContent(parent)
     progBg:SetBackdropColor(0, 0, 0, 0.3)
     progBg:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
 
-    local progTitle = progBg:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    progTitle:SetPoint("TOPLEFT", 15, -15)
-    progTitle:SetText("Información de Nivel Disponible")
-    progTitle:SetTextColor(0.25, 0.78, 0.94)
+    local progTitle = GAC:CreateFontString(progBg, "Información de Nivel Disponible", "GameFontNormalLarge", { "TOPLEFT", 15, -15 }, { 0.25, 0.78, 0.94 })
 
-    -- Cajas de información
-    local function CreateInfoBox(parent, label, x, y)
-        local box = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-        box:SetSize(160, 45)
-        box:SetPoint("TOPLEFT", x, y)
-        box:SetBackdrop({bgFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 8})
-        box:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
-        
-        local lText = box:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        lText:SetPoint("TOPLEFT", 5, -5)
-        lText:SetText(label)
-        lText:SetTextColor(0.25, 0.78, 0.94)
-
-        local vText = box:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-        vText:SetPoint("BOTTOMRIGHT", -10, 5)
-        vText:SetText("-")
-        
-        return box, vText
-    end
-
-    local _, hpText = CreateInfoBox(progBg, "Salud Máxima", 20, -50)
-    local _, expText = CreateInfoBox(progBg, "Exp para Nivel", 190, -50)
-    local _, attText = CreateInfoBox(progBg, "Puntos de Atributo", 20, -100)
-    local _, skillText = CreateInfoBox(progBg, "Ranuras de hechisos/habilidadeh", 190, -100)
-    local _, heroicText = CreateInfoBox(progBg, "Puntos Heroicos", 20, -150)
-    local _, traitText = CreateInfoBox(progBg, "Rasgos Positivos", 190, -150)
+    local _, hpText = GAC:CreateInfoBox(progBg, "Salud Máxima", 20, -50)
+    local _, expText = GAC:CreateInfoBox(progBg, "Exp para Nivel", 190, -50)
+    local _, attText = GAC:CreateInfoBox(progBg, "Puntos de Atributo", 20, -100)
+    local _, skillText = GAC:CreateInfoBox(progBg, "Ranuras de hechisos/habilidadeh", 190, -100)
+    local _, heroicText = GAC:CreateInfoBox(progBg, "Puntos Heroicos", 20, -150)
+    local _, traitText = GAC:CreateInfoBox(progBg, "Rasgos Positivos", 190, -150)
 
     -- Controles
-    local catLabel = progBg:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    catLabel:SetPoint("TOPLEFT", 380, -50)
-    catLabel:SetText("Categoría:")
+    local catLabel = GAC:CreateFontString(progBg, "Categoría:", "GameFontNormal", { "TOPLEFT", 380, -50 }, {1, 1, 1})
     
     local catDrop = CreateFrame("Frame", "GAC_CharSheetCatDrop", progBg, "UIDropDownMenuTemplate")
     catDrop:SetPoint("TOPLEFT", catLabel, "BOTTOMLEFT", -15, -5)
     UIDropDownMenu_SetWidth(catDrop, 100)
 
-    local lvlLabel = progBg:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    lvlLabel:SetPoint("TOPLEFT", 380, -110)
-    lvlLabel:SetText("Nivel:")
-
+    local lvlLabel = GAC:CreateFontString(progBg, "Nivel:", "GameFontNormal", { "TOPLEFT", 380, -110 }, {1, 1, 1})
+    
     local lvlDrop = CreateFrame("Frame", "GAC_CharSheetLvlDrop", progBg, "UIDropDownMenuTemplate")
     lvlDrop:SetPoint("TOPLEFT", lvlLabel, "BOTTOMLEFT", -15, -5)
     UIDropDownMenu_SetWidth(lvlDrop, 100)
@@ -345,7 +280,7 @@ function GAC:CreateCharSheetContent(parent)
 
     saveStatsBtn:SetScript("OnClick", function()
         saveStatsBtn:Hide()
-        print("|cFF40C7EBGAC:|r Atributos y talentos guardados correctamente.")
+        print("|cFF40C7EB[GAC]|r: Atributos y talentos guardados correctamente.")
         for key, data in pairs(statInputs) do
             local v = tonumber(data.input:GetText()) or 0
             if GAC.characterData then
@@ -354,75 +289,6 @@ function GAC:CreateCharSheetContent(parent)
             end
         end
     end)
-
-    local function CreateStatInput(parent, label, key, isTalent)
-        local row = CreateFrame("Frame", nil, parent)
-        row:SetPoint("LEFT", 5, 0)
-        row:SetPoint("RIGHT", -5, 0)
-        row:SetHeight(26)
-        
-        local name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        name:SetPoint("LEFT", 5, 0)
-        local localizedName = (GAC.L and GAC.L[label]) or label:gsub("^%l", string.upper)
-        name:SetText(localizedName)
-
-        local input = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
-        input:SetSize(40, 20)
-        input:SetPoint("RIGHT", -20, 0)
-        input:SetAutoFocus(false)
-        
-        
-        input:SetNumeric(false) -- Removed SetNumeric to prevent any WoW API rejection bugs
-        input:SetFontObject("GameFontHighlight") -- Explicitly set font
-        input:SetTextInsets(5, 5, 0, 0) -- Prevent text from clipping under textures
-
-        input:SetScript("OnTextChanged", function(self, isUserInput)
-            if not isUserInput then return end
-            saveStatsBtn:Show()
-        end)
-        input:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-        input:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-
-        statInputs[key] = { input = input, isTalent = isTalent }
-        return row, name
-    end
-
-    local function CreateCard(parent, group)
-        local card = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-        card:SetBackdrop({
-            bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12,
-            insets = { left = 3, right = 3, top = 3, bottom = 3 },
-        })
-        card:SetBackdropColor(0, 0, 0, 0.5)
-        card:SetBackdropBorderColor(0.25, 0.78, 0.94, 0.6)
-
-        local headerBg = CreateFrame("Frame", nil, card)
-        headerBg:SetPoint("TOPLEFT", 3, -3)
-        headerBg:SetPoint("TOPRIGHT", -3, -3)
-        headerBg:SetHeight(30)
-
-        local attRow, nameLabel = CreateStatInput(headerBg, GAC:_(group.name), group.name, false)
-        attRow:SetPoint("CENTER")
-        nameLabel:SetFontObject("GameFontNormalLarge")
-        nameLabel:SetTextColor(0.25, 0.78, 0.94)
-
-        local div = card:CreateTexture(nil, "ARTWORK")
-        div:SetHeight(1)
-        div:SetPoint("TOPLEFT", headerBg, "BOTTOMLEFT", 5, 0)
-        div:SetPoint("TOPRIGHT", headerBg, "BOTTOMRIGHT", -5, 0)
-        div:SetColorTexture(1, 1, 1, 0.1)
-
-        local currentY = -40
-        for _, talent in ipairs(group.talents) do
-            local talRow = CreateStatInput(card, GAC:_(talent), talent, true)
-            talRow:SetPoint("TOP", 0, currentY)
-            currentY = currentY - 26
-        end
-
-        card:SetHeight(-currentY + 5)
-        return card
-    end
 
     local function RefreshStats()
         saveStatsBtn:Hide()
@@ -448,7 +314,7 @@ function GAC:CreateCharSheetContent(parent)
         local currentY = -10
 
         for i, group in ipairs(GAC.attributeGroups) do
-            local card = CreateCard(contentContainer, group)
+            local card = GAC:CreateCard(contentContainer, group, function() saveStatsBtn:Show() end, statInputs)
             card:SetPoint("TOPLEFT", 10, currentY)
             card:SetPoint("TOPRIGHT", -10, currentY)
             
@@ -479,9 +345,7 @@ function GAC:CreateCharSheetContent(parent)
     local worgenCurseCheckbox = CreateFrame("CheckButton", nil, otrosBg, "UICheckButtonTemplate")
     worgenCurseCheckbox:SetPoint("TOPLEFT", 15, -15)
     
-    local worgenCurseLabel = otrosBg:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    worgenCurseLabel:SetPoint("LEFT", worgenCurseCheckbox, "RIGHT", 5, 0)
-    worgenCurseLabel:SetText("Maldición Huargen")
+    local worgenCurseLabel = GAC:CreateFontString(otrosBg, "Maldición Huargen", "GameFontHighlight", { "LEFT", worgenCurseCheckbox, "RIGHT", 5, 0 }, {1, 1, 1})
 
     worgenCurseCheckbox:SetScript("OnClick", function(self)
         if not GAC.characterData then return end

@@ -3,4 +3,5 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="ExpBar.lua"/>
 	<Include file="PlayerPlate.lua"/>
 	<Include file="TargetPlate.lua"/>
+	<Include file="RaidPlate.lua"/>
 </Ui>
