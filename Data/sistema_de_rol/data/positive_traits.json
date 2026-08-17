@@ -1,0 +1,205 @@
+[
+  {
+    "Nombre": "Abusón/a",
+    "Descripción": "Aumenta el rango de los críticos.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "3"
+  },
+  {
+    "Nombre": "Ágil",
+    "Descripción": "Mejora el talento de Def. Ágil.\n\nA nivel 3, mejora Acrobacias",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "Def. Ágil +2\n\nAcrobacias +1"
+  },
+  {
+    "Nombre": "Ambidiestro/a ágil",
+    "Descripción": "Elimina la penalización al nivel 1 de las armas finas. En el resto\nde niveles, suma al ataque.",
+    "Nivel 1": null,
+    "Nivel 2": 1.0,
+    "Nivel 3": "2"
+  },
+  {
+    "Nombre": "Ambidiestro/a robusto",
+    "Descripción": "Al nivel 1 reduce a la mitad la penalización por doble empuñadura de\narmas de 1 y 2 manos.",
+    "Nivel 1": null,
+    "Nivel 2": 1.0,
+    "Nivel 3": "2"
+  },
+  {
+    "Nombre": "Atlético/a",
+    "Descripción": "Mejora el talento de Atletismo. Al nivel tres, también mejora Acrobacias",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "At+2\n\nAc+1"
+  },
+  {
+    "Nombre": "Aventajado/a",
+    "Descripción": "Dispone de una acción extra.\n\nSe siguen aplicando todas las reglas establecidas para las acciones.",
+    "Nivel 1": null,
+    "Nivel 2": null,
+    "Nivel 3": null
+  },
+  {
+    "Nombre": "Bello/a",
+    "Descripción": "Los NPC preferirán tratar contigo antes que cualquier otro.\n\nLos NPC se fijarán más en ti.\n\nMejora el talento de Seducción.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "3"
+  },
+  {
+    "Nombre": "Buen aprendiz",
+    "Descripción": "Gana el doble de experiencia que el resto de personajes.",
+    "Nivel 1": null,
+    "Nivel 2": null,
+    "Nivel 3": null
+  },
+  {
+    "Nombre": "Cabezota",
+    "Descripción": "Mejora el talento de Res. Atur.\n\nAl nivel 3, mejora Res. Derr.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "Rest. Atur+2\n\nRest. Derr.+1"
+  },
+  {
+    "Nombre": "Centinela",
+    "Descripción": "Al beneficiarte de la ventaja por Altura, ganas un bonificador a tus\nataques a distancia.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "3"
+  },
+  {
+    "Nombre": "Corredor/a",
+    "Descripción": "Aumenta la distancia normal de Movimiento del personaje. (Metros).",
+    "Nivel 1": "5",
+    "Nivel 2": 7.0,
+    "Nivel 3": "10"
+  },
+  {
+    "Nombre": "Espiritual",
+    "Descripción": "Mejora uno de los siguientes talentos: Fe, C. Elemental o Chi.\n\nAl nivel 3, reduce el coste de espíritu de los hechizos de ese talento.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "Talento +2\n\nEspíritu-1"
+  },
+  {
+    "Nombre": "Felino/a",
+    "Descripción": "Mejora el talento de Sigilo.\n\nAl nivel 3, mejora Juego de Manos.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "Sigilo +2\n\nJuego Manos +1"
+  },
+  {
+    "Nombre": "Hechicero",
+    "Descripción": "Mejora un talento de la rama de INT. (Se debe seleccionar)\n\nAl nivel 3, reduce el coste de maná de los hechizos de ese talento.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "Talento +2\n\nManá -1"
+  },
+  {
+    "Nombre": "Inquebrantable",
+    "Descripción": "Mejora el talento de Res. Pér. Control.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "3"
+  },
+  {
+    "Nombre": "Maestro de armas",
+    "Descripción": "Mejora todos los talentos armas cuerpo a cuerpo.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "3"
+  },
+  {
+    "Nombre": "Maestro rúnico",
+    "Descripción": "Aumenta el talento de Inscripción (Sabiduría).",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "3"
+  },
+  {
+    "Nombre": "Oído agudo",
+    "Descripción": "Mejora el talento de Percepción cuando se realiza utilizando el sentido\ndel oído.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "3"
+  },
+  {
+    "Nombre": "Preparado/a",
+    "Descripción": "Mejora las tiradas de iniciativa.\n\nAl nivel 3, siempre empieza primero.",
+    "Nivel 1": "25",
+    "Nivel 2": 50.0,
+    "Nivel 3": "∞"
+  },
+  {
+    "Nombre": "Rápido/a",
+    "Descripción": "Reduce la ventaja de los enemigos por flanqueos.",
+    "Nivel 1": "Los enemigos que te flanqueen ya no se benefician de tiradas con Ventaja.",
+    "Nivel 2": null,
+    "Nivel 3": null
+  },
+  {
+    "Nombre": "Resiliente",
+    "Descripción": "Mejora el talento de Resiliencia. Al nivel 3, mejora a la Fortaleza.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "Re +2\n\nFor +1"
+  },
+  {
+    "Nombre": "Robusto/a",
+    "Descripción": "Mejora el talento de DR. Al nivel 3, da un extra de vida.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "DR +2\n\nHP +5"
+  },
+  {
+    "Nombre": "Sensibilidad mágica",
+    "Descripción": "Mejora las tiradas de percepción mágica.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "3"
+  },
+  {
+    "Nombre": "Suertudo",
+    "Descripción": "Una vez por objetivo, si logras hacer un crítico exitoso, puedes atacar\no sanar una segunda vez al mismo objetivo. (Se siguen aplicando todas las reglas\nestablecidas para un ataque normal)",
+    "Nivel 1": null,
+    "Nivel 2": null,
+    "Nivel 3": null
+  },
+  {
+    "Nombre": "Táctico/a",
+    "Descripción": "En cada turno, te permite elegir en qué momento actúas, independientemente\ndel órden de los turnos. Para usar este rasgo, el personaje no debe haber actuado\ny debe declarar su intención de actuar antes que cualquier otro lo haga.",
+    "Nivel 1": null,
+    "Nivel 2": null,
+    "Nivel 3": null
+  },
+  {
+    "Nombre": "Talentoso",
+    "Descripción": "Mejora un talento de tu elección sin restricciones.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "3"
+  },
+  {
+    "Nombre": "Veloz",
+    "Descripción": "No puedes ser objetivo de agarres ni efectos de enraizado.",
+    "Nivel 1": null,
+    "Nivel 2": null,
+    "Nivel 3": null
+  },
+  {
+    "Nombre": "Visión nocturna",
+    "Descripción": "Reduce la penalización por Oscuridad.",
+    "Nivel 1": "1",
+    "Nivel 2": 3.0,
+    "Nivel 3": "5"
+  },
+  {
+    "Nombre": "Vista aguda",
+    "Descripción": "Mejora la percepción siempre y cuando se realice usando el sentido\nde la vista. A nivel 3 mejora Armas Distancia.",
+    "Nivel 1": "1",
+    "Nivel 2": 2.0,
+    "Nivel 3": "Per +2\n\nArmD +1"
+  }
+]

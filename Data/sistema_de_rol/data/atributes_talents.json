@@ -1,0 +1,67 @@
+{
+  "Destreza": {
+    "Talentos": [
+      "Precisión",
+      "Combate Ágil",
+      "Acrobacias",
+      "Sigilo",
+      "Juego de Manos",
+      "Defensa Ágil"
+    ]
+  },
+  "Fuerza": {
+    "Talentos": [
+      "Combate a 2 manos",
+      "Combate a 1 mano",
+      "Atletismo",
+      "Brutalidad",
+      "Defensa Robusta"
+    ]
+  },
+  "Inteligencia": {
+    "Talentos": [
+      "Arcano",
+      "Vil",
+      "Naturaleza",
+      "Sombras",
+      "Nigromancia"
+    ]
+  },
+  "Voluntad": {
+    "Talentos": [
+      "Resistencia Mágica",
+      "Resistencia a la Pérdida de Control",
+      "Fe",
+      "Conexión Elemental",
+      "Chi",
+      "Regeneración de Maná"
+    ]
+  },
+  "Constitución": {
+    "Talentos": [
+      "Resiliencia",
+      "Resistencia a Aturdimientos",
+      "Resistencia a Derribos",
+      "Resistencia al Frío",
+      "Resistencia al Calor",
+      "Fortaleza"
+    ]
+  },
+  "Sabiduría": {
+    "Talentos": [
+      "Conexión con los animales",
+      "Supervivencia",
+      "Percepción"
+    ]
+  },
+  "Carisma": {
+    "Talentos": [
+      "Persuasión",
+      "Diplomacia",
+      "Comercio",
+      "Provocación",
+      "Seducción",
+      "Interpretación"
+    ]
+  }
+}

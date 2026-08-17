@@ -1,0 +1,285 @@
+{
+  "Novato": {
+    "1": {
+      "Vida": 10,
+      "Puntos de atributo": 0,
+      "Ranuras de habilidad/hechizos": 2,
+      "Ranuras de Heroicas": 1,
+      "Experiencia necesaria para subir de nivel": 10
+    },
+    "2": {
+      "Vida": 11,
+      "Puntos de atributo": 1,
+      "Ranuras de habilidad/hechizos": 3,
+      "Ranuras de Heroicas": 1,
+      "Experiencia necesaria para subir de nivel": 12
+    },
+    "3": {
+      "Vida": 13,
+      "Puntos de atributo": 3,
+      "Ranuras de habilidad/hechizos": 4,
+      "Ranuras de Heroicas": 1,
+      "Experiencia necesaria para subir de nivel": 14
+    },
+    "4": {
+      "Vida": 16,
+      "Puntos de atributo": 3,
+      "Ranuras de habilidad/hechizos": 5,
+      "Ranuras de Heroicas": 1,
+      "Experiencia necesaria para subir de nivel": 16
+    },
+    "5": {
+      "Vida": 20,
+      "Puntos de atributo": 5,
+      "Ranuras de habilidad/hechizos": 5,
+      "Ranuras de Heroicas": 1,
+      "Experiencia necesaria para subir de nivel": 20
+    }
+  },
+  "Normal": {
+    "1": {
+      "Vida": 20,
+      "Puntos de atributo": 5,
+      "Ranuras de habilidad/hechizos": 5,
+      "Ranuras de Heroicas": 2,
+      "Rasgos positivos máximos": 2,
+      "Experiencia necesaria para subir de nivel": 30
+    },
+    "2": {
+      "Vida": 27,
+      "Puntos de atributo": 5,
+      "Ranuras de habilidad/hechizos": 6,
+      "Ranuras de Heroicas": 2,
+      "Rasgos positivos máximos": 2,
+      "Experiencia necesaria para subir de nivel": 45
+    },
+    "3": {
+      "Vida": 34,
+      "Puntos de atributo": 6,
+      "Ranuras de habilidad/hechizos": 6,
+      "Ranuras de Heroicas": 2,
+      "Rasgos positivos máximos": 2,
+      "Experiencia necesaria para subir de nivel": 68
+    },
+    "4": {
+      "Vida": 41,
+      "Puntos de atributo": 7,
+      "Ranuras de habilidad/hechizos": 7,
+      "Ranuras de Heroicas": 2,
+      "Rasgos positivos máximos": 2,
+      "Experiencia necesaria para subir de nivel": 102
+    },
+    "5": {
+      "Vida": 49,
+      "Puntos de atributo": 7,
+      "Ranuras de habilidad/hechizos": 7,
+      "Ranuras de Heroicas": 3,
+      "Rasgos positivos máximos": 2,
+      "Experiencia necesaria para subir de nivel": 153
+    },
+    "6": {
+      "Vida": 57,
+      "Puntos de atributo": 8,
+      "Ranuras de habilidad/hechizos": 8,
+      "Ranuras de Heroicas": 3,
+      "Rasgos positivos máximos": 2,
+      "Experiencia necesaria para subir de nivel": 230
+    },
+    "7": {
+      "Vida": 65,
+      "Puntos de atributo": 9,
+      "Ranuras de habilidad/hechizos": 8,
+      "Ranuras de Heroicas": 3,
+      "Rasgos positivos máximos": 2,
+      "Experiencia necesaria para subir de nivel": 345
+    },
+    "8": {
+      "Vida": 74,
+      "Puntos de atributo": 9,
+      "Ranuras de habilidad/hechizos": 9,
+      "Ranuras de Heroicas": 3,
+      "Rasgos positivos máximos": 2,
+      "Experiencia necesaria para subir de nivel": 518
+    },
+    "9": {
+      "Vida": 83,
+      "Puntos de atributo": 10,
+      "Ranuras de habilidad/hechizos": 9,
+      "Ranuras de Heroicas": 3,
+      "Rasgos positivos máximos": 2,
+      "Experiencia necesaria para subir de nivel": 777
+    },
+    "10": {
+      "Vida": 92,
+      "Puntos de atributo": 10,
+      "Ranuras de habilidad/hechizos": 10,
+      "Ranuras de Heroicas": 4,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 1166
+    }
+  },
+  "Élite": {
+    "1": {
+      "Vida": 92,
+      "Puntos de atributo": 10,
+      "Ranuras de habilidad/hechizos": 10,
+      "Ranuras de Heroicas": 4,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 1749
+    },
+    "2": {
+      "Vida": 99,
+      "Puntos de atributo": 11,
+      "Ranuras de habilidad/hechizos": 11,
+      "Ranuras de Heroicas": 4,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 2624
+    },
+    "3": {
+      "Vida": 108,
+      "Puntos de atributo": 12,
+      "Ranuras de habilidad/hechizos": 11,
+      "Ranuras de Heroicas": 4,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 3936
+    },
+    "4": {
+      "Vida": 115,
+      "Puntos de atributo": 13,
+      "Ranuras de habilidad/hechizos": 12,
+      "Ranuras de Heroicas": 4,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 5904
+    },
+    "5": {
+      "Vida": 123,
+      "Puntos de atributo": 13,
+      "Ranuras de habilidad/hechizos": 12,
+      "Ranuras de Heroicas": 5,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 6495
+    },
+    "6": {
+      "Vida": 131,
+      "Puntos de atributo": 14,
+      "Ranuras de habilidad/hechizos": 13,
+      "Ranuras de Heroicas": 5,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 7145
+    },
+    "7": {
+      "Vida": 139,
+      "Puntos de atributo": 14,
+      "Ranuras de habilidad/hechizos": 13,
+      "Ranuras de Heroicas": 5,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 7858
+    },
+    "8": {
+      "Vida": 148,
+      "Puntos de atributo": 14,
+      "Ranuras de habilidad/hechizos": 14,
+      "Ranuras de Heroicas": 5,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 8646
+    },
+    "9": {
+      "Vida": 157,
+      "Puntos de atributo": 15,
+      "Ranuras de habilidad/hechizos": 14,
+      "Ranuras de Heroicas": 5,
+      "Rasgos positivos máximos": 3,
+      "Experiencia necesaria para subir de nivel": 9511
+    },
+    "10": {
+      "Vida": 166,
+      "Puntos de atributo": 15,
+      "Ranuras de habilidad/hechizos": 15,
+      "Ranuras de Heroicas": 6,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 10462
+    }
+  },
+  "Jefe": {
+    "1": {
+      "Vida": 166,
+      "Puntos de atributo": 15,
+      "Ranuras de habilidad/hechizos": 15,
+      "Ranuras de Heroicas": 6,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 11508
+    },
+    "2": {
+      "Vida": 173,
+      "Puntos de atributo": 16,
+      "Ranuras de habilidad/hechizos": 16,
+      "Ranuras de Heroicas": 6,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 12659
+    },
+    "3": {
+      "Vida": 180,
+      "Puntos de atributo": 17,
+      "Ranuras de habilidad/hechizos": 16,
+      "Ranuras de Heroicas": 6,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 13925
+    },
+    "4": {
+      "Vida": 187,
+      "Puntos de atributo": 18,
+      "Ranuras de habilidad/hechizos": 17,
+      "Ranuras de Heroicas": 6,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 15318
+    },
+    "5": {
+      "Vida": 195,
+      "Puntos de atributo": 18,
+      "Ranuras de habilidad/hechizos": 17,
+      "Ranuras de Heroicas": 7,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 16850
+    },
+    "6": {
+      "Vida": 203,
+      "Puntos de atributo": 19,
+      "Ranuras de habilidad/hechizos": 18,
+      "Ranuras de Heroicas": 7,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 18535
+    },
+    "7": {
+      "Vida": 212,
+      "Puntos de atributo": 19,
+      "Ranuras de habilidad/hechizos": 18,
+      "Ranuras de Heroicas": 7,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 20389
+    },
+    "8": {
+      "Vida": 221,
+      "Puntos de atributo": 19,
+      "Ranuras de habilidad/hechizos": 19,
+      "Ranuras de Heroicas": 7,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 22428
+    },
+    "9": {
+      "Vida": 230,
+      "Puntos de atributo": 20,
+      "Ranuras de habilidad/hechizos": 19,
+      "Ranuras de Heroicas": 7,
+      "Rasgos positivos máximos": 4,
+      "Experiencia necesaria para subir de nivel": 24671
+    },
+    "10": {
+      "Vida": 250,
+      "Puntos de atributo": 20,
+      "Ranuras de habilidad/hechizos": 20,
+      "Ranuras de Heroicas": 8,
+      "Rasgos positivos máximos": 5,
+      "Experiencia necesaria para subir de nivel": null
+    }
+  }
+}

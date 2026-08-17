@@ -1,0 +1,92 @@
+[
+  {
+    "Nombre": "Bloquear y empuja",
+    "Descripción": "Cuando te defiendes con éxito usando un escudo, puedes intentar derribar a tu objetivo.",
+    "Tipo": "Pasiva",
+    "Coste de Acciones": 0,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 0,
+    "Turnos de Enfriamiento (Cooldown)": 3
+  },
+  {
+    "Nombre": "Bloqueo agresivo",
+    "Descripción": "Cuando te defiendes con éxito usando un escudo, ganas ventaja en tu siguiente ataque.",
+    "Tipo": "Pasiva",
+    "Coste de Acciones": 0,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 0,
+    "Turnos de Enfriamiento (Cooldown)": 3
+  },
+  {
+    "Nombre": "Carga barbárica",
+    "Descripción": "Carga contra su objetivo dentro de 15 metros de distancia. Recibirá un dado de daño por parte de su objetivo. Sin embargo, derribará a su objetivo haciendo 1d6 de daño más su brutalidad.",
+    "Tipo": "Activa",
+    "Coste de Acciones": 1,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 0,
+    "Turnos de Enfriamiento (Cooldown)": 3
+  },
+  {
+    "Nombre": "Contraataque rabioso",
+    "Descripción": "Tras una defensa fallida y perder vida, puedes realizar un contraataque.\n\nEste contraataque debe suceder después de recibir daño y sigue las normas básicas de contraataque.\n\nSolo se puede usar tras recibir daño. Si en el siguiente turno, te defiendes exitosamente, esta habilidad no estará disponible.",
+    "Tipo": "Activa",
+    "Coste de Acciones": 1,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 0,
+    "Turnos de Enfriamiento (Cooldown)": 4
+  },
+  {
+    "Nombre": "Contragolpe",
+    "Descripción": "Cuando te defiendes, ya sea parando o bloqueando, pero fallas tu defensa, devuelves el golpe contra tu atacante acertando directamente.\nEsta habilidad debe usarse ANTES del turno defensivo.\nContragolpe se consume siempre, tengas o no éxito en la defensa.",
+    "Tipo": "Activa",
+    "Coste de Acciones": 1,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 1,
+    "Turnos de Enfriamiento (Cooldown)": 4
+  },
+  {
+    "Nombre": "Desmoralizar",
+    "Descripción": "Desmoraliza a los enemigos cercanos a él, provocandoles desventaja en sus tiradas de ataque y defensa.\n\nLanza un D20 + Fuerza + Brutalidad.\nLos enemigos lanzan un tirada de salvación D20 + Voluntad + Res. Pér. Control enfrentada.\n\nSi es crítico, los enemigos entran en pánico, haciendole imposible realizar cualquier acción, excepto la de huir, durante 4 turnos.",
+    "Tipo": "Activa",
+    "Coste de Acciones": 2,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 4,
+    "Turnos de Enfriamiento (Cooldown)": 3
+  },
+  {
+    "Nombre": "Devastar",
+    "Descripción": "Una vez cada tres turnos, si el objetivo te ha ganado en defensa, puedes ignorar su defensa y golpearle igualmente como si hubieras acertado.",
+    "Tipo": "Activa",
+    "Coste de Acciones": 1,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 0,
+    "Turnos de Enfriamiento (Cooldown)": 3
+  },
+  {
+    "Nombre": "Furia",
+    "Descripción": "Entra en estado de furia que hace que sus ataques tengan ventaja sobre sus objetivos. Los enemigos dentro del rango efectivo de acción sufrirán desventaja contra el personaje.",
+    "Tipo": "Activa",
+    "Coste de Acciones": 1,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 3,
+    "Turnos de Enfriamiento (Cooldown)": 4
+  },
+  {
+    "Nombre": "Indefensos",
+    "Descripción": "Cada vez que un ataque acertado es absorbido por un escudo, la mitad del daño afectará directamente al objetivo como daño verdadero.",
+    "Tipo": "Pasiva",
+    "Coste de Acciones": 0,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 0,
+    "Turnos de Enfriamiento (Cooldown)": 0
+  },
+  {
+    "Nombre": "Romper los huesos",
+    "Descripción": "Realiza un golpe brutal sobre alguna extremidad con la intención de romper los huesos. Usará brutalidad para realizar esta acción y su objetivo usará su defensa para evitarlo. Si se logra, dependiendo de la extremidad afectada (piernas o manos), quedará Cojo o Manco.",
+    "Tipo": "Activa",
+    "Coste de Acciones": 1,
+    "Coste de Ranuras": 1,
+    "Turnos de Efecto": 0,
+    "Turnos de Enfriamiento (Cooldown)": 4
+  }
+]

@@ -1,0 +1,217 @@
+{
+  "Alianza": {
+    "Humano": {
+      "Ventajas": [
+        "+1 Adaptabilidad",
+        "+1 Diplomacia",
+        "+1 Resistencia a Aturdimiento"
+      ],
+      "Desventajas": [
+        "-2 Resistencia a la Pérdida de Control",
+        "-1 Resiliencia"
+      ]
+    },
+    "Enano": {
+      "Ventajas": [
+        "+1 Resistencia al Frío",
+        "+1 Brutalidad",
+        "+1 Defensa Robusta"
+      ],
+      "Desventajas": [
+        "-1 Juego de Manos",
+        "-2 Diplomacia"
+      ]
+    },
+    "kaldorei": {
+      "Ventajas": [
+        "+1 Sigilo",
+        "+1 Defensa Ágil",
+        "+1 Atletismo"
+      ],
+      "Desventajas": [
+        "-1 Arcano",
+        "-2 Comercio"
+      ],
+      "Especial": [
+        "Visión nocturna",
+        "Audición superior"
+      ]
+    },
+    "Gnomo": {
+      "Ventajas": [
+        "+1 Perfeccionamiento",
+        "+1 Juego de Manos",
+        "+1 Resistencia Mágica"
+      ],
+      "Desventajas": [
+        "-2 Vida",
+        "-1 Resiliencia"
+      ]
+    },
+    "Draenei": {
+      "Ventajas": [
+        "+1 Joyería (Profesión)",
+        "+2 Fe (Luz)"
+      ],
+      "Desventajas": [
+        "-2 Conexión Elemental",
+        "-1 Sigilo"
+      ]
+    },
+    "Quel'dorei": {
+      "Ventajas": [
+        "+2 Resistencia Mágica",
+        "+1 Arcano"
+      ],
+      "Desventajas": [
+        "-1 Brutalidad",
+        "-2 Defensa Robusta"
+      ],
+      "Especial": [
+        "Audición superior"
+      ]
+    }
+  },
+  "Horda": {
+    "Orco": {
+      "Ventajas": [
+        "+1 Brutalidad",
+        "+2 Conexión elemental"
+      ],
+      "Desventajas": [
+        "-1 Defensa Ágil",
+        "-2 Sigilo"
+      ],
+      "Especial": [
+        "Superfuerza"
+      ]
+    },
+    "No-muerto": {
+      "Ventajas": [
+        "+2 Resistencia a la Pérdida de Control",
+        "+1 Alquimia (Profesión)"
+      ],
+      "Desventajas": [
+        "-2 Diplomacia",
+        "-1 Regeneración de Maná"
+      ],
+      "Especial": [
+        "Inmunidad a los efectos de miedo y sueño",
+        "Inmune a venenos y enfermedades",
+        "Reemplazo de miembros"
+      ]
+    },
+    "Tauren": {
+      "Ventajas": [
+        "+2 Fortaleza",
+        "+1 Naturaleza"
+      ],
+      "Desventajas": [
+        "-2 Defensa Agil",
+        "-1 Sigilo"
+      ],
+      "Especial": [
+        "Superfuerza"
+      ]
+    },
+    "Troll": {
+      "Ventajas": [
+        "+1 Combate a 1 mano",
+        "+1 Regeneración de Maná",
+        "+1 Resistencia a Derribos"
+      ],
+      "Desventajas": [
+        "-1 Defensa Robusta",
+        "-2 Resiliencia"
+      ],
+      "Especial": [
+        "Regeneración"
+      ]
+    },
+    "Goblin": {
+      "Ventajas": [
+        "+2 Comercio",
+        "+1 Juego de Manos"
+      ],
+      "Desventajas": [
+        "-2 Diplomacia",
+        "-1 Fe"
+      ]
+    },
+    "Sin'dorei": {
+      "Ventajas": [
+        "+1 Vil",
+        "+2 Resistencia Mágica"
+      ],
+      "Desventajas": [
+        "-1 Resistencia a la Pérdida de Control",
+        "-2 Defensa Robusta"
+      ],
+      "Especial": [
+        "Audición superior"
+      ]
+    }
+  },
+  "Otras razas": {
+    "Pandaren": {
+      "Ventajas": [
+        "+2 Chi",
+        "+1 Resistencia a la Pérdida de Control"
+      ],
+      "Desventajas": [
+        "-2 Provocar",
+        "-1 Resiliencia"
+      ]
+    },
+    "Vrykul": {
+      "Ventajas": [
+        "+1 Brutalidad",
+        "+1 Resistencia al frío",
+        "+1 Fortaleza"
+      ],
+      "Desventajas": [
+        "-2 Resistencia a la Pérdida de Control",
+        "-2 Sigilo"
+      ],
+      "Especial": [
+        "Superfuerza"
+      ]
+    }
+  },
+  "Especiales": {
+    "Huargen": {
+      "Forma humana": {
+        "Ventajas": [
+          "+1 Atletismo",
+          "+1 Brutalidad",
+          "+1 Resistencia Mágica",
+          "+1 Percepción",
+          "+1 Resiliencia"
+        ],
+        "Desventajas": [
+          "-2 Restistencia a la Pérdida de Control",
+          "-2 Sigilo",
+          "-1 Juego de Manos"
+        ]
+      },
+      "Forma de lobo": {
+        "Ventajas": [
+          "+2 Atletismo",
+          "+2 Brutalidad",
+          "+2 Resistencia Mágica",
+          "+2 Percepción",
+          "+2 Resiliencia"
+        ],
+        "Desventajas": [
+          "-5 Rest. P. Control",
+          "-3 Sigilo",
+          "-2 Juego de Manos"
+        ],
+        "Especial": [
+          "A 4 patas Gran movilidad",
+          "Superfuerza"
+        ]
+      }
+    }
+  }
+}
