@@ -5,7 +5,7 @@ function GAC:CreateCharSheetContent(parent)
     frame:SetAllPoints()
 
     -- Título
-    local header = GAC:CreateFontString(frame, "Ficha de Personaje", "GameFontNormalLarge", { "TOPLEFT", 15, -15 }, { 1, 1, 1 })
+    local header = GAC:CreateFontString(frame, GAC:_("charSheetTitle"), "GameFontNormalLarge", { "TOPLEFT", 15, -15 }, { 1, 1, 1 })
 
     local line = frame:CreateTexture(nil, "ARTWORK")
     line:SetPoint("TOPLEFT", 15, -40)
@@ -38,7 +38,7 @@ function GAC:CreateCharSheetContent(parent)
     local race = GAC:GetActiveTRP3ProfileRace()
     local class = GAC:GetActiveTRP3ProfileClass()
     
-    local infoText = GAC:CreateFontString(frame, string.format("Nivel %d - %s - %s", level, race, class), "GameFontHighlight", { "TOPLEFT", nameText, "BOTTOMLEFT", 0, -5 }, {1, 1, 1}) 
+    local infoText = GAC:CreateFontString(frame, string.format(GAC:_("charSheetInfoTextFmt"), level, race, class), "GameFontHighlight", { "TOPLEFT", nameText, "BOTTOMLEFT", 0, -5 }, {1, 1, 1}) 
     
 
     -- Contenedor principal de pestañas interiores
@@ -59,16 +59,16 @@ function GAC:CreateCharSheetContent(parent)
     tab4:Hide()
 
     -- Botones de Pestañas
-    local btnHistoria = GAC:CreateSubTabButton(frame, "Historia", 100)
+    local btnHistoria = GAC:CreateSubTabButton(frame, GAC:_("charSheetTabHistory"), 100)
     btnHistoria:SetPoint("BOTTOMLEFT", contentArea, "TOPLEFT", 5, 5)
     
-    local btnProgresion = GAC:CreateSubTabButton(frame, "Progresión", 120)
+    local btnProgresion = GAC:CreateSubTabButton(frame, GAC:_("charSheetTabProgression"), 120)
     btnProgresion:SetPoint("LEFT", btnHistoria, "RIGHT", 5, 0)
     
-    local btnAtributos = GAC:CreateSubTabButton(frame, "Atributos y Talentos", 150)
+    local btnAtributos = GAC:CreateSubTabButton(frame, GAC:_("charSheetTabAttributes"), 150)
     btnAtributos:SetPoint("LEFT", btnProgresion, "RIGHT", 5, 0)
     
-    local btnOtros = GAC:CreateSubTabButton(frame, "Otros", 80)
+    local btnOtros = GAC:CreateSubTabButton(frame, GAC:_("charSheetTabOther"), 80)
     btnOtros:SetPoint("LEFT", btnAtributos, "RIGHT", 5, 0)
 
     local function SelectSubTab(id)
@@ -109,7 +109,7 @@ function GAC:CreateCharSheetContent(parent)
     descEditBox:SetMultiLine(true)
     descEditBox:SetFontObject("GameFontHighlight")
     descEditBox:SetWidth(400)
-    descEditBox:SetText("Escribe aquí el trasfondo de tu personaje...")
+    descEditBox:SetText(GAC:_("charSheetBackgroundPlaceholder"))
     descEditBox:SetAutoFocus(false)
     scrollFrame:SetScrollChild(descEditBox)
     scrollFrame:SetScript("OnSizeChanged", function(self, width) descEditBox:SetWidth(width) end)
@@ -117,7 +117,7 @@ function GAC:CreateCharSheetContent(parent)
     local saveBtn = CreateFrame("Button", nil, descFrame, "UIPanelButtonTemplate")
     saveBtn:SetSize(120, 26)
     saveBtn:SetPoint("BOTTOMRIGHT", -10, 10)
-    saveBtn:SetText("Guardar Historia")
+    saveBtn:SetText(GAC:_("charSheetSaveStory"))
 
     -------------------------------------------------
     -- TAB 2: PROGRESIÓN (Niveles y Categorías)
@@ -131,23 +131,23 @@ function GAC:CreateCharSheetContent(parent)
     progBg:SetBackdropColor(0, 0, 0, 0.3)
     progBg:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
 
-    local progTitle = GAC:CreateFontString(progBg, "Información de Nivel Disponible", "GameFontNormalLarge", { "TOPLEFT", 15, -15 }, { 0.25, 0.78, 0.94 })
+    local progTitle = GAC:CreateFontString(progBg, GAC:_("charSheetProgressionTitle"), "GameFontNormalLarge", { "TOPLEFT", 15, -15 }, { 0.25, 0.78, 0.94 })
 
-    local _, hpText = GAC:CreateInfoBox(progBg, "Salud Máxima", 20, -50)
-    local _, expText = GAC:CreateInfoBox(progBg, "Exp para Nivel", 190, -50)
-    local _, attText = GAC:CreateInfoBox(progBg, "Puntos de Atributo", 20, -100)
-    local _, skillText = GAC:CreateInfoBox(progBg, "Ranuras de hechisos/habilidadeh", 190, -100)
-    local _, heroicText = GAC:CreateInfoBox(progBg, "Puntos Heroicos", 20, -150)
-    local _, traitText = GAC:CreateInfoBox(progBg, "Rasgos Positivos", 190, -150)
+    local _, hpText = GAC:CreateInfoBox(progBg, GAC:_("charSheetMaxHealth"), 20, -50)
+    local _, expText = GAC:CreateInfoBox(progBg, GAC:_("charSheetExpToLevel"), 190, -50)
+    local _, attText = GAC:CreateInfoBox(progBg, GAC:_("charSheetAttributePoints"), 20, -100)
+    local _, skillText = GAC:CreateInfoBox(progBg, GAC:_("charSheetSkillSlots"), 190, -100)
+    local _, heroicText = GAC:CreateInfoBox(progBg, GAC:_("charSheetHeroicPoints"), 20, -150)
+    local _, traitText = GAC:CreateInfoBox(progBg, GAC:_("charSheetPositiveTraits"), 190, -150)
 
     -- Controles
-    local catLabel = GAC:CreateFontString(progBg, "Categoría:", "GameFontNormal", { "TOPLEFT", 380, -50 }, {1, 1, 1})
+    local catLabel = GAC:CreateFontString(progBg, GAC:_("charSheetCategoryLabel"), "GameFontNormal", { "TOPLEFT", 380, -50 }, {1, 1, 1})
     
     local catDrop = CreateFrame("Frame", "GAC_CharSheetCatDrop", progBg, "UIDropDownMenuTemplate")
     catDrop:SetPoint("TOPLEFT", catLabel, "BOTTOMLEFT", -15, -5)
     UIDropDownMenu_SetWidth(catDrop, 100)
 
-    local lvlLabel = GAC:CreateFontString(progBg, "Nivel:", "GameFontNormal", { "TOPLEFT", 380, -110 }, {1, 1, 1})
+    local lvlLabel = GAC:CreateFontString(progBg, GAC:_("charSheetLevelLabel"), "GameFontNormal", { "TOPLEFT", 380, -110 }, {1, 1, 1})
     
     local lvlDrop = CreateFrame("Frame", "GAC_CharSheetLvlDrop", progBg, "UIDropDownMenuTemplate")
     lvlDrop:SetPoint("TOPLEFT", lvlLabel, "BOTTOMLEFT", -15, -5)
@@ -160,7 +160,7 @@ function GAC:CreateCharSheetContent(parent)
     local saveProgBtn = CreateFrame("Button", nil, progBg, "UIPanelButtonTemplate")
     saveProgBtn:SetSize(140, 26)
     saveProgBtn:SetPoint("BOTTOM", 0, 10)
-    saveProgBtn:SetText("Guardar Progresión")
+    saveProgBtn:SetText(GAC:_("charSheetSaveProgression"))
     saveProgBtn:Hide()
 
     saveProgBtn:SetScript("OnClick", function()
@@ -198,7 +198,7 @@ function GAC:CreateCharSheetContent(parent)
             GAC:UpdateGameExpBar()
         end
         if frame.Update then frame:Update() end
-        print("|cFF40C7EBGAC:|r Progresión guardada correctamente. Salud restablecida al máximo.")
+        print("|cFF40C7EBGAC:|r " .. GAC:_("charSheetSaveSuccessMsg"))
     end)
 
     local function UpdateProgressionInfo()
@@ -349,7 +349,7 @@ function GAC:CreateCharSheetContent(parent)
     local worgenCurseCheckbox = CreateFrame("CheckButton", nil, otrosBg, "UICheckButtonTemplate")
     worgenCurseCheckbox:SetPoint("TOPLEFT", 15, -15)
     
-    local worgenCurseLabel = GAC:CreateFontString(otrosBg, "Maldición Huargen", "GameFontHighlight", { "LEFT", worgenCurseCheckbox, "RIGHT", 5, 0 }, {1, 1, 1})
+    local worgenCurseLabel = GAC:CreateFontString(otrosBg, GAC:_("charSheetWorgenCurse"), "GameFontHighlight", { "LEFT", worgenCurseCheckbox, "RIGHT", 5, 0 }, {1, 1, 1})
 
     worgenCurseCheckbox:SetScript("OnClick", function(self)
         if not GAC.characterData then return end
@@ -376,7 +376,7 @@ function GAC:CreateCharSheetContent(parent)
         if currentClass then
             local cl = RAID_CLASS_COLORS[select(2, UnitClass("player"))] or {r=1, g=1, b=1}
             infoText:SetTextColor(cl.r, cl.g, cl.b)
-            infoText:SetText(string.format("Nivel %d (%s) - %s - %s", GAC.characterData.progress.level, GAC.characterData.progress.category:gsub("^%l", string.upper), GAC:GetActiveTRP3ProfileRace(), currentClass))
+            infoText:SetText(string.format(GAC:_("charSheetInfoTextWithCategoryFmt"), GAC.characterData.progress.level, GAC:_(GAC.characterData.progress.category):gsub("^%l", string.upper), GAC:GetActiveTRP3ProfileRace(), currentClass))
         end
         nameText:SetText(GAC:GetRollDisplayName())
 

@@ -38,7 +38,7 @@ local function safeCall(fn, ...)
         return nil
     end
 
-    local ok, result = pcall(fn, ...)
+    local ok, result = GAC:SafeCall(fn, ...)
     if not ok then
         return nil
     end

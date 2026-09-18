@@ -471,9 +471,9 @@ function GAC:CreateInventoryContent(parent)
         wpnText:SetText(wpnStr)
         
         if #notAllowedErrors > 0 then
-            meetsReqText:SetText("* Comb. Inválidas:\n" .. table.concat(notAllowedErrors, "\n"))
+            meetsReqText:SetText(GAC:_("invInvalidCombo") .. table.concat(notAllowedErrors, "\n"))
         elseif hasAnyArmor and not meetsAll then
-            meetsReqText:SetText("* No cumples con los requisitos *")
+            meetsReqText:SetText(GAC:_("invRequirementsNotMet"))
         else
             meetsReqText:SetText("")
         end

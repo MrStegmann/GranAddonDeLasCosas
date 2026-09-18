@@ -1,8 +1,7 @@
-local addonName , GAC   = ...
+local addonName, GAC = ...
 
 GAC.Locales = GAC.Locales or {}
-GAC.Locales.ES_es = 
-{
+GAC.Locales.ES_es = GAC.Locales.ES_es or {
     dexterity = "Destreza",
     strength = "Fuerza",
     intelligence = "Inteligencia",
@@ -51,4 +50,51 @@ GAC.Locales.ES_es =
     normal = "Normal",
     elite = "Élite",
     boss = "Jefe",
+
+    -- CharSheetContent (T003)
+    charSheetTitle = "Ficha de Personaje",
+    charSheetInfoTextFmt = "Nivel %d - %s - %s",
+    charSheetInfoTextWithCategoryFmt = "Nivel %d (%s) - %s - %s",
+    charSheetTabHistory = "Historia",
+    charSheetTabProgression = "Progresión",
+    charSheetTabAttributes = "Atributos y Talentos",
+    charSheetTabOther = "Otros",
+    charSheetBackgroundPlaceholder = "Escribe aquí el trasfondo de tu personaje...",
+    charSheetSaveStory = "Guardar Historia",
+    charSheetProgressionTitle = "Información de Nivel Disponible",
+    charSheetMaxHealth = "Salud Máxima",
+    charSheetExpToLevel = "Exp para Nivel",
+    charSheetAttributePoints = "Puntos de Atributo",
+    charSheetSkillSlots = "Ranuras de hechisos/habilidadeh",
+    charSheetHeroicPoints = "Puntos Heroicos",
+    charSheetPositiveTraits = "Rasgos Positivos",
+    charSheetCategoryLabel = "Categoría:",
+    charSheetLevelLabel = "Nivel:",
+    charSheetSaveProgression = "Guardar Progresión",
+    charSheetSaveSuccessMsg = "Progresión guardada correctamente. Salud restablecida al máximo.",
+    charSheetWorgenCurse = "Maldición Huargen",
+
+    -- ExperienceConfigurator (T004)
+    expHeaderTitle = "Experiencia",
+    expCurrentLevelFmt = "Nivel Actual: %d (%s)",
+    expMaxLevelReached = "Nivel Máximo Alcanzado",
+    expReceivedLabel = "Experiencia recibida:",
+    expReceivedMsgFmt = "Has recibido %d puntos de experiencia.",
+
+    -- InventoryContent (T005)
+    invInvalidCombo = "* Comb. Inválidas:\n",
+    invRequirementsNotMet = "* No cumples con los requisitos *",
+
+    -- QuickButtonsMenu (T006)
+    qbModifyHealthTitle = "Modificar Vida (Ej: 5 o -5)",
+    qbModifyShieldTitle = "Modificar Escudo (Ej: 5 o -5)",
+    qbAcceptBtn = "Aceptar",
+    qbModLifeTooltipTitle = "Modificar vida ±1",
+    qbModLifeTooltipLeft = "Clic izquierdo: Añade 1 punto de vida.",
+    qbModLifeTooltipRight = "Clic derecho: Quita 1 punto de vida.",
+    qbModCtrlClickTooltip = "Control + Clic: Introducir valor manual",
+    qbModShieldTooltipTitle = "Modificar escudo ±1",
+    qbModShieldTooltipLeft = "Clic izquierdo: Añade 1 punto de escudo.",
+    qbModShieldTooltipRight = "Clic derecho: Quita 1 punto de escudo.",
+    qbProgSavedSuccess = "Progresión guardada correctamente.",
 }

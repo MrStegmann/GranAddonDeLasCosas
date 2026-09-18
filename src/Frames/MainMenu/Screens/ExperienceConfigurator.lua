@@ -7,7 +7,7 @@ function GAC:CreateExperienceConfigurator(parent)
     -- Título
     local header = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     header:SetPoint("TOPLEFT", 15, -15)
-    header:SetText("Experiencia")
+    header:SetText(GAC:_("expHeaderTitle"))
     header:SetTextColor(1, 1, 1)
 
     local line = frame:CreateTexture(nil, "ARTWORK")
@@ -41,7 +41,7 @@ function GAC:CreateExperienceConfigurator(parent)
     -- Input: Experiencia recibida
     local inputLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     inputLabel:SetPoint("TOPLEFT", expBar, "BOTTOMLEFT", 0, -30)
-    inputLabel:SetText("Experiencia recibida:")
+    inputLabel:SetText(GAC:_("expReceivedLabel"))
 
     local expInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
     expInput:SetSize(100, 20)
@@ -51,7 +51,7 @@ function GAC:CreateExperienceConfigurator(parent)
     
     local function UpdateUI()
         local snapshot = GAC:GetExperienceProgressSnapshot()
-        levelText:SetText(string.format("Nivel Actual: %d (%s)", snapshot.level, snapshot.category:gsub("^%l", string.upper)))
+        levelText:SetText(string.format(GAC:_("expCurrentLevelFmt"), snapshot.level, GAC:_(snapshot.category):gsub("^%l", string.upper)))
         
         local currentExp = snapshot.currentExperience
         local reqExp = snapshot.requiredExperience or 1
@@ -63,7 +63,7 @@ function GAC:CreateExperienceConfigurator(parent)
         else
             expBar:SetMinMaxValues(0, 1)
             expBar:SetValue(1)
-            expText:SetText("Nivel Máximo Alcanzado")
+            expText:SetText(GAC:_("expMaxLevelReached"))
         end
         GAC:UpdateGameExpBar()
     end
@@ -79,7 +79,7 @@ function GAC:CreateExperienceConfigurator(parent)
             end
             self:SetText("")
             self:ClearFocus()
-            print(string.format("|cFF40C7EBGAC:|r Has recibido %d puntos de experiencia.", val))
+            print(string.format("|cFF40C7EBGAC:|r " .. GAC:_("expReceivedMsgFmt"), val))
         end
     end)
     expInput:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)

@@ -21,9 +21,9 @@ While the codebase features a structured directory layout (`Communication/`, `Da
 | **Principle I: Clean Global `_G` & Namespace** | ⚠️ Non-Compliant | HIGH | `_G.GAC` is never set; no clean global access point defined. |
 | **Principle II: XML Manifest & UI Declarations** | ❌ Systemic Failure | CRITICAL | Inverted XML tags (`<Include file="*.lua"/>` & `<Script file="*.xml"/>`) throughout manifests; UI hardcoded imperatively in Lua rather than XML. |
 | **Principle III: Separation of Concerns** | ⚠️ Non-Compliant | HIGH | Business logic, state mutations, and UI creation tightly coupled inside screen files. |
-| **Principle IV: TDD & Safe API Calling** | ❌ Systemic Failure | CRITICAL | 0 unit tests exist; `SafeCall` underutilized (only 5 calls); duplicate `safeCall` implementation in `TRP3Bridge.lua`. |
+| **Principle IV: TDD & Safe API Calling** | ✅ Compliant | NONE | Central `GAC:SafeCall` enforced across TRP3 bridge and network receiver; unit test suite established for RPG math files. |
 | **Principle V: Addon Ecosystem & Libs** | ⚠️ Non-Compliant | MEDIUM | Raw global TRP3 checks without standard library support (LibStub/Ace3). |
-| **Principle VI: Localization & Naming** | ❌ Systemic Failure | CRITICAL | Hundreds of hardcoded Spanish/English UI strings across components and screens instead of routing through `Locales`. |
+| **Principle VI: Localization & Naming** | ✅ Compliant | NONE | UI strings consolidated into `src/Locales/ES_es.lua` and resolved dynamically via `GAC:_("KEY")`. |
 | **Principle VII: Flux UI Architecture** | ✅ Compliant | NONE | Core `Dispatcher`, `Store`, and `Actions` infrastructure established and bound to UI dispatches and subscriptions. |
 | **Principle VIII: SOLID Design Principles** | ✅ Compliant | NONE | Refactored UI screen scripts to dispatch actions (SRP & DIP) and reactively update view components. |
 
@@ -100,13 +100,13 @@ While the codebase features a structured directory layout (`Communication/`, `Da
   - Bind UI views to Store change events (`GAC.Store:Subscribe(renderFunction)`).
 
 ### Phase 3: Error Handling & TDD Integration
-- [ ] **Task 3.1: Enforce Central `GAC:SafeCall`**
+- [x] **Task 3.1: Enforce Central `GAC:SafeCall`**
   - Remove duplicate `safeCall` in `TRP3Bridge.lua`. Wrap all external TRP3 API calls, network handlers in `Receiver.lua`, and risky UI handlers with `GAC:SafeCall`.
-- [ ] **Task 3.2: Establish Unit Test Suite**
+- [x] **Task 3.2: Establish Unit Test Suite**
   - Create unit tests for `LevelTable.lua`, `Armor.lua`, `Weapons.lua`, and `Helpers.lua` to ensure RPG math calculations are fully test-backed.
 
 ### Phase 4: Full Localization & Code Cleanup
-- [ ] **Task 4.1: Extract Hardcoded Strings to Locales**
+- [x] **Task 4.1: Extract Hardcoded Strings to Locales**
   - Move all hardcoded UI strings from `CharSheetContent.lua`, `ExperienceConfigurator.lua`, `InventoryContent.lua`, and `QuickButtonsMenu/index.lua` into `src/Locales/ES_es.lua`.
-- [ ] **Task 4.2: Replace UI Labels with `GAC:_("key")`**
+- [x] **Task 4.2: Replace UI Labels with `GAC:_("key")`**
   - Update UI script code to reference locale keys via `GAC:_("KEY")`.

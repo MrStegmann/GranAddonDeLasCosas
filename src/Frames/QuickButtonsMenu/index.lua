@@ -106,7 +106,7 @@ function GAC:CreateQuickActionsFrame()
             local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
             btn:SetSize(80, 22)
             btn:SetPoint("BOTTOM", 0, 15)
-            btn:SetText("Aceptar")
+            btn:SetText(GAC:_("qbAcceptBtn"))
             f.btn = btn
             
             local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
@@ -147,7 +147,7 @@ function GAC:CreateQuickActionsFrame()
     lifeButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     lifeButton:SetScript("OnClick", function(_, b)
         if IsControlKeyDown() then
-            ShowModifyValuePopup("Modificar Vida (Ej: 5 o -5)", function(val)
+            ShowModifyValuePopup(GAC:_("qbModifyHealthTitle"), function(val)
                 if GAC.Dispatcher and GAC.Actions then
                     GAC.Dispatcher:Dispatch(GAC.Actions.MODIFY_HEALTH, { delta = val })
                 elseif GAC.ModifyPlayerLife then
@@ -163,10 +163,10 @@ function GAC:CreateQuickActionsFrame()
             end
         end
     end)
-    GAC:SetupQuickTooltip(lifeButton, "Modificar vida ±1", 
-        "Clic izquierdo: Añade 1 punto de vida.", 
-        {"Clic derecho: Quita 1 punto de vida.", 1, 0.7, 0.7},
-        {"Control + Clic: Introducir valor manual", 1, 1, 0.5}
+    GAC:SetupQuickTooltip(lifeButton, GAC:_("qbModLifeTooltipTitle"), 
+        GAC:_("qbModLifeTooltipLeft"), 
+        {GAC:_("qbModLifeTooltipRight"), 1, 0.7, 0.7},
+        {GAC:_("qbModCtrlClickTooltip"), 1, 1, 0.5}
     )
 
     -- 4. Escudo
@@ -181,7 +181,7 @@ function GAC:CreateQuickActionsFrame()
     shieldButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     shieldButton:SetScript("OnClick", function(_, b)
         if IsControlKeyDown() then
-            ShowModifyValuePopup("Modificar Escudo (Ej: 5 o -5)", function(val)
+            ShowModifyValuePopup(GAC:_("qbModifyShieldTitle"), function(val)
                 if GAC.Dispatcher and GAC.Actions then
                     GAC.Dispatcher:Dispatch(GAC.Actions.MODIFY_SHIELD, { delta = val })
                 elseif GAC.ModifyPlayerShield then
@@ -197,10 +197,10 @@ function GAC:CreateQuickActionsFrame()
             end
         end
     end)
-    GAC:SetupQuickTooltip(shieldButton, "Modificar escudo ±1", 
-        "Clic izquierdo: Añade 1 punto de escudo.", 
-        {"Clic derecho: Quita 1 punto de escudo.", 1, 0.7, 0.7},
-        {"Control + Clic: Introducir valor manual", 1, 1, 0.5}
+    GAC:SetupQuickTooltip(shieldButton, GAC:_("qbModShieldTooltipTitle"), 
+        GAC:_("qbModShieldTooltipLeft"), 
+        {GAC:_("qbModShieldTooltipRight"), 1, 0.7, 0.7},
+        {GAC:_("qbModCtrlClickTooltip"), 1, 1, 0.5}
     )
 
     -- 7. Expandir Turnos

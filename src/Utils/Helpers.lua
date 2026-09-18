@@ -93,16 +93,30 @@ function GAC:ErrorHandler(errorMessage)
         print("|cffff0000[GAC]|r |cffff8000Error detectado:|r " .. tostring(errorMessage))
     end
     
-    -- Pass the error to the standard UI error handler (e.g. BugSack, Swatter, or default WoW error frame)
-    local handler = geterrorhandler()
-    if handler then
-        handler(errorMessage)
+    -- Pass the error to the standard UI error handler if available (e.g. BugSack, Swatter, or default WoW error frame)
+    if geterrorhandler then
+        local handler = geterrorhandler()
+        if handler then
+            handler(errorMessage)
+        end
     end
 end
 
 function GAC:SafeCall(func, ...)
-    if type(func) ~= "function" then return end
-    return xpcall(func, function(err) GAC:ErrorHandler(err) end, ...)
+    if type(func) ~= "function" then
+        return false, "Not a function"
+    end
+    
+    local results = { pcall(func, ...) }
+    local ok = table.remove(results, 1)
+    
+    if not ok then
+        local err = results[1]
+        GAC:ErrorHandler(err)
+        return false, err
+    end
+    
+    return true, unpack(results)
 end
 
 function GAC:SetClampedWithVisiblePixels(frame, visiblePixels)
