@@ -2,5 +2,5 @@
 https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI-Classic.xsd">
 	<Include file="Components\Components.xml"/>
 	<Include file="Hooks\Hooks.xml"/>
-	<Include file="index.lua"/>
+	<Script file="index.lua"/>
 </Ui>

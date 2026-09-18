@@ -228,6 +228,13 @@ function GAC:InitializePlayerPlate()
                 GAC:UpdatePlayerPlate()
             end
         end)
+    -- 5. Subscripción reactiva al Store de Flux
+    if GAC.Store and GAC.Store.Subscribe then
+        GAC.Store:Subscribe(function()
+            if GAC.UpdatePlayerPlate then
+                GAC:UpdatePlayerPlate()
+            end
+        end)
     end
 
     -- Forzamos la actualización inicial

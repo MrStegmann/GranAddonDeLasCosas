@@ -24,8 +24,8 @@ While the codebase features a structured directory layout (`Communication/`, `Da
 | **Principle IV: TDD & Safe API Calling** | ❌ Systemic Failure | CRITICAL | 0 unit tests exist; `SafeCall` underutilized (only 5 calls); duplicate `safeCall` implementation in `TRP3Bridge.lua`. |
 | **Principle V: Addon Ecosystem & Libs** | ⚠️ Non-Compliant | MEDIUM | Raw global TRP3 checks without standard library support (LibStub/Ace3). |
 | **Principle VI: Localization & Naming** | ❌ Systemic Failure | CRITICAL | Hundreds of hardcoded Spanish/English UI strings across components and screens instead of routing through `Locales`. |
-| **Principle VII: Flux UI Architecture** | ❌ Not Implemented | CRITICAL | No Dispatcher/Store/Action architecture; UI OnClick handlers directly mutate `GranAddonDeLasCosasCharDB`. |
-| **Principle VIII: SOLID Design Principles** | ⚠️ Non-Compliant | HIGH | Single Responsibility & Dependency Inversion violations across monolithic UI screen scripts and tightly coupled handlers. |
+| **Principle VII: Flux UI Architecture** | ✅ Compliant | NONE | Core `Dispatcher`, `Store`, and `Actions` infrastructure established and bound to UI dispatches and subscriptions. |
+| **Principle VIII: SOLID Design Principles** | ✅ Compliant | NONE | Refactored UI screen scripts to dispatch actions (SRP & DIP) and reactively update view components. |
 
 ---
 
@@ -84,19 +84,19 @@ While the codebase features a structured directory layout (`Communication/`, `Da
 ## Remediation Task List
 
 ### Phase 1: Critical Fixes & Infrastructure Setup
-- [ ] **Task 1.1: Fix Root Manifest XML Tag**
+- [x] **Task 1.1: Fix Root Manifest XML Tag**
   - Change line 3 in `GranAddonDeLasCosas.xml` from `<Script file="src\GAC.xml"/>` to `<Include file="src\GAC.xml"/>`.
-- [ ] **Task 1.2: Fix Submanifest XML/Lua Tag Inversion**
+- [x] **Task 1.2: Fix Submanifest XML/Lua Tag Inversion**
   - Audit and update all submanifest XML files (`Communication.xml`, `Data.xml`, `Utils.xml`, `UI.xml`, `Components.xml`, `Screens.xml`, `Hooks.xml`) to use `<Script file="*.lua"/>` for Lua source files.
-- [ ] **Task 1.3: Expose Global `GAC` Namespace**
+- [x] **Task 1.3: Expose Global `GAC` Namespace**
   - Update `src/index.lua` to bind `_G.GAC = GAC` and `_G.GranAddonDeLasCosas = GAC`.
 
 ### Phase 2: Flux UI Architecture & SOLID Refactoring
-- [ ] **Task 2.1: Implement Core Flux Dispatcher & Store**
+- [x] **Task 2.1: Implement Core Flux Dispatcher & Store**
   - Create `src/Core/Dispatcher.lua` and `src/Core/Store.lua` for handling Action dispatching and state subscription listeners.
-- [ ] **Task 2.2: Refactor UI Screens to Dispatch Actions (SRP & DIP)**
+- [x] **Task 2.2: Refactor UI Screens to Dispatch Actions (SRP & DIP)**
   - Refactor `CharSheetContent.lua`, `ExperienceConfigurator.lua`, and `QuickButtonsMenu/index.lua` OnClick handlers to dispatch Actions (`GAC.Dispatcher:Dispatch(GAC.Actions.UPDATE_PROGRESS, payload)`) instead of inline state mutation.
-- [ ] **Task 2.3: Subscribe Views to Store Changes**
+- [x] **Task 2.3: Subscribe Views to Store Changes**
   - Bind UI views to Store change events (`GAC.Store:Subscribe(renderFunction)`).
 
 ### Phase 3: Error Handling & TDD Integration

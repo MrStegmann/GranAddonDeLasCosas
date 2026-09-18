@@ -1,5 +1,8 @@
 local addonName, GAC = ...
 
+_G.GAC = GAC
+_G.GranAddonDeLasCosas = GAC
+
 GAC.name = addonName
 GAC.version = "1.2.1"
 
@@ -36,6 +39,10 @@ function GAC:ADDON_LOADED(loadedAddonName)
         self.characterData = GranAddonDeLasCosasCharDB
         self.characterData.progress = self.characterData.progress or {}
         self.characterData.ui = self.characterData.ui or {}
+
+        if self.Store and self.Store.Initialize then
+            self.Store:Initialize(self.characterData)
+        end
 
         if self.InitializeAttributeSystem then self:InitializeAttributeSystem() end
         if self.CreateQuickActionsFrame then self:CreateQuickActionsFrame() end

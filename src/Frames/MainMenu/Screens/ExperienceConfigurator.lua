@@ -71,8 +71,12 @@ function GAC:CreateExperienceConfigurator(parent)
     expInput:SetScript("OnEnterPressed", function(self)
         local val = tonumber(self:GetText()) or 0
         if val > 0 then
-            GAC:AddExperience(val)
-            UpdateUI()
+            if GAC.Dispatcher and GAC.Actions then
+                GAC.Dispatcher:Dispatch(GAC.Actions.ADD_EXPERIENCE, { expAmount = val })
+            else
+                GAC:AddExperience(val)
+                UpdateUI()
+            end
             self:SetText("")
             self:ClearFocus()
             print(string.format("|cFF40C7EBGAC:|r Has recibido %d puntos de experiencia.", val))
@@ -82,6 +86,14 @@ function GAC:CreateExperienceConfigurator(parent)
 
     frame.Update = function(self)
         UpdateUI()
+    end
+
+    if GAC.Store and GAC.Store.Subscribe then
+        GAC.Store:Subscribe(function()
+            if frame:IsShown() and frame.Update then
+                frame:Update()
+            end
+        end)
     end
 
     return frame

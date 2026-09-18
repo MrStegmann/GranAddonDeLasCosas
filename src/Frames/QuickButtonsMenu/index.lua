@@ -148,10 +148,19 @@ function GAC:CreateQuickActionsFrame()
     lifeButton:SetScript("OnClick", function(_, b)
         if IsControlKeyDown() then
             ShowModifyValuePopup("Modificar Vida (Ej: 5 o -5)", function(val)
-                if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(val) end
+                if GAC.Dispatcher and GAC.Actions then
+                    GAC.Dispatcher:Dispatch(GAC.Actions.MODIFY_HEALTH, { delta = val })
+                elseif GAC.ModifyPlayerLife then
+                    GAC:ModifyPlayerLife(val)
+                end
             end)
         else
-            if GAC.ModifyPlayerLife then GAC:ModifyPlayerLife(b == "RightButton" and -1 or 1) end
+            local delta = (b == "RightButton" and -1 or 1)
+            if GAC.Dispatcher and GAC.Actions then
+                GAC.Dispatcher:Dispatch(GAC.Actions.MODIFY_HEALTH, { delta = delta })
+            elseif GAC.ModifyPlayerLife then
+                GAC:ModifyPlayerLife(delta)
+            end
         end
     end)
     GAC:SetupQuickTooltip(lifeButton, "Modificar vida ±1", 
@@ -173,10 +182,19 @@ function GAC:CreateQuickActionsFrame()
     shieldButton:SetScript("OnClick", function(_, b)
         if IsControlKeyDown() then
             ShowModifyValuePopup("Modificar Escudo (Ej: 5 o -5)", function(val)
-                if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(val) end
+                if GAC.Dispatcher and GAC.Actions then
+                    GAC.Dispatcher:Dispatch(GAC.Actions.MODIFY_SHIELD, { delta = val })
+                elseif GAC.ModifyPlayerShield then
+                    GAC:ModifyPlayerShield(val)
+                end
             end)
         else
-            if GAC.ModifyPlayerShield then GAC:ModifyPlayerShield(b == "RightButton" and -1 or 1) end
+            local delta = (b == "RightButton" and -1 or 1)
+            if GAC.Dispatcher and GAC.Actions then
+                GAC.Dispatcher:Dispatch(GAC.Actions.MODIFY_SHIELD, { delta = delta })
+            elseif GAC.ModifyPlayerShield then
+                GAC:ModifyPlayerShield(delta)
+            end
         end
     end)
     GAC:SetupQuickTooltip(shieldButton, "Modificar escudo ±1", 

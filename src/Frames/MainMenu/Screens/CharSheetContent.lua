@@ -165,34 +165,38 @@ function GAC:CreateCharSheetContent(parent)
 
     saveProgBtn:SetScript("OnClick", function()
         saveProgBtn:Hide()
-        GAC:SetExperienceCategory(currentCat)
-        GAC:SetExperienceLevel(currentLvl)
-        GAC:SetCurrentExperience(0)
-        
-        if GAC.characterData then
-            local levelEntry = GAC.GetLevelEntry and GAC:GetLevelEntry(currentCat, currentLvl)
-            local baseHealth = 10
-            if levelEntry and levelEntry.maxHealth then
-                baseHealth = levelEntry.maxHealth
-            elseif GAC.levelsTable and GAC.levelsTable[currentCat] and GAC.levelsTable[currentCat][currentLvl] then
-                baseHealth = GAC.levelsTable[currentCat][currentLvl].maxHealth or 10
-            end
+        if GAC.Dispatcher and GAC.Actions then
+            GAC.Dispatcher:Dispatch(GAC.Actions.UPDATE_PROGRESS, { category = currentCat, level = currentLvl })
+        else
+            GAC:SetExperienceCategory(currentCat)
+            GAC:SetExperienceLevel(currentLvl)
+            GAC:SetCurrentExperience(0)
             
-            local constitution = (GAC.characterData.attributes and GAC.characterData.attributes["constitution"]) or 0
-            local maxHealth = baseHealth + constitution
-            if maxHealth < 1 then maxHealth = 1 end
-            
-            GAC.characterData.currentHealth = maxHealth
-            
-            if PlayerFrameHealthBar then
-                UnitFrameHealthBar_Update(PlayerFrameHealthBar, "player")
-                if TextStatusBar_UpdateTextString then
-                    TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
+            if GAC.characterData then
+                local levelEntry = GAC.GetLevelEntry and GAC:GetLevelEntry(currentCat, currentLvl)
+                local baseHealth = 10
+                if levelEntry and levelEntry.maxHealth then
+                    baseHealth = levelEntry.maxHealth
+                elseif GAC.levelsTable and GAC.levelsTable[currentCat] and GAC.levelsTable[currentCat][currentLvl] then
+                    baseHealth = GAC.levelsTable[currentCat][currentLvl].maxHealth or 10
+                end
+                
+                local constitution = (GAC.characterData.attributes and GAC.characterData.attributes["constitution"]) or 0
+                local maxHealth = baseHealth + constitution
+                if maxHealth < 1 then maxHealth = 1 end
+                
+                GAC.characterData.currentHealth = maxHealth
+                
+                if PlayerFrameHealthBar then
+                    UnitFrameHealthBar_Update(PlayerFrameHealthBar, "player")
+                    if TextStatusBar_UpdateTextString then
+                        TextStatusBar_UpdateTextString(PlayerFrameHealthBar)
+                    end
                 end
             end
-        end
 
-        GAC:UpdateGameExpBar()
+            GAC:UpdateGameExpBar()
+        end
         if frame.Update then frame:Update() end
         print("|cFF40C7EBGAC:|r Progresión guardada correctamente. Salud restablecida al máximo.")
     end)
@@ -392,6 +396,14 @@ function GAC:CreateCharSheetContent(parent)
             end
             if saveProgBtn then saveProgBtn:Hide() end
         end
+    end
+
+    if GAC.Store and GAC.Store.Subscribe then
+        GAC.Store:Subscribe(function()
+            if frame:IsShown() and frame.Update then
+                frame:Update()
+            end
+        end)
     end
 
     return frame
