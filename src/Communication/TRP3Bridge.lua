@@ -128,9 +128,7 @@ local function getCurrentProfileData(api)
         return nil
     end
 
-    return safeCall(api.getData, "player")
-        or safeCall(api.getData)
-        or safeCall(api.getPlayerCurrentProfile)
+    return safeCall(api.getPlayerCurrentProfile)
         or safeCall(api.getCurrentProfile)
 end
 
@@ -142,29 +140,42 @@ local function getFromTRP3ProfileAPI(api, extractor)
     return extractor(getCurrentProfileData(api))
 end
 
+local function isTRP3PlayerProfileReady()
+    if type(TRP3_API) == "table"
+        and type(TRP3_API.profile) == "table"
+        and type(TRP3_API.profile.getPlayerCurrentProfile) == "function"
+    then
+        local profile = safeCall(TRP3_API.profile.getPlayerCurrentProfile)
+        return type(profile) == "table"
+    end
+    return false
+end
+
 local function getFromTRP3RegisterAPI(api, extractor)
-    if type(api) ~= "table" then
+    if type(api) ~= "table" or type(extractor) ~= "function" then
         return nil
     end
 
     local unitID = safeCall(api.getUnitID, "player") or "player"
+    local unit = safeCall(api.getUnit, unitID) or safeCall(api.getUnitData, unitID)
+    if type(unit) ~= "table" then
+        return nil
+    end
 
-    local directUnit = safeCall(api.getUnit, unitID) or safeCall(api.getUnitData, unitID)
-    local directValue = extractor(directUnit)
+    local directValue = extractor(unit)
     if directValue then
         return directValue
     end
 
-    local profileID = safeCall(api.getUnitIDCurrentProfile, unitID)
-        or safeCall(api.getUnitCurrentProfile, unitID)
-        or safeCall(api.getUnitProfileID, unitID)
-
-    if not profileID then
-        return nil
+    local profileID = unit.profileID or unit.profile
+    if type(profileID) == "string" and type(api.getProfile) == "function" then
+        local profileData = safeCall(api.getProfile, profileID)
+        if type(profileData) == "table" then
+            return extractor(profileData)
+        end
     end
 
-    local profileData = safeCall(api.getProfile, profileID)
-    return extractor(profileData)
+    return nil
 end
 
 local function getProfileRaceFromData(profileData)
@@ -235,7 +246,7 @@ function GAC:GetRollDisplayNameWithColor()
 end
 
 local function getTargetTRP3ProfileValue(extractor)
-    if type(TRP3_API) ~= "table" then
+    if type(TRP3_API) ~= "table" or type(extractor) ~= "function" then
         return nil
     end
 
@@ -245,24 +256,30 @@ local function getTargetTRP3ProfileValue(extractor)
     end
 
     local unitStr = "target"
-    local unitID = safeCall(api.getUnitID, unitStr) or unitStr
+    if not UnitExists(unitStr) then
+        return nil
+    end
 
-    local directUnit = safeCall(api.getUnit, unitID) or safeCall(api.getUnitData, unitID)
-    local directValue = extractor(directUnit)
+    local unitID = safeCall(api.getUnitID, unitStr) or unitStr
+    local unit = safeCall(api.getUnit, unitID) or safeCall(api.getUnitData, unitID)
+    if type(unit) ~= "table" then
+        return nil
+    end
+
+    local directValue = extractor(unit)
     if directValue then
         return directValue
     end
 
-    local profileID = safeCall(api.getUnitIDCurrentProfile, unitID)
-        or safeCall(api.getUnitCurrentProfile, unitID)
-        or safeCall(api.getUnitProfileID, unitID)
-
-    if not profileID then
-        return nil
+    local profileID = unit.profileID or unit.profile
+    if type(profileID) == "string" and type(api.getProfile) == "function" then
+        local profileData = safeCall(api.getProfile, profileID)
+        if type(profileData) == "table" then
+            return extractor(profileData)
+        end
     end
 
-    local profileData = safeCall(api.getProfile, profileID)
-    return extractor(profileData)
+    return nil
 end
 
 function GAC:GetTargetTRP3ProfileName()
@@ -430,9 +447,11 @@ getItemDisplayName = function(itemData)
         and type(TRP3_API.inventory.getItemLink) == "function"
     then
         local classData = safeCall(TRP3_API.extended.getClass, itemData.id)
-        local itemLink = safeCall(TRP3_API.inventory.getItemLink, classData, itemData.id)
-        if type(itemLink) == "string" and itemLink ~= "" then
-            table.insert(nameCandidates, 1, itemLink)
+        if type(classData) == "table" then
+            local itemLink = safeCall(TRP3_API.inventory.getItemLink, classData, itemData.id)
+            if type(itemLink) == "string" and itemLink ~= "" then
+                table.insert(nameCandidates, 1, itemLink)
+            end
         end
     end
 
@@ -462,6 +481,10 @@ local function readSlotValue(slotTable, slotID)
 end
 
 local function getExtendedInventoryFromAPI()
+    if not isTRP3PlayerProfileReady() then
+        return nil
+    end
+
     if type(TRP3_API) == "table"
         and type(TRP3_API.inventory) == "table"
         and type(TRP3_API.inventory.getInventory) == "function"
@@ -472,72 +495,15 @@ local function getExtendedInventoryFromAPI()
         end
     end
 
-    if type(TRP3_API) ~= "table" then
-        return nil
-    end
-
-    local extended = TRP3_API.extended
-    if type(extended) ~= "table" then
-        return nil
-    end
-
-    local inventoryModule = extended.inventory
-    local itemsModule = extended.items
-
-    local inventoryCandidates = {
-        safeCall(extended.getPlayerInventory, "player"),
-        safeCall(extended.getPlayerInventory),
-        safeCall(extended.getInventoryForUnit, "player"),
-        safeCall(extended.getInventory, "player"),
-        safeCall(inventoryModule and inventoryModule.getPlayerInventory, "player"),
-        safeCall(inventoryModule and inventoryModule.getPlayerInventory),
-        safeCall(inventoryModule and inventoryModule.getInventoryForUnit, "player"),
-        safeCall(inventoryModule and inventoryModule.getInventory, "player"),
-        safeCall(itemsModule and itemsModule.getPlayerInventory, "player"),
-        safeCall(itemsModule and itemsModule.getInventoryForUnit, "player"),
-    }
-
-    local inventoryData = findFirstTable(inventoryCandidates)
-    if type(inventoryData) ~= "table" then
-        return nil
-    end
-
-    if type(inventoryData.content) == "table" then
-        return inventoryData.content
-    end
-
-    local equippedCandidates = {
-        inventoryData.equipped,
-        inventoryData.equipment,
-        inventoryData.slots,
-        inventoryData.worn,
-        inventoryData,
-    }
-
-    return findFirstTable(equippedCandidates)
+    return nil
 end
 
 local function getExtendedInventoryFromProfileData()
-    if type(TRP3_API) == "table"
-        and type(TRP3_API.profile) == "table"
-        and type(TRP3_API.profile.getPlayerCurrentProfile) == "function"
-    then
-        local profileData = safeCall(TRP3_API.profile.getPlayerCurrentProfile)
-        if type(profileData) == "table"
-            and type(profileData.inventory) == "table"
-            and type(profileData.inventory.content) == "table"
-        then
-            return profileData.inventory.content
-        end
-    end
-
-    if type(TRP3_API) ~= "table" or type(TRP3_API.profile) ~= "table" then
+    if not isTRP3PlayerProfileReady() then
         return nil
     end
 
-    local profileData = safeCall(TRP3_API.profile.getData, "player")
-        or safeCall(TRP3_API.profile.getData)
-        or safeCall(TRP3_API.profile.getCurrentProfile)
+    local profileData = safeCall(TRP3_API.profile.getPlayerCurrentProfile)
 
     if type(profileData) ~= "table" then
         return nil
@@ -1082,11 +1048,13 @@ function GAC:InitTRP3ArmorHook()
             local original_sendObject = AddOn_TotalRP3.Communications.sendObject
             AddOn_TotalRP3.Communications.sendObject = function(prefix, data, target, priority, reservedMessageID, ...)
                 if prefix == "IIRS" and type(data) == "table" and type(data.slots) == "table" then
-                    local playerInventory = TRP3_API.inventory and TRP3_API.inventory.getInventory and TRP3_API.inventory.getInventory()
-                    if playerInventory and playerInventory.content then
-                        for slotID, slotInfo in pairs(playerInventory.content) do
-                            if data.slots[slotID] and slotInfo.VA then
-                                data.slots[slotID].VA = slotInfo.VA
+                    if isTRP3PlayerProfileReady() then
+                        local playerInventory = safeCall(TRP3_API.inventory.getInventory)
+                        if type(playerInventory) == "table" and type(playerInventory.content) == "table" then
+                            for slotID, slotInfo in pairs(playerInventory.content) do
+                                if data.slots[slotID] and slotInfo.VA then
+                                    data.slots[slotID].VA = slotInfo.VA
+                                end
                             end
                         end
                     end

@@ -6,7 +6,15 @@ function GAC:CreateStatInput(parent, label, key, isTalent, saveCallback, statInp
     row:SetPoint("RIGHT", -5, 0)
     row:SetHeight(26)
     
-    local name = GAC:CreateFontString(row, (GAC.L and GAC.L[label]) or label:gsub("^%l", string.upper), "GameFontHighlight", { "LEFT", 5, 0 }, {1, 1, 1})
+    local labelText = label
+    if GAC.L and GAC.L[label] then
+        labelText = GAC.L[label]
+    elseif type(label) == "string" then
+        labelText = label:gsub("^%l", string.upper)
+    else
+        labelText = tostring(label or "")
+    end
+    local name = GAC:CreateFontString(row, labelText, "GameFontHighlight", { "LEFT", 5, 0 }, {1, 1, 1})
 
     local input = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
     input:SetSize(40, 20)

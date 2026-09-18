@@ -50,8 +50,14 @@ function GAC:CreateExperienceConfigurator(parent)
     expInput:SetNumeric(true)
     
     local function UpdateUI()
-        local snapshot = GAC:GetExperienceProgressSnapshot()
-        levelText:SetText(string.format(GAC:_("expCurrentLevelFmt"), snapshot.level, GAC:_(snapshot.category):gsub("^%l", string.upper)))
+        local snapshot = GAC:GetExperienceProgressSnapshot() or {}
+        local categoryStr = GAC:_(snapshot.category) or snapshot.category or "normal"
+        if type(categoryStr) == "string" then
+            categoryStr = categoryStr:gsub("^%l", string.upper)
+        else
+            categoryStr = tostring(categoryStr)
+        end
+        levelText:SetText(string.format(GAC:_("expCurrentLevelFmt"), snapshot.level or 1, categoryStr))
         
         local currentExp = snapshot.currentExperience
         local reqExp = snapshot.requiredExperience or 1

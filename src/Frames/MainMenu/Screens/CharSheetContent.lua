@@ -372,13 +372,22 @@ function GAC:CreateCharSheetContent(parent)
             portrait:RefreshUnit()
             portrait:SetPortraitZoom(1)
         end
-        local currentClass = GAC:GetActiveTRP3ProfileClass()
-        if currentClass then
-            local cl = RAID_CLASS_COLORS[select(2, UnitClass("player"))] or {r=1, g=1, b=1}
-            infoText:SetTextColor(cl.r, cl.g, cl.b)
-            infoText:SetText(string.format(GAC:_("charSheetInfoTextWithCategoryFmt"), GAC.characterData.progress.level, GAC:_(GAC.characterData.progress.category):gsub("^%l", string.upper), GAC:GetActiveTRP3ProfileRace(), currentClass))
+        local currentClass = GAC:GetActiveTRP3ProfileClass() or select(1, UnitClass("player")) or ""
+        local currentRace = GAC:GetActiveTRP3ProfileRace() or select(1, UnitRace("player")) or ""
+        local progress = GAC.characterData and GAC.characterData.progress or {}
+        local level = progress.level or 1
+        local category = progress.category or "normal"
+        local localizedCategory = GAC:_(category) or category
+        if type(localizedCategory) == "string" then
+            localizedCategory = localizedCategory:gsub("^%l", string.upper)
+        else
+            localizedCategory = tostring(category)
         end
-        nameText:SetText(GAC:GetRollDisplayName())
+
+        local cl = RAID_CLASS_COLORS[select(2, UnitClass("player"))] or {r=1, g=1, b=1}
+        infoText:SetTextColor(cl.r, cl.g, cl.b)
+        infoText:SetText(string.format(GAC:_("charSheetInfoTextWithCategoryFmt"), level, localizedCategory, currentRace, currentClass))
+        nameText:SetText(GAC:GetRollDisplayName() or UnitName("player") or "")
 
         -- Update progression dropdowns to reflect current actual progress, 
         -- assuming the user wants to see their current level when updated.
