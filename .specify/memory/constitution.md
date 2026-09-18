@@ -1,8 +1,8 @@
 <!--
 SYNC IMPACT REPORT
-Version: 1.0.0 -> 1.1.0
+Version: 1.1.0 -> 1.2.0
 Added Principles:
-- VII. Flux-Driven Modular UI Architecture
+- VIII. SOLID Object-Oriented & Modular Design Principles
 Added Sections: None
 Removed Sections: None
 Follow-up TODOs: None
@@ -33,6 +33,14 @@ All variable names, table fields, and internal identifiers MUST follow `camelCas
 ### VII. Flux-Driven Modular UI Architecture
 UI frames and view components MUST strictly follow a Flux-driven unidirectional data flow pattern (`Action` → `Dispatcher` → `Store` → `View`). UI views and XML/Lua frames MUST NOT mutate application state directly; all user interactions (e.g., button clicks, attribute allocation changes, health adjustments) MUST dispatch discrete Actions. Stores update internal state and broadcast state-change notifications, causing registered UI views to re-render. UI components MUST remain presentationally focused and modular, subscribing to Store updates rather than maintaining independent parallel state.
 
+### VIII. SOLID Object-Oriented & Modular Design Principles
+All software components, modules, stores, and frame controllers MUST adhere to SOLID design principles adapted for World of Warcraft Lua architecture:
+- **Single Responsibility Principle (SRP)**: Each file and table MUST have one well-defined responsibility (e.g., UI layout, state storage, network protocol, localization).
+- **Open/Closed Principle (OCP)**: Code modules MUST be open for extension (via callback registries, events, or hooks) but closed for direct internal modification.
+- **Liskov Substitution Principle (LSP)**: Reusable UI component contracts (e.g., custom buttons, input cards, dialog frames) MUST be interchangeable without breaking caller expectations.
+- **Interface Segregation Principle (ISP)**: Module interfaces MUST remain narrow and specific; consumers MUST NOT be forced to depend on methods they do not use.
+- **Dependency Inversion Principle (DIP)**: High-level domain logic and Flux stores MUST depend on abstract service interfaces or event buses rather than concrete low-level WoW API calls or global UI frames directly.
+
 ## Technical Constraints & Target Client Specifications
 - **Target Interface Client**: WoW 9.0.2 / 9.2.7 (`## Interface: 90207`), engineered for retail and custom RP client environments (e.g., Epsilon WoW).
 - **Saved Variables**: Persistent user options and character profiles MUST be declared explicitly in `.toc` (`SavedVariables: GranAddonDeLasCosasDB`, `SavedVariablesPerCharacter: GranAddonDeLasCosasCharDB`).
@@ -44,8 +52,9 @@ UI frames and view components MUST strictly follow a Flux-driven unidirectional 
 3. **Localization Enforcement**: Verify that every added label or text string has a corresponding entry in the `Locales` module.
 4. **Manifest Ordering**: Ensure newly added Lua or XML files are correctly included in `GranAddonDeLasCosas.xml` in valid dependency order.
 5. **Flux Data Flow Compliance**: Ensure UI event handlers dispatch Actions to Stores rather than directly mutating shared tables or global frame properties.
+6. **SOLID Design Verification**: Ensure new modules strictly adhere to SRP, expose narrow interfaces, and depend on abstractions rather than monolithic globals.
 
 ## Governance
 This Constitution is the supreme governing document for the Gran Addon De Las Cosas (GAC_DEV) codebase. All code contributions, refactorings, pull requests, and AI agent implementations MUST strictly comply with these principles. Amendments to this constitution require explicit documented justification, version revision, and verification against existing architectural patterns.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-18 | **Last Amended**: 2026-09-18
+**Version**: 1.2.0 | **Ratified**: 2026-09-18 | **Last Amended**: 2026-09-18
